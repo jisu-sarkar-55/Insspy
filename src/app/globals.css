@@ -124,6 +124,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    zoom: 1.25;
   }
   html {
     @apply font-sans;
