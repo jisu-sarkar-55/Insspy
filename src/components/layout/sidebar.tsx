@@ -20,7 +20,6 @@ import {
   Users,
   FileText,
   Library,
-  Server,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -63,12 +62,6 @@ const navGroups = [
       { name: "Trade Replay", href: "/dashboard/trade-replay", icon: Play },
       { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Users },
       { name: "Reports", href: "/dashboard/reports", icon: FileText },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { name: "Infrastructure", href: "/dashboard/infrastructure", icon: Server },
     ],
   },
   {
