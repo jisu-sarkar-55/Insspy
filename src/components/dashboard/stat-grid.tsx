@@ -23,13 +23,6 @@ export function StatGrid({ stats }: StatGridProps) {
       sub: `${stats.totalWinningTrades}W / ${stats.totalLosingTrades}L`,
     },
     {
-      label: "Avg R:R",
-      value: "—",
-      icon: TrendingUp,
-      color: "var(--color-info)",
-      sub: "From stop loss",
-    },
-    {
       label: "Profit factor",
       value:
         stats.profitFactor === Infinity

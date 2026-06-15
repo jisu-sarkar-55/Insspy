@@ -114,19 +114,60 @@ export function calculateStrategyStats(trades: Trade[]): StrategyStats[] {
 }
 
 function calculateAverageRR(trades: Trade[]): number {
-  const tradesWithRR = trades.filter(
-    (t) => t.stop_loss && t.net_pnl !== null
+  const withExit = trades.filter(
+    (t) => t.stop_loss !== null && t.exit_price !== null
+  );
+  const withoutExit = trades.filter(
+    (t) => t.stop_loss !== null && t.exit_price === null && t.net_pnl !== null
   );
 
-  if (tradesWithRR.length === 0) return 0;
+  if (withExit.length === 0 && withoutExit.length === 0) return 0;
 
-  const totalRR = tradesWithRR.reduce((sum, trade) => {
-    const risk = Math.abs(trade.entry_price - trade.stop_loss!);
-    const reward = Math.abs(trade.net_pnl || 0);
-    return sum + (risk > 0 ? reward / risk : 0);
-  }, 0);
+  let totalRR = 0;
+  let count = 0;
 
-  return totalRR / tradesWithRR.length;
+  for (const trade of withExit) {
+    const riskDistance = Math.abs(trade.entry_price - trade.stop_loss!);
+    if (riskDistance === 0) continue;
+    const priceMove =
+      trade.direction === "buy"
+        ? trade.exit_price! - trade.entry_price
+        : trade.entry_price - trade.exit_price!;
+    totalRR += priceMove / riskDistance;
+    count++;
+  }
+
+  if (withoutExit.length > 0) {
+    let multiplier = 100000;
+    if (withExit.length > 0) {
+      let totalDerived = 0;
+      for (const trade of withExit) {
+        const priceMove =
+          trade.direction === "buy"
+            ? trade.exit_price! - trade.entry_price
+            : trade.entry_price - trade.exit_price!;
+        const pm = Math.abs(priceMove);
+        if (pm > 0 && trade.lot_size > 0 && trade.net_pnl !== null) {
+          totalDerived += Math.abs(trade.net_pnl) / (pm * trade.lot_size);
+        }
+      }
+      if (totalDerived > 0) multiplier = totalDerived / withExit.length;
+    } else if (trades.some((t) => t.entry_price > 100 && t.entry_price < 2000)) {
+      multiplier = 1000;
+    }
+
+    for (const trade of withoutExit) {
+      const riskDistance = Math.abs(trade.entry_price - trade.stop_loss!);
+      if (riskDistance === 0 || trade.lot_size <= 0) continue;
+      const riskInDollars = riskDistance * trade.lot_size * multiplier;
+      if (riskInDollars > 0) {
+        totalRR += (trade.net_pnl || 0) / riskInDollars;
+        count++;
+      }
+    }
+  }
+
+  return count > 0 ? totalRR / count : 0;
 }
 
 export function calculateDailyPnl(trades: Trade[]): DailyPnl[] {
@@ -183,10 +224,10 @@ function getHour(dateStr: string): number {
 }
 
 function getSessionLabel(hour: number): string {
-  if (hour >= 0 && hour < 9) return "Asia";
-  if (hour >= 7 && hour < 16) return "London";
-  if (hour >= 12 && hour < 21) return "New York";
-  if (hour >= 12 && hour < 16) return "Overlap";
+  if (hour >= 13 && hour < 16) return "Overlap";
+  if (hour >= 8 && hour < 16) return "London";
+  if (hour >= 13 && hour < 21) return "New York";
+  if (hour >= 0 && hour < 8) return "Asia";
   return "Off-hours";
 }
 

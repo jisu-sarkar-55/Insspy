@@ -76,12 +76,6 @@ function SessionCard({ insight, icon: Icon, iconColor }: {
             {insight.winRate.toFixed(0)}%
           </div>
         </div>
-        <div>
-          <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>Avg RR</div>
-          <div className="text-[13px] font-semibold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-            {insight.avgRR.toFixed(1)}
-          </div>
-        </div>
       </div>
       <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
         {insight.detail}

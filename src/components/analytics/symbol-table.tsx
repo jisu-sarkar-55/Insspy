@@ -35,7 +35,7 @@ export function SymbolTable({ data }: Props) {
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            {["Symbol", "Trades", "Win Rate", "P&L", "Avg R", "PF"].map((h) => (
+            {["Symbol", "Trades", "Win Rate", "P&L", "PF"].map((h) => (
               <th key={h} className="border-b px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ borderColor: "var(--border-subtle)", color: "var(--text-muted)", fontFamily: "var(--font-jetbrains)" }}>
                 {h}
               </th>
@@ -49,7 +49,6 @@ export function SymbolTable({ data }: Props) {
               <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.trades}</td>
               <td className="border-b px-2 py-2 text-[11px] font-semibold font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: s.winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)" }}>{s.winRate.toFixed(0)}%</td>
               <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>${s.pnl.toFixed(0)}</td>
-              <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.avgRR.toFixed(1)}R</td>
               <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.profitFactor === Infinity ? "∞" : s.profitFactor.toFixed(1)}</td>
             </tr>
           ))}

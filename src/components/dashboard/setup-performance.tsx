@@ -34,7 +34,7 @@ export function SetupPerformance({ strategies }: SetupPerformanceProps) {
     <table className="w-full border-collapse">
       <thead>
         <tr>
-          {["Setup", "Trades", "Win rate", "Net P&L", "Avg R", "Status"].map(
+          {["Setup", "Trades", "Win rate", "Net P&L", "Status"].map(
             (h) => (
               <th
                 key={h}
@@ -96,15 +96,6 @@ export function SetupPerformance({ strategies }: SetupPerformanceProps) {
                 }}
               >
                 ${s.netPnl.toFixed(0)}
-              </td>
-              <td
-                className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]"
-                style={{
-                  borderColor: "var(--border-subtle)",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                {s.averageRR.toFixed(1)}R
               </td>
               <td
                 className="border-b px-2 py-2"

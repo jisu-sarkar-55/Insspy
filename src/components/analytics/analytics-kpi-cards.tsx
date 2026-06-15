@@ -29,12 +29,6 @@ export function AnalyticsKPICards({ data }: Props) {
       color: data.profitFactor >= 2 ? "var(--color-profit)" : data.profitFactor >= 1 ? "var(--primary)" : "var(--color-loss)",
     },
     {
-      label: "Average RR",
-      value: `${data.avgRR.toFixed(1)}R`,
-      icon: Zap,
-      color: data.avgRR >= 2 ? "var(--color-profit)" : data.avgRR >= 1 ? "var(--color-info)" : "var(--color-loss)",
-    },
-    {
       label: "Max Drawdown",
       value: `${data.maxDrawdown.toFixed(1)}%`,
       icon: TrendingDown,

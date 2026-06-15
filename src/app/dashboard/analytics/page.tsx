@@ -53,19 +53,29 @@ function Section({ title, children, span }: { title: string; children: React.Rea
 export default function AnalyticsPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+
     async function fetchTrades() {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .order("entry_time", { ascending: false });
-      if (data) setTrades(data);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from("trades")
+          .select("*")
+          .order("entry_time", { ascending: false });
+        if (error) throw error;
+        if (!cancelled && data) setTrades(data);
+      } catch (err) {
+        if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
     fetchTrades();
-  }, [supabase]);
+    return () => { cancelled = true; };
+  }, []);
 
   if (loading) {
     return (
@@ -75,6 +85,15 @@ export default function AnalyticsPage() {
     );
   }
 
+  if (fetchError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div style={{ color: "var(--color-loss)" }}>{fetchError}</div>
+      </div>
+    );
+  }
+
+  const STARTING_BALANCE = 10000;
   const closed = trades.filter((t) => t.net_pnl !== null);
 
   if (closed.length === 0) {
@@ -91,8 +110,8 @@ export default function AnalyticsPage() {
   }
 
   const kpis = calculateAnalyticsKPIs(closed);
-  const drawdown = calculateDrawdownAnalysis(closed, 10000);
-  const equityCurve = calculateEquityCurve(closed, 10000);
+  const drawdown = calculateDrawdownAnalysis(closed, STARTING_BALANCE);
+  const equityCurve = calculateEquityCurve(closed, STARTING_BALANCE);
   const histogram = calculatePnlHistogram(closed);
   const symbolStats = calculateSymbolStats(closed);
   const sessionStats = calculateSessionStats(closed);
@@ -184,8 +203,6 @@ export default function AnalyticsPage() {
       <Section title="AI insights">
         <AiCoachingPanel insights={aiInsights} />
       </Section>
-
-
     </div>
   );
 }
