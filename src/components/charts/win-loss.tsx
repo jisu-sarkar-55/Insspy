@@ -7,7 +7,7 @@ interface WinLossChartProps {
   losses: number;
 }
 
-const COLORS = ["#10b981", "#ef4444"];
+const COLORS = ["var(--color-profit)", "var(--color-loss)"];
 
 export function WinLossChart({ wins, losses }: WinLossChartProps) {
   const data = [
@@ -17,7 +17,10 @@ export function WinLossChart({ wins, losses }: WinLossChartProps) {
 
   if (wins === 0 && losses === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-zinc-400">
+      <div
+        className="flex items-center justify-center h-[300px]"
+        style={{ color: "var(--text-muted)" }}
+      >
         No trade data available
       </div>
     );
@@ -32,24 +35,32 @@ export function WinLossChart({ wins, losses }: WinLossChartProps) {
           cy="50%"
           innerRadius={60}
           outerRadius={100}
-          paddingAngle={5}
+          paddingAngle={4}
           dataKey="value"
         >
           {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell
+              key={`cell-${index}`}
+              fill={COLORS[index % COLORS.length]}
+              fillOpacity={0.7}
+              stroke="var(--surface-card)"
+              strokeWidth={2}
+            />
           ))}
         </Pie>
         <Tooltip
           contentStyle={{
-            backgroundColor: "#18181b",
-            border: "1px solid #27272a",
-            borderRadius: "8px",
+            backgroundColor: "var(--surface-card)",
+            border: "1px solid var(--border-medium)",
+            borderRadius: "6px",
+            fontSize: "12px",
           }}
+          itemStyle={{ color: "var(--text-secondary)" }}
           formatter={(value, name) => [value, name]}
         />
         <Legend
-          wrapperStyle={{ color: "#a1a1aa" }}
-          formatter={(value) => <span style={{ color: "#a1a1aa" }}>{value}</span>}
+          wrapperStyle={{ color: "var(--text-secondary)", fontSize: "12px" }}
+          formatter={(value) => <span style={{ color: "var(--text-secondary)" }}>{value}</span>}
         />
       </PieChart>
     </ResponsiveContainer>

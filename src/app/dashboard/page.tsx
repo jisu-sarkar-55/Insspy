@@ -2,32 +2,68 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TraderIQ } from "@/components/dashboard/trader-iq";
+import { AiCoachingPanel } from "@/components/dashboard/ai-coaching-panel";
+import { StatGrid } from "@/components/dashboard/stat-grid";
+import { EquityMini } from "@/components/dashboard/equity-mini";
+import { SessionPerformance } from "@/components/dashboard/session-performance";
+import { PnlHeatmap } from "@/components/dashboard/pnl-heatmap";
+import { BehaviourFlags } from "@/components/dashboard/behaviour-flags";
+import { StreakTracker } from "@/components/dashboard/streak-tracker";
+import { SetupPerformance } from "@/components/dashboard/setup-performance";
+import { EmotionTracker } from "@/components/dashboard/emotion-tracker";
+import Link from "next/link";
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Target,
-  BarChart3,
-  Calendar,
-} from "lucide-react";
-import type { Trade, DashboardStats } from "@/types";
-import { calculateDashboardStats } from "@/lib/calculations";
+  calculateDashboardStats,
+  calculateEquityCurve,
+  calculateSessionStats,
+  calculateBehaviourFlags,
+  calculateStreaks,
+  calculateHeatmapData,
+  calculateStrategyStats,
+  calculateTraderIQ,
+  calculateEmotionStats,
+  calculateBestHours,
+  calculateAiCoaching,
+} from "@/lib/calculations";
+import type { Trade } from "@/types";
+
+function SectionHeader({ title, link }: { title: string; link?: string }) {
+  return (
+    <div className="mb-3 flex items-center justify-between">
+      <div
+        className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+        style={{ color: "var(--text-muted)" }}
+      >
+        {title}
+      </div>
+      {link && (
+        <Link
+          href={link}
+          className="cursor-pointer text-[11px] font-medium transition-colors hover:opacity-80"
+          style={{ color: "var(--primary)" }}
+        >
+          View all →
+        </Link>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
     async function fetchTrades() {
-      const { data: trades } = await supabase
+      const { data } = await supabase
         .from("trades")
         .select("*")
         .order("entry_time", { ascending: false });
 
-      if (trades) {
-        setStats(calculateDashboardStats(trades));
+      if (data) {
+        setTrades(data);
       }
       setLoading(false);
     }
@@ -38,161 +74,152 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-zinc-400">Loading dashboard...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "var(--border-medium)", borderTopColor: "transparent" }}
+          />
+          <div style={{ color: "var(--text-muted)" }} className="text-sm">Loading dashboard...</div>
+        </div>
       </div>
     );
   }
 
-  if (!stats) {
+  if (trades.length === 0) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Welcome to Trading Journal
+      <div className="py-16 text-center animate-fade-in">
+        <h2
+          className="mb-3 text-3xl font-bold"
+          style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
+        >
+          Welcome to Insspy
         </h2>
-        <p className="text-zinc-400">
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
           Start by adding your first trade to see your analytics.
         </p>
+        <Link
+          href="/dashboard/trades/new"
+          className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-[11px] font-semibold uppercase tracking-wider"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+        >
+          + Add Trade
+        </Link>
       </div>
     );
   }
 
-  const statCards = [
-    {
-      title: "Total Trades",
-      value: stats.totalTrades,
-      icon: BarChart3,
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
-    },
-    {
-      title: "Win Rate",
-      value: `${stats.winRate.toFixed(1)}%`,
-      icon: Target,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
-    },
-    {
-      title: "Net P&L",
-      value: `$${stats.netPnl.toFixed(2)}`,
-      icon: DollarSign,
-      color: stats.netPnl >= 0 ? "text-emerald-400" : "text-red-400",
-      bgColor: stats.netPnl >= 0 ? "bg-emerald-400/10" : "bg-red-400/10",
-    },
-    {
-      title: "Profit Factor",
-      value: stats.profitFactor === Infinity ? "∞" : stats.profitFactor.toFixed(2),
-      icon: TrendingUp,
-      color: "text-purple-400",
-      bgColor: "bg-purple-400/10",
-    },
-    {
-      title: "Average Win",
-      value: `$${stats.averageWin.toFixed(2)}`,
-      icon: TrendingUp,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
-    },
-    {
-      title: "Average Loss",
-      value: `$${stats.averageLoss.toFixed(2)}`,
-      icon: TrendingDown,
-      color: "text-red-400",
-      bgColor: "bg-red-400/10",
-    },
-    {
-      title: "Best Day",
-      value: `$${stats.bestDay.toFixed(2)}`,
-      icon: Calendar,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
-    },
-    {
-      title: "Worst Day",
-      value: `$${stats.worstDay.toFixed(2)}`,
-      icon: Calendar,
-      color: "text-red-400",
-      bgColor: "bg-red-400/10",
-    },
-  ];
+  const stats = calculateDashboardStats(trades);
+  const closed = trades.filter((t) => t.net_pnl !== null);
+  const equityCurve = calculateEquityCurve(closed, 10000);
+  const sessionStats = calculateSessionStats(closed);
+  const behaviourFlags = calculateBehaviourFlags(closed);
+  const streaks = calculateStreaks(closed);
+
+  const now = new Date();
+  const heatmapDays = calculateHeatmapData(
+    closed,
+    now.getUTCFullYear(),
+    now.getUTCMonth()
+  );
+  const monthLabel = now.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const strategyStats = calculateStrategyStats(closed);
+  const traderIQ = calculateTraderIQ(closed);
+  const emotions = calculateEmotionStats(closed);
+  const bestHours = calculateBestHours(closed);
+  const aiInsights = calculateAiCoaching(closed);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">
-          Your trading performance at a glance
-        </p>
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1
+            className="text-xl font-bold"
+            style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
+          >
+            Dashboard
+          </h1>
+        </div>
+        <Link
+          href="/dashboard/trades/new"
+          className="rounded-md px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-all duration-200 hover:opacity-90"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+        >
+          + Add Trade
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card) => (
-          <Card key={card.title} className="bg-zinc-900 border-zinc-800">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400">
-                {card.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${card.bgColor}`}>
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${card.color}`}>
-                {card.value}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
+        <TraderIQ data={traderIQ} />
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <AiCoachingPanel insights={aiInsights} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-white">Win/Loss Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center space-x-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-emerald-400">
-                  {stats.totalWinningTrades}
-                </div>
-                <div className="text-sm text-zinc-400">Winning Trades</div>
-              </div>
-              <div className="text-4xl font-bold text-zinc-600">/</div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-red-400">
-                  {stats.totalLosingTrades}
-                </div>
-                <div className="text-sm text-zinc-400">Losing Trades</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <StatGrid stats={stats} />
 
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-white">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <a
-              href="/dashboard/trades/new"
-              className="block w-full p-3 text-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-            >
-              + Add New Trade
-            </a>
-            <a
-              href="/dashboard/analytics"
-              className="block w-full p-3 text-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
-            >
-              View Detailed Analytics
-            </a>
-            <a
-              href="/dashboard/ai-insights"
-              className="block w-full p-3 text-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
-            >
-              Get AI Insights
-            </a>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Equity curve" />
+          <EquityMini data={equityCurve} />
+        </div>
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Session performance" />
+          <SessionPerformance sessions={sessionStats} />
+        </div>
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title={`P&L calendar — ${monthLabel}`} />
+          <PnlHeatmap days={heatmapDays} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Behaviour detection" />
+          <BehaviourFlags flags={behaviourFlags} />
+        </div>
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Win/Loss streak" />
+          <StreakTracker data={streaks} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[2fr_1fr]">
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Setup performance" link="/dashboard/analytics" />
+          <SetupPerformance strategies={strategyStats} />
+        </div>
+        <div
+          className="rounded-lg border p-4 card-surface"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          <SectionHeader title="Emotion tracking" />
+          <EmotionTracker emotions={emotions} bestHours={bestHours} />
+        </div>
       </div>
     </div>
   );

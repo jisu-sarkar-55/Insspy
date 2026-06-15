@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
 import type { Trade } from "@/types";
 import { useRouter } from "next/navigation";
 
@@ -29,6 +29,7 @@ export default function TradesPage() {
   const [loading, setLoading] = useState(true);
   const [strategyFilter, setStrategyFilter] = useState<string>("all");
   const [directionFilter, setDirectionFilter] = useState<string>("all");
+  const [clearing, setClearing] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -58,6 +59,25 @@ export default function TradesPage() {
     }
   }
 
+  async function handleClearAll() {
+    if (!confirm(`Delete ALL ${trades.length} trades? This cannot be undone.`)) return;
+    if (!confirm("Are you absolutely sure? Everything will be permanently erased.")) return;
+
+    setClearing(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setClearing(false);
+      return;
+    }
+
+    const { error } = await supabase.from("trades").delete().eq("user_id", user.id);
+
+    if (!error) {
+      setTrades([]);
+    }
+    setClearing(false);
+  }
+
   const filteredTrades = trades.filter((trade) => {
     if (strategyFilter !== "all" && trade.strategy !== strategyFilter) return false;
     if (directionFilter !== "all" && trade.direction !== directionFilter) return false;
@@ -67,28 +87,42 @@ export default function TradesPage() {
   const strategies = [...new Set(trades.map((t) => t.strategy).filter(Boolean))];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Trades</h1>
-          <p className="text-zinc-400 mt-1">
+          <h1 className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>Trades</h1>
+          <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
             {trades.length} total trades
           </p>
         </div>
-        <Link href="/dashboard/trades/new">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Trade
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {trades.length > 0 && (
+            <Button
+              variant="outline"
+              className="border-zinc-700"
+              style={{ color: "var(--color-loss)" }}
+              onClick={handleClearAll}
+              disabled={clearing}
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              {clearing ? "Clearing..." : "Clear All"}
+            </Button>
+          )}
+          <Link href="/dashboard/trades/new">
+            <Button style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Trade
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-4">
         <Select value={strategyFilter} onValueChange={(value) => value && setStrategyFilter(value)}>
-          <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-white">
+          <SelectTrigger className="w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
             <SelectValue placeholder="All Strategies" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-800 border-zinc-700">
+          <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
             <SelectItem value="all">All Strategies</SelectItem>
             {strategies.map((s) => (
               <SelectItem key={s} value={s!}>
@@ -99,10 +133,10 @@ export default function TradesPage() {
         </Select>
 
         <Select value={directionFilter} onValueChange={(value) => value && setDirectionFilter(value)}>
-          <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-white">
+          <SelectTrigger className="w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
             <SelectValue placeholder="All Directions" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-800 border-zinc-700">
+          <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
             <SelectItem value="all">All Directions</SelectItem>
             <SelectItem value="buy">Buy (Long)</SelectItem>
             <SelectItem value="sell">Sell (Short)</SelectItem>
@@ -111,17 +145,17 @@ export default function TradesPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-zinc-400">Loading trades...</div>
+        <div className="text-center py-12" style={{ color: "var(--text-muted)" }}>Loading trades...</div>
       ) : filteredTrades.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-zinc-400 mb-4">
+          <p className="mb-4" style={{ color: "var(--text-muted)" }}>
             {trades.length === 0
               ? "No trades yet. Add your first trade to get started!"
               : "No trades match your filters."}
           </p>
           {trades.length === 0 && (
             <Link href="/dashboard/trades/new">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Trade
               </Button>
@@ -129,26 +163,26 @@ export default function TradesPage() {
           )}
         </div>
       ) : (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+        <div className="rounded-lg overflow-hidden" style={{ background: "var(--surface-card)", border: "1px solid var(--border-subtle)" }}>
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-800">
-                <TableHead className="text-zinc-400">Symbol</TableHead>
-                <TableHead className="text-zinc-400">Direction</TableHead>
-                <TableHead className="text-zinc-400">Entry</TableHead>
-                <TableHead className="text-zinc-400">Exit</TableHead>
-                <TableHead className="text-zinc-400">P&L</TableHead>
-                <TableHead className="text-zinc-400">Strategy</TableHead>
-                <TableHead className="text-zinc-400">Date</TableHead>
-                <TableHead className="text-zinc-400 text-right">
+              <TableRow style={{ borderColor: "var(--border-subtle)" }}>
+                <TableHead style={{ color: "var(--text-muted)" }}>Symbol</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>Direction</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>Entry</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>Exit</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>P&L</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>Strategy</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }}>Date</TableHead>
+                <TableHead style={{ color: "var(--text-muted)" }} className="text-right">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTrades.map((trade) => (
-                <TableRow key={trade.id} className="border-zinc-800">
-                  <TableCell className="font-medium text-white">
+                <TableRow key={trade.id} style={{ borderColor: "var(--border-subtle)" }}>
+                  <TableCell className="font-medium" style={{ color: "var(--text-primary)" }}>
                     {trade.symbol}
                   </TableCell>
                   <TableCell>
@@ -156,27 +190,24 @@ export default function TradesPage() {
                       variant={
                         trade.direction === "buy" ? "default" : "secondary"
                       }
-                      className={
-                        trade.direction === "buy"
-                          ? "bg-emerald-600/20 text-emerald-400"
-                          : "bg-red-600/20 text-red-400"
-                      }
+                      style={{
+                        background: trade.direction === "buy" ? "var(--color-profit-bg)" : "var(--color-loss-bg)",
+                        color: trade.direction === "buy" ? "var(--color-profit)" : "var(--color-loss)",
+                      }}
                     >
                       {trade.direction.toUpperCase()}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-zinc-300">
+                  <TableCell style={{ color: "var(--text-secondary)" }}>
                     {trade.entry_price}
                   </TableCell>
-                  <TableCell className="text-zinc-300">
+                  <TableCell style={{ color: "var(--text-secondary)" }}>
                     {trade.exit_price || "-"}
                   </TableCell>
                   <TableCell
-                    className={
-                      (trade.net_pnl || 0) >= 0
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }
+                    style={{
+                      color: (trade.net_pnl || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)",
+                    }}
                   >
                     {trade.net_pnl !== null
                       ? `$${trade.net_pnl.toFixed(2)}`
@@ -184,30 +215,30 @@ export default function TradesPage() {
                   </TableCell>
                   <TableCell>
                     {trade.strategy && (
-                      <Badge variant="outline" className="border-zinc-700 text-zinc-300">
+                      <Badge variant="outline" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
                         {trade.strategy}
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-zinc-400">
+                  <TableCell style={{ color: "var(--text-muted)" }}>
                     {new Date(trade.entry_time).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/dashboard/trades/${trade.id}`}>
-                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+                        <Button variant="ghost" size="icon" style={{ color: "var(--text-muted)" }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
                       <Link href={`/dashboard/trades/${trade.id}/edit`}>
-                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+                        <Button variant="ghost" size="icon" style={{ color: "var(--text-muted)" }}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </Link>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-zinc-400 hover:text-red-400"
+                        style={{ color: "var(--color-loss)" }}
                         onClick={() => handleDelete(trade.id)}
                       >
                         <Trash2 className="h-4 w-4" />

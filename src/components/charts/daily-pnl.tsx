@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  Cell,
 } from "recharts";
 
 interface DailyPnlChartProps {
@@ -18,7 +19,10 @@ interface DailyPnlChartProps {
 export function DailyPnlChart({ data }: DailyPnlChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-zinc-400">
+      <div
+        className="flex items-center justify-center h-[300px]"
+        style={{ color: "var(--text-muted)" }}
+      >
         No data available for daily P&L
       </div>
     );
@@ -27,11 +31,17 @@ export function DailyPnlChart({ data }: DailyPnlChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke="var(--border-subtle)"
+          vertical={false}
+        />
         <XAxis
           dataKey="date"
-          stroke="#71717a"
-          fontSize={12}
+          stroke="var(--text-muted)"
+          fontSize={11}
+          tickLine={false}
+          axisLine={{ stroke: "var(--border-subtle)" }}
           tickFormatter={(value) => {
             const date = new Date(value);
             return date.toLocaleDateString("en-US", {
@@ -40,24 +50,39 @@ export function DailyPnlChart({ data }: DailyPnlChartProps) {
             });
           }}
         />
-        <YAxis stroke="#71717a" fontSize={12} tickFormatter={(value) => `$${value}`} />
+        <YAxis
+          stroke="var(--text-muted)"
+          fontSize={11}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => `$${value}`}
+        />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#18181b",
-            border: "1px solid #27272a",
-            borderRadius: "8px",
+            backgroundColor: "var(--surface-card)",
+            border: "1px solid var(--border-medium)",
+            borderRadius: "6px",
+            fontSize: "12px",
           }}
-          labelStyle={{ color: "#fff" }}
+          labelStyle={{ color: "var(--text-primary)" }}
+          itemStyle={{ color: "var(--text-secondary)" }}
           labelFormatter={(value) => new Date(value).toLocaleDateString()}
           formatter={(value) => [`$${Number(value).toFixed(2)}`, "P&L"]}
         />
-        <ReferenceLine y={0} stroke="#52525b" />
+        <ReferenceLine y={0} stroke="var(--border-medium)" />
         <Bar
           dataKey="pnl"
-          fill="#10b981"
-          radius={[4, 4, 0, 0]}
+          radius={[3, 3, 0, 0]}
           maxBarSize={40}
-        />
+        >
+          {data.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"}
+              fillOpacity={0.7}
+            />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );

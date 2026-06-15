@@ -1,0 +1,54 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  TrendingUp,
+  BarChart3,
+  Brain,
+  MoreHorizontal,
+} from "lucide-react";
+
+const mobileNavItems = [
+  { name: "Home", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Trades", href: "/dashboard/trades", icon: TrendingUp },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "AI", href: "/dashboard/ai-insights", icon: Brain },
+  { name: "More", href: "/dashboard/settings", icon: MoreHorizontal },
+];
+
+export function MobileNav() {
+  const pathname = usePathname();
+
+  return (
+    <div
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
+      style={{
+        background: "var(--surface-sidebar)",
+        borderColor: "var(--border-subtle)",
+      }}
+    >
+      <nav className="flex items-center justify-around h-14">
+        {mobileNavItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
+              style={{
+                color: isActive ? "var(--primary)" : "var(--text-muted)",
+              }}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[9px] font-medium uppercase tracking-wider">
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}

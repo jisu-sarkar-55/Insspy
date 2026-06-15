@@ -53,7 +53,7 @@ export default function TradeDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-zinc-400">Loading trade...</div>
+        <div style={{ color: "var(--text-muted)" }}>Loading trade...</div>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function TradeDetailPage() {
   if (!trade) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-400">Trade not found</p>
+        <p style={{ color: "var(--text-muted)" }}>Trade not found</p>
         <Link href="/dashboard/trades">
           <Button className="mt-4">Back to Trades</Button>
         </Link>
@@ -70,31 +70,30 @@ export default function TradeDetailPage() {
   }
 
   const pnlColor =
-    (trade.net_pnl || 0) >= 0 ? "text-emerald-400" : "text-red-400";
+    (trade.net_pnl || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)";
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/trades">
-            <Button variant="ghost" size="icon" className="text-zinc-400">
+            <Button variant="ghost" size="icon" style={{ color: "var(--text-muted)" }}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold font-[var(--font-playfair)] flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
               {trade.symbol}
               <Badge
-                className={
-                  trade.direction === "buy"
-                    ? "bg-emerald-600/20 text-emerald-400"
-                    : "bg-red-600/20 text-red-400"
-                }
+                style={{
+                  background: trade.direction === "buy" ? "var(--color-profit-bg)" : "var(--color-loss-bg)",
+                  color: trade.direction === "buy" ? "var(--color-profit)" : "var(--color-loss)",
+                }}
               >
                 {trade.direction.toUpperCase()}
               </Badge>
             </h1>
-            <p className="text-zinc-400 mt-1">
+            <p className="text-[12px] mt-1" style={{ color: "var(--text-muted)" }}>
               {new Date(trade.entry_time).toLocaleString()}
             </p>
           </div>
@@ -103,7 +102,7 @@ export default function TradeDetailPage() {
           <Link href={`/dashboard/trades/${trade.id}/edit`}>
             <Button
               variant="outline"
-              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}
             >
               <Pencil className="h-4 w-4 mr-2" />
               Edit
@@ -111,7 +110,8 @@ export default function TradeDetailPage() {
           </Link>
           <Button
             variant="outline"
-            className="border-red-700 text-red-400 hover:bg-red-900/20"
+            className="border-red-700"
+            style={{ color: "var(--color-loss)" }}
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -121,67 +121,67 @@ export default function TradeDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
           <CardHeader>
-            <CardTitle className="text-white">Trade Details</CardTitle>
+            <CardTitle style={{ color: "var(--text-primary)" }}>Trade Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Entry Price</span>
-              <span className="text-white font-medium">{trade.entry_price}</span>
+              <span style={{ color: "var(--text-muted)" }}>Entry Price</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>{trade.entry_price}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Exit Price</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Exit Price</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.exit_price || "-"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Stop Loss</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Stop Loss</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.stop_loss || "-"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Take Profit</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Take Profit</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.take_profit || "-"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Lot Size</span>
-              <span className="text-white font-medium">{trade.lot_size}</span>
+              <span style={{ color: "var(--text-muted)" }}>Lot Size</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>{trade.lot_size}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
           <CardHeader>
-            <CardTitle className="text-white">Performance</CardTitle>
+            <CardTitle style={{ color: "var(--text-primary)" }}>Performance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Net P&L</span>
-              <span className={`text-xl font-bold ${pnlColor}`}>
+              <span style={{ color: "var(--text-muted)" }}>Net P&L</span>
+              <span className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: pnlColor }}>
                 {trade.net_pnl !== null ? `$${trade.net_pnl.toFixed(2)}` : "-"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Commission</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Commission</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 ${trade.commission.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Swap</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Swap</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 ${trade.swap.toFixed(2)}
               </span>
             </div>
             {trade.strategy && (
               <div className="flex justify-between">
-                <span className="text-zinc-400">Strategy</span>
-                <Badge variant="outline" className="border-zinc-700 text-zinc-300">
+                <span style={{ color: "var(--text-muted)" }}>Strategy</span>
+                <Badge variant="outline" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
                   {trade.strategy}
                 </Badge>
               </div>
@@ -189,32 +189,32 @@ export default function TradeDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
           <CardHeader>
-            <CardTitle className="text-white">Psychology</CardTitle>
+            <CardTitle style={{ color: "var(--text-primary)" }}>Psychology</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Confidence</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Confidence</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.confidence_before || "-"}/10
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Fear Level</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Fear Level</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.fear_level || "-"}/10
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Greed Level</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Greed Level</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.greed_level || "-"}/10
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Followed Plan</span>
-              <span className="text-white font-medium">
+              <span style={{ color: "var(--text-muted)" }}>Followed Plan</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
                 {trade.followed_plan === true
                   ? "Yes"
                   : trade.followed_plan === false
@@ -226,12 +226,12 @@ export default function TradeDetailPage() {
         </Card>
 
         {trade.notes && (
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
             <CardHeader>
-              <CardTitle className="text-white">Notes</CardTitle>
+              <CardTitle style={{ color: "var(--text-primary)" }}>Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-zinc-300 whitespace-pre-wrap">{trade.notes}</p>
+              <p className="whitespace-pre-wrap" style={{ color: "var(--text-secondary)" }}>{trade.notes}</p>
             </CardContent>
           </Card>
         )}

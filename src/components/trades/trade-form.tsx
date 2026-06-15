@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Trade, TradeFormData } from "@/types";
+import type { Trade, TradeFormData, SetupPlaybook } from "@/types";
 
 interface TradeFormProps {
   initialData?: Trade;
@@ -65,12 +65,26 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
     fear_level: initialData?.fear_level || 3,
     greed_level: initialData?.greed_level || 3,
     followed_plan: initialData?.followed_plan ?? true,
+    setup_playbook_id: initialData?.setup_playbook_id || undefined,
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [playbooks, setPlaybooks] = useState<SetupPlaybook[]>([]);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchPlaybooks() {
+      const { data } = await supabase
+        .from("setup_playbooks")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
+      if (data) setPlaybooks(data);
+    }
+    fetchPlaybooks();
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +118,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
       fear_level: formData.fear_level,
       greed_level: formData.greed_level,
       followed_plan: formData.followed_plan,
+      setup_playbook_id: formData.setup_playbook_id || null,
     };
 
     let result;
@@ -130,25 +145,34 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const inputStyle = {
+    background: "var(--surface-raised)",
+    borderColor: "var(--border-subtle)",
+    color: "var(--text-primary)",
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       {error && (
-        <div className="p-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div
+          className="p-3 rounded-md text-sm"
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)", color: "var(--color-loss)" }}
+        >
           {error}
         </div>
       )}
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Trade Details</CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardTitle style={{ color: "var(--text-primary)" }}>Trade Details</CardTitle>
+          <CardDescription style={{ color: "var(--text-muted)" }}>
             Enter the basic information about your trade
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="symbol" className="text-zinc-300">
+              <Label htmlFor="symbol" style={{ color: "var(--text-secondary)" }}>
                 Symbol *
               </Label>
               <Input
@@ -156,12 +180,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 placeholder="EURUSD"
                 value={formData.symbol}
                 onChange={(e) => updateField("symbol", e.target.value.toUpperCase())}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-300">Direction *</Label>
+              <Label style={{ color: "var(--text-secondary)" }}>Direction *</Label>
               <Select
                 value={formData.direction}
                 onValueChange={(value) => {
@@ -170,10 +194,10 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                   }
                 }}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger style={inputStyle}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
                   <SelectItem value="buy">Buy (Long)</SelectItem>
                   <SelectItem value="sell">Sell (Short)</SelectItem>
                 </SelectContent>
@@ -183,7 +207,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="entry_price" className="text-zinc-300">
+              <Label htmlFor="entry_price" style={{ color: "var(--text-secondary)" }}>
                 Entry Price *
               </Label>
               <Input
@@ -194,12 +218,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("entry_price", parseFloat(e.target.value) || 0)
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="exit_price" className="text-zinc-300">
+              <Label htmlFor="exit_price" style={{ color: "var(--text-secondary)" }}>
                 Exit Price
               </Label>
               <Input
@@ -213,14 +237,14 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                     e.target.value ? parseFloat(e.target.value) : undefined
                   )
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="stop_loss" className="text-zinc-300">
+              <Label htmlFor="stop_loss" style={{ color: "var(--text-secondary)" }}>
                 Stop Loss
               </Label>
               <Input
@@ -234,11 +258,11 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                     e.target.value ? parseFloat(e.target.value) : undefined
                   )
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="take_profit" className="text-zinc-300">
+              <Label htmlFor="take_profit" style={{ color: "var(--text-secondary)" }}>
                 Take Profit
               </Label>
               <Input
@@ -252,14 +276,14 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                     e.target.value ? parseFloat(e.target.value) : undefined
                   )
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="lot_size" className="text-zinc-300">
+              <Label htmlFor="lot_size" style={{ color: "var(--text-secondary)" }}>
                 Lot Size *
               </Label>
               <Input
@@ -270,22 +294,22 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("lot_size", parseFloat(e.target.value) || 0.01)
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="strategy" className="text-zinc-300">
+              <Label htmlFor="strategy" style={{ color: "var(--text-secondary)" }}>
                 Strategy
               </Label>
               <Select
                 value={formData.strategy}
                 onValueChange={(value) => updateField("strategy", value)}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger style={inputStyle}>
                   <SelectValue placeholder="Select strategy" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
                   {strategies.map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
@@ -298,14 +322,48 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Timing & Costs</CardTitle>
+          <CardTitle style={{ color: "var(--text-primary)" }}>Setup Playbook</CardTitle>
+          <CardDescription style={{ color: "var(--text-muted)" }}>
+            Link this trade to a setup playbook for performance tracking
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="setup_playbook_id" style={{ color: "var(--text-secondary)" }}>
+              Playbook (Optional)
+            </Label>
+            <Select
+              value={formData.setup_playbook_id || "none"}
+              onValueChange={(value) =>
+                updateField("setup_playbook_id", value === "none" ? undefined : value)
+              }
+            >
+              <SelectTrigger style={inputStyle}>
+                <SelectValue placeholder="Select a playbook" />
+              </SelectTrigger>
+              <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
+                <SelectItem value="none">No playbook</SelectItem>
+                {playbooks.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
+        <CardHeader>
+          <CardTitle style={{ color: "var(--text-primary)" }}>Timing & Costs</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="entry_time" className="text-zinc-300">
+              <Label htmlFor="entry_time" style={{ color: "var(--text-secondary)" }}>
                 Entry Time *
               </Label>
               <Input
@@ -313,12 +371,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 type="datetime-local"
                 value={formData.entry_time}
                 onChange={(e) => updateField("entry_time", e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="exit_time" className="text-zinc-300">
+              <Label htmlFor="exit_time" style={{ color: "var(--text-secondary)" }}>
                 Exit Time
               </Label>
               <Input
@@ -326,14 +384,14 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 type="datetime-local"
                 value={formData.exit_time || ""}
                 onChange={(e) => updateField("exit_time", e.target.value || undefined)}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="commission" className="text-zinc-300">
+              <Label htmlFor="commission" style={{ color: "var(--text-secondary)" }}>
                 Commission
               </Label>
               <Input
@@ -344,11 +402,11 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("commission", parseFloat(e.target.value) || 0)
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="swap" className="text-zinc-300">
+              <Label htmlFor="swap" style={{ color: "var(--text-secondary)" }}>
                 Swap
               </Label>
               <Input
@@ -359,13 +417,13 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("swap", parseFloat(e.target.value) || 0)
                 }
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={inputStyle}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="net_pnl" className="text-zinc-300">
+            <Label htmlFor="net_pnl" style={{ color: "var(--text-secondary)" }}>
               Net P&L ($) *
             </Label>
             <Input
@@ -380,26 +438,26 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                   e.target.value ? parseFloat(e.target.value) : undefined
                 )
               }
-              className="bg-zinc-800 border-zinc-700 text-white"
+              style={inputStyle}
             />
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               Copy the profit/loss value from MT5. Positive = profit, negative = loss.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Psychology</CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardTitle style={{ color: "var(--text-primary)" }}>Psychology</CardTitle>
+          <CardDescription style={{ color: "var(--text-muted)" }}>
             Rate your mental state before the trade
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-zinc-300">
+              <Label style={{ color: "var(--text-secondary)" }}>
                 Confidence: {formData.confidence_before}/10
               </Label>
               <input
@@ -410,11 +468,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("confidence_before", parseInt(e.target.value))
                 }
-                className="w-full accent-emerald-500"
+                className="w-full"
+                style={{ accentColor: "var(--color-profit)" }}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-300">
+              <Label style={{ color: "var(--text-secondary)" }}>
                 Fear: {formData.fear_level}/10
               </Label>
               <input
@@ -425,11 +484,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("fear_level", parseInt(e.target.value))
                 }
-                className="w-full accent-red-500"
+                className="w-full"
+                style={{ accentColor: "var(--color-loss)" }}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-300">
+              <Label style={{ color: "var(--text-secondary)" }}>
                 Greed: {formData.greed_level}/10
               </Label>
               <input
@@ -440,20 +500,21 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 onChange={(e) =>
                   updateField("greed_level", parseInt(e.target.value))
                 }
-                className="w-full accent-yellow-500"
+                className="w-full"
+                style={{ accentColor: "var(--color-warning)" }}
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Notes</CardTitle>
+          <CardTitle style={{ color: "var(--text-primary)" }}>Notes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-zinc-300">
+            <Label htmlFor="notes" style={{ color: "var(--text-secondary)" }}>
               Trade Notes
             </Label>
             <Textarea
@@ -461,7 +522,8 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
               placeholder="Why did you take this trade? What did you observe? Any mistakes?"
               value={formData.notes || ""}
               onChange={(e) => updateField("notes", e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white min-h-[120px]"
+              className="min-h-[120px]"
+              style={{ ...inputStyle, resize: "none" }}
             />
           </div>
         </CardContent>
@@ -470,7 +532,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
       <div className="flex gap-4">
         <Button
           type="submit"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           disabled={loading}
         >
           {loading
@@ -485,7 +547,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
           type="button"
           variant="outline"
           onClick={() => router.back()}
-          className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+          style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}
         >
           Cancel
         </Button>

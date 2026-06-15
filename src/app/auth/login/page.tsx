@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { CandlestickChart } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -45,25 +46,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
-      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "var(--surface-page)" }}
+    >
+      <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">
+          <div className="flex justify-center mb-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
+              <CandlestickChart className="h-5 w-5" style={{ color: "var(--primary)" }} />
+            </div>
+          </div>
+          <CardTitle
+            className="text-2xl font-bold"
+            style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
+          >
             Welcome Back
           </CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardDescription style={{ color: "var(--text-secondary)" }}>
             Sign in to your trading journal
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="p-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div
+                className="p-3 rounded-md text-sm border"
+                style={{
+                  background: "rgba(248, 113, 113, 0.08)",
+                  borderColor: "rgba(248, 113, 113, 0.2)",
+                  color: "var(--color-loss)",
+                }}
+              >
                 {error}
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-zinc-300">
+              <Label htmlFor="email" className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-secondary)" }}>
                 Email
               </Label>
               <Input
@@ -72,12 +91,12 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-zinc-300">
+              <Label htmlFor="password" className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-secondary)" }}>
                 Password
               </Label>
               <Input
@@ -86,7 +105,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}
                 required
               />
             </div>
@@ -94,14 +113,14 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full text-[11px] uppercase tracking-wider font-semibold"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Don&apos;t have an account?{" "}
-              <Link href="/auth/signup" className="text-emerald-400 hover:underline">
+              <Link href="/auth/signup" className="hover:underline" style={{ color: "var(--primary)" }}>
                 Sign up
               </Link>
             </p>

@@ -30,7 +30,7 @@ export default function EditTradePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-zinc-400">Loading trade...</div>
+        <div style={{ color: "var(--text-muted)" }}>Loading trade...</div>
       </div>
     );
   }
@@ -38,16 +38,16 @@ export default function EditTradePage() {
   if (!trade) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-400">Trade not found</p>
+        <p style={{ color: "var(--text-muted)" }}>Trade not found</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-white">Edit Trade</h1>
-        <p className="text-zinc-400 mt-1">
+        <h1 className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>Edit Trade</h1>
+        <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
           Update the details of your trade
         </p>
       </div>

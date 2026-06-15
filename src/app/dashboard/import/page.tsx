@@ -80,49 +80,49 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="space-y-8 max-w-3xl animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-white">Import Trades</h1>
-        <p className="text-zinc-400 mt-1">
+        <h1 className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>Import Trades</h1>
+        <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
           Import your MT5 trading history
         </p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">How to Export from MT5</CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardTitle style={{ color: "var(--text-primary)" }}>How to Export from MT5</CardTitle>
+          <CardDescription style={{ color: "var(--text-muted)" }}>
             Follow these steps to export your trade history
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-zinc-300">
+        <CardContent className="space-y-3 text-sm" style={{ color: "var(--text-secondary)" }}>
           <div className="flex items-start gap-3">
-            <span className="font-bold text-emerald-400">1.</span>
+            <span className="font-bold" style={{ color: "var(--color-profit)" }}>1.</span>
             <p>Open <strong>MetaTrader 5</strong> and go to the <strong>Toolbox</strong> panel (Ctrl+T)</p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="font-bold text-emerald-400">2.</span>
+            <span className="font-bold" style={{ color: "var(--color-profit)" }}>2.</span>
             <p>Click the <strong>&quot;History&quot;</strong> tab at the bottom</p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="font-bold text-emerald-400">3.</span>
+            <span className="font-bold" style={{ color: "var(--color-profit)" }}>3.</span>
             <p>Right-click anywhere in the history table and select <strong>&quot;Export All&quot;</strong> or select specific trades</p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="font-bold text-emerald-400">4.</span>
+            <span className="font-bold" style={{ color: "var(--color-profit)" }}>4.</span>
             <p>Choose <strong>&quot;CSV&quot;</strong> as the format and save the file</p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="font-bold text-emerald-400">5.</span>
+            <span className="font-bold" style={{ color: "var(--color-profit)" }}>5.</span>
             <p>Upload the CSV file below</p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Upload File</CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardTitle style={{ color: "var(--text-primary)" }}>Upload File</CardTitle>
+          <CardDescription style={{ color: "var(--text-muted)" }}>
             Drag and drop your MT5 CSV file or click to browse
           </CardDescription>
         </CardHeader>
@@ -130,11 +130,11 @@ export default function ImportPage() {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer
-              ${file
-                ? "border-emerald-500 bg-emerald-500/5"
-                : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/50"
-              }`}
+            className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer`}
+            style={{
+              borderColor: file ? "var(--color-profit)" : "var(--border-subtle)",
+              background: file ? "var(--color-profit-bg)" : "var(--surface-raised)",
+            }}
             onClick={() => document.getElementById("file-input")?.click()}
           >
             <input
@@ -147,19 +147,19 @@ export default function ImportPage() {
 
             {file ? (
               <div className="space-y-2">
-                <FileText className="h-12 w-12 text-emerald-400 mx-auto" />
-                <p className="text-white font-medium">{file.name}</p>
-                <p className="text-zinc-400 text-sm">
+                <FileText className="h-12 w-12 mx-auto" style={{ color: "var(--color-profit)" }} />
+                <p className="font-medium" style={{ color: "var(--text-primary)" }}>{file.name}</p>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                   {(file.size / 1024).toFixed(1)} KB
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
-                <Upload className="h-12 w-12 text-zinc-600 mx-auto" />
-                <p className="text-zinc-400">
+                <Upload className="h-12 w-12 mx-auto" style={{ color: "var(--text-muted)" }} />
+                <p style={{ color: "var(--text-muted)" }}>
                   Drop your MT5 export file here
                 </p>
-                <p className="text-zinc-500 text-sm">
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                   Supports .csv, .htm, .html files
                 </p>
               </div>
@@ -168,11 +168,12 @@ export default function ImportPage() {
 
           {result && (
             <div
-              className={`p-4 rounded-lg flex items-center gap-3 ${
-                result.success
-                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
-                  : "bg-red-500/10 border border-red-500/20 text-red-400"
-              }`}
+              className="p-4 rounded-lg flex items-center gap-3"
+              style={{
+                background: result.success ? "var(--color-profit-bg)" : "var(--color-loss-bg)",
+                border: `1px solid ${result.success ? "rgba(74, 222, 128, 0.2)" : "rgba(248, 113, 113, 0.2)"}`,
+                color: result.success ? "var(--color-profit)" : "var(--color-loss)",
+              }}
             >
               {result.success ? (
                 <CheckCircle className="h-5 w-5 shrink-0" />
@@ -187,7 +188,7 @@ export default function ImportPage() {
             <Button
               onClick={handleUpload}
               disabled={!file || loading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {loading ? (
                 <>
@@ -206,7 +207,7 @@ export default function ImportPage() {
               <Button
                 onClick={() => router.push("/dashboard/trades")}
                 variant="outline"
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}
               >
                 View Trades
               </Button>
@@ -215,17 +216,17 @@ export default function ImportPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle className="text-white">Supported MT5 Formats</CardTitle>
+          <CardTitle style={{ color: "var(--text-primary)" }}>Supported MT5 Formats</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-zinc-300 space-y-2">
+          <div className="text-sm space-y-2" style={{ color: "var(--text-secondary)" }}>
             <p>The import supports standard MT5 CSV exports with columns like:</p>
-            <code className="block bg-zinc-800 p-3 rounded text-zinc-400 text-xs">
+            <code className="block p-3 rounded text-xs" style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}>
               #, Symbol, Type, Volume, Open Time, Close Time, Open Price, Close Price, Commission, Swap, Profit
             </code>
-            <p className="text-zinc-400">
+            <p style={{ color: "var(--text-muted)" }}>
               Column names are auto-detected. The importer looks for: ticket, symbol, type, volume/size/lots, time, price, profit/pnl.
             </p>
           </div>
