@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
+import { ConfirmDialog } from "@/components/premium/confirm-dialog";
 import type { Trade } from "@/types";
 import { useRouter } from "next/navigation";
 
@@ -39,6 +40,7 @@ export default function TradesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [clearConfirmed, setClearConfirmed] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -64,13 +66,12 @@ export default function TradesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this trade?")) return;
-
     const { error } = await supabase.from("trades").delete().eq("id", id);
 
     if (!error) {
       setTrades(trades.filter((t) => t.id !== id));
     }
+    setDeleteTarget(null);
   }
 
   async function executeClearAll() {
@@ -259,7 +260,7 @@ export default function TradesPage() {
                         variant="ghost"
                         size="icon"
                         style={{ color: "var(--color-loss)" }}
-                        onClick={() => handleDelete(trade.id)}
+                        onClick={() => setDeleteTarget(trade.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -315,6 +316,14 @@ export default function TradesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Trade"
+        description="Are you sure you want to delete this trade? This cannot be undone."
+        onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
+      />
     </div>
   );
 }

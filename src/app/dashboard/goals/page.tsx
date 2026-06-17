@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GoalCard } from "@/components/goals/goal-card";
 import { CreateGoalDialog } from "@/components/goals/create-goal-dialog";
+import { ConfirmDialog } from "@/components/premium/confirm-dialog";
 import type { Goal, GoalFormData } from "@/types";
 
 export default function GoalsPage() {
@@ -11,6 +12,7 @@ export default function GoalsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -78,18 +80,23 @@ export default function GoalsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this goal?")) return;
+  const handleDelete = (id: string) => {
+    setDeleteTarget(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/goals/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/goals/${deleteTarget}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Failed to delete goal" }));
         throw new Error(err.error || "Failed to delete goal");
       }
-      setGoals(goals.filter((g) => g.id !== id));
+      setGoals(goals.filter((g) => g.id !== deleteTarget));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete goal");
     }
+    setDeleteTarget(null);
   };
 
   const activeGoals = goals.filter((g) => g.status === "active");
@@ -165,6 +172,14 @@ export default function GoalsPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete Goal"
+        description="Are you sure you want to delete this goal?"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 }

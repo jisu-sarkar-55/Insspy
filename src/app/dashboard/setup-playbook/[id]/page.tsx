@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Clock, Target, TrendingUp, Trash2 } from "lucide-react";
 import { ScreenshotGallery } from "@/components/setup-playbook/screenshot-gallery";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
+import { ConfirmDialog } from "@/components/premium/confirm-dialog";
 import type { SetupPlaybook, SetupPlaybookFormData, Trade } from "@/types";
 
 interface PlaybookStats {
@@ -22,6 +23,7 @@ export default function SetupPlaybookDetailPage() {
   const [stats, setStats] = useState<PlaybookStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -87,7 +89,6 @@ export default function SetupPlaybookDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this playbook? This will not delete linked trades.")) return;
     const res = await fetch(`/api/setup-playbooks/${params.id}`, { method: "DELETE" });
     if (res.ok) {
       router.push("/dashboard/setup-playbook");
@@ -153,7 +154,7 @@ export default function SetupPlaybookDetailPage() {
             mode="edit"
           />
           <button
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             className="rounded-lg p-2 transition-colors"
             style={{ color: "var(--text-muted)" }}
           >
@@ -161,6 +162,14 @@ export default function SetupPlaybookDetailPage() {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete Playbook"
+        description={`Delete "${playbook?.name}"? This will not delete linked trades.`}
+        onConfirm={handleDelete}
+      />
 
       <div className="flex flex-wrap gap-2">
         {playbook.timeframe && (

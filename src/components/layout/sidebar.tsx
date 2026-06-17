@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NavLink } from "@/components/layout/nav-link";
 import {
@@ -11,7 +13,6 @@ import {
   Upload,
   Settings,
   LogOut,
-  CandlestickChart,
   Target,
   Trophy,
   ShieldCheck,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { max } from "date-fns/fp";
 
 interface NavItem {
   name: string;
@@ -36,7 +38,12 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-      { name: "AI Coaching", href: "/dashboard/ai-insights", icon: Brain, premium: true },
+      {
+        name: "AI Coaching",
+        href: "/dashboard/ai-insights",
+        icon: Brain,
+        premium: true,
+      },
     ],
   },
   {
@@ -50,7 +57,12 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Strategy",
     items: [
-      { name: "Setup Playbook", href: "/dashboard/setup-playbook", icon: Library, premium: true },
+      {
+        name: "Setup Playbook",
+        href: "/dashboard/setup-playbook",
+        icon: Library,
+        premium: true,
+      },
     ],
   },
   {
@@ -58,22 +70,40 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { name: "Goals", href: "/dashboard/goals", icon: Target },
       { name: "Challenges", href: "/dashboard/challenges", icon: Trophy },
-      { name: "Scorecard", href: "/dashboard/scorecard", icon: ShieldCheck, premium: true },
+      {
+        name: "Scorecard",
+        href: "/dashboard/scorecard",
+        icon: ShieldCheck,
+        premium: true,
+      },
     ],
   },
   {
     label: "Elite Features",
     items: [
-      { name: "Trade Replay", href: "/dashboard/trade-replay", icon: Play, premium: true },
-      { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Users, premium: true },
-      { name: "Reports", href: "/dashboard/reports", icon: FileText, premium: true },
+      {
+        name: "Trade Replay",
+        href: "/dashboard/trade-replay",
+        icon: Play,
+        premium: true,
+      },
+      {
+        name: "Leaderboard",
+        href: "/dashboard/leaderboard",
+        icon: Users,
+        premium: true,
+      },
+      {
+        name: "Reports",
+        href: "/dashboard/reports",
+        icon: FileText,
+        premium: true,
+      },
     ],
   },
   {
     label: "Account",
-    items: [
-      { name: "Settings", href: "/dashboard/settings", icon: Settings },
-    ],
+    items: [{ name: "Settings", href: "/dashboard/settings", icon: Settings }],
   },
 ];
 
@@ -96,15 +126,19 @@ export function Sidebar() {
         borderColor: "var(--border-subtle)",
       }}
     >
-      <div className="border-b px-4 py-5" style={{ borderColor: "var(--border-subtle)" }}>
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-            <CandlestickChart className="h-4 w-4" style={{ color: "var(--primary)" }} />
-          </div>
-          <span className="font-[var(--font-playfair)] text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>
-            Insspy
-          </span>
-        </div>
+      <div
+        className="border-b px-4 py-4"
+        style={{ borderColor: "var(--border-subtle)", padding: 10 }}
+      >
+        <Link href="/dashboard" className="block">
+          <Image
+            src="/logo1.png"
+            alt="Insspy"
+            width={120}
+            height={16}
+            priority
+          />
+        </Link>
       </div>
 
       <div className="flex-1 px-2 py-2">
@@ -133,7 +167,10 @@ export function Sidebar() {
         ))}
       </div>
 
-      <div className="mt-auto border-t p-3" style={{ borderColor: "var(--border-subtle)" }}>
+      <div
+        className="mt-auto border-t p-3"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
         <Button
           onClick={handleLogout}
           variant="ghost"

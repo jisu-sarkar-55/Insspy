@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { Trade } from "@/types";
+import { ConfirmDialog } from "@/components/premium/confirm-dialog";
 
 export default function TradeDetailPage() {
   const params = useParams();
@@ -22,6 +23,7 @@ export default function TradeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [playbookName, setPlaybookName] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -60,8 +62,6 @@ export default function TradeDetailPage() {
   }, [params.id]);
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this trade?")) return;
-
     const { error } = await supabase
       .from("trades")
       .delete()
@@ -152,13 +152,21 @@ export default function TradeDetailPage() {
             variant="outline"
             className="border-red-700"
             style={{ color: "var(--color-loss)" }}
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete Trade"
+        description="Are you sure you want to delete this trade? This cannot be undone."
+        onConfirm={handleDelete}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
