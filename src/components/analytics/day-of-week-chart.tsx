@@ -37,7 +37,10 @@ export function DayOfWeekChart({ data }: Props) {
           <Tooltip
             contentStyle={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", borderRadius: 8, fontSize: 11 }}
             labelStyle={{ color: "var(--text-primary)" }}
-            formatter={(v) => [`$${Number(v).toFixed(0)}`, "P&L"]}
+            formatter={(v, name, props) => {
+              if (name === "pnl") return [`$${Number(v).toFixed(0)}`, "P&L"];
+              return [v, name];
+            }}
           />
           <ReferenceLine y={0} stroke="var(--border-subtle)" />
           <Bar dataKey="pnl" radius={[4, 4, 0, 0]} maxBarSize={40}>

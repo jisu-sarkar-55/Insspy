@@ -426,6 +426,8 @@ export interface Challenge {
   unit: string;
   duration: string;
   rule: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: "discipline" | "risk" | "performance" | "psychology" | "diversification";
 }
 
 export interface ChallengeProgress {

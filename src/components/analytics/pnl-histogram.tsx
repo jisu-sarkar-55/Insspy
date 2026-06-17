@@ -26,28 +26,37 @@ export function PnlHistogram({ data }: Props) {
     );
   }
 
+  const totalTrades = data.reduce((s, d) => s + d.count, 0);
+
   return (
-    <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-        <XAxis
-          dataKey="range"
-          stroke="var(--text-muted)"
-          fontSize={9}
-          angle={-35}
-          textAnchor="end"
-          height={60}
-        />
-        <YAxis stroke="var(--text-muted)" fontSize={10} />
-        <Tooltip
-          contentStyle={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", borderRadius: 8, fontSize: 11 }}
-          labelStyle={{ color: "var(--text-primary)" }}
-          formatter={(value, name) => [Number(value), name === "wins" ? "Wins" : name === "losses" ? "Losses" : "Trades"]}
-        />
-        <ReferenceLine y={0} stroke="var(--border-subtle)" />
-        <Bar dataKey="wins" stackId="a" fill="var(--color-profit)" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="losses" stackId="a" fill="var(--color-loss)" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="space-y-2">
+      <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--text-muted)" }}>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: "var(--color-profit)" }} /> Wins: {data.reduce((s, d) => s + d.wins, 0)}</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: "var(--color-loss)" }} /> Losses: {data.reduce((s, d) => s + d.losses, 0)}</span>
+        <span>Total: {totalTrades} trades</span>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+          <XAxis
+            dataKey="range"
+            stroke="var(--text-muted)"
+            fontSize={9}
+            angle={-35}
+            textAnchor="end"
+            height={60}
+          />
+          <YAxis stroke="var(--text-muted)" fontSize={10} />
+          <Tooltip
+            contentStyle={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", borderRadius: 8, fontSize: 11 }}
+            labelStyle={{ color: "var(--text-primary)" }}
+            formatter={(value, name) => [Number(value), name === "wins" ? "Wins" : name === "losses" ? "Losses" : "Trades"]}
+          />
+          <ReferenceLine y={0} stroke="var(--border-subtle)" />
+          <Bar dataKey="wins" stackId="a" fill="var(--color-profit)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="losses" stackId="a" fill="var(--color-loss)" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

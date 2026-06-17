@@ -228,14 +228,21 @@ export function calculateEquityCurve(
   trades: Trade[],
   startingBalance: number
 ): { date: string; equity: number }[] {
-  const sortedTrades = [...trades]
+  const dailyMap = new Map<string, number>();
+  trades
     .filter((t) => t.net_pnl !== null)
-    .sort((a, b) => a.entry_time.localeCompare(b.entry_time));
+    .forEach((t) => {
+      const date = t.entry_time.split("T")[0];
+      dailyMap.set(date, (dailyMap.get(date) || 0) + (t.net_pnl || 0));
+    });
 
+  const sorted = Array.from(dailyMap.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0])
+  );
   let equity = startingBalance;
-  return sortedTrades.map((trade) => {
-    equity += trade.net_pnl || 0;
-    return { date: trade.entry_time.split("T")[0], equity };
+  return sorted.map(([date, pnl]) => {
+    equity += pnl;
+    return { date, equity };
   });
 }
 
@@ -737,27 +744,45 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
 
   let equity = startBalance;
   let peak = startBalance;
+  let peakDate = sorted[0].entry_time.split("T")[0];
   let maxDD = 0;
   let maxDDPct = 0;
   let maxDDDuration = 0;
   let currentDD = 0;
   let currentDDPct = 0;
-  let currentDDDuration = 0;
   let inDrawdown = false;
+  let drawdownStartDate: string | null = null;
+  let currentDDDays = 0;
+
+  function daysBetween(a: string, b: string): number {
+    return Math.round(
+      (new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
 
   const curve: Array<{ date: string; equity: number; drawdown: number; drawdownPct: number }> = sorted.map((t) => {
+    const date = t.entry_time.split("T")[0];
     equity += t.net_pnl || 0;
-    if (equity > peak) {
+
+    if (equity >= peak) {
+      if (inDrawdown && drawdownStartDate) {
+        const d = daysBetween(drawdownStartDate, date);
+        if (d > maxDDDuration) maxDDDuration = d;
+      }
       peak = equity;
+      peakDate = date;
       inDrawdown = false;
-      currentDDDuration = 0;
+      drawdownStartDate = null;
+      currentDDDays = 0;
     }
+
     const dd = peak - equity;
     const ddPct = peak > 0 ? (dd / peak) * 100 : 0;
 
     if (dd > 0) {
+      if (!inDrawdown) drawdownStartDate = date;
       inDrawdown = true;
-      currentDDDuration++;
+      if (drawdownStartDate) currentDDDays = daysBetween(drawdownStartDate, date);
       currentDD = dd;
       currentDDPct = ddPct;
     }
@@ -766,17 +791,15 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
       maxDD = dd;
       maxDDPct = ddPct;
     }
-    if (currentDDDuration > maxDDDuration) {
-      maxDDDuration = currentDDDuration;
-    }
 
-    return {
-      date: t.entry_time.split("T")[0],
-      equity,
-      drawdown: dd,
-      drawdownPct: ddPct,
-    };
+    return { date, equity, drawdown: dd, drawdownPct: ddPct };
   });
+
+  if (inDrawdown && drawdownStartDate) {
+    const lastDate = sorted[sorted.length - 1].entry_time.split("T")[0];
+    const d = daysBetween(drawdownStartDate, lastDate);
+    if (d > maxDDDuration) maxDDDuration = d;
+  }
 
   return {
     maxDrawdown: maxDD,
@@ -784,7 +807,7 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
     currentDrawdown: inDrawdown ? currentDD : 0,
     currentDrawdownPct: inDrawdown ? currentDDPct : 0,
     maxDrawdownDuration: maxDDDuration,
-    currentDrawdownDuration: inDrawdown ? currentDDDuration : 0,
+    currentDrawdownDuration: inDrawdown ? currentDDDays : 0,
     curve,
   };
 }
@@ -792,7 +815,7 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
 export function calculatePnlHistogram(trades: Trade[]): PnlHistogramBucket[] {
   const closed = trades.filter((t) => t.net_pnl !== null);
   const ranges = [
-    { min: -Infinity, max: -200, label: "< -$200" },
+    { min: -Infinity, max: -200, label: "≤ -$200" },
     { min: -200, max: -100, label: "-$200 to -$100" },
     { min: -100, max: -50, label: "-$100 to -$50" },
     { min: -50, max: -20, label: "-$50 to -$20" },
@@ -801,11 +824,16 @@ export function calculatePnlHistogram(trades: Trade[]): PnlHistogramBucket[] {
     { min: 20, max: 50, label: "$20 to $50" },
     { min: 50, max: 100, label: "$50 to $100" },
     { min: 100, max: 200, label: "$100 to $200" },
-    { min: 200, max: Infinity, label: "> $200" },
+    { min: 200, max: Infinity, label: "≥ $200" },
   ];
 
   return ranges.map(({ min, max, label }) => {
-    const bucket = closed.filter((t) => (t.net_pnl || 0) >= min && (t.net_pnl || 0) < max);
+    const bucket = closed.filter((t) => {
+      const pnl = t.net_pnl || 0;
+      if (min === -Infinity) return pnl <= max;
+      if (max === Infinity) return pnl >= min;
+      return pnl > min && pnl <= max;
+    });
     return {
       range: label,
       count: bucket.length,

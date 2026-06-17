@@ -36,16 +36,39 @@ import {
 } from "@/lib/calculations";
 import type { Trade } from "@/types";
 
-function Section({ title, children, span }: { title: string; children: React.ReactNode; span?: string }) {
+function Section({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`card-surface rounded-lg border p-4 ${span || ""}`}
+      className={`card-surface rounded-lg border p-4 ${className || ""}`}
       style={{ borderColor: "var(--border-subtle)" }}
     >
       <div className="mb-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)", fontFamily: "var(--font-jetbrains)" }}>
         {title}
       </div>
       {children}
+    </div>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, var(--border-subtle), transparent)" }} />
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </span>
+      <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, var(--border-subtle))" }} />
+    </div>
+  );
+}
+
+function SkeletonBlock({ className }: { className?: string }) {
+  return (
+    <div className={`rounded-lg ${className || ""}`} style={{ background: "var(--surface-raised)" }}>
+      <div className="animate-pulse space-y-3 p-4">
+        <div className="h-3 w-1/3 rounded" style={{ background: "var(--border-subtle)" }} />
+        <div className="h-32 w-full rounded" style={{ background: "var(--border-subtle)" }} />
+      </div>
     </div>
   );
 }
@@ -79,8 +102,39 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div style={{ color: "var(--text-muted)" }}>Loading analytics...</div>
+      <div className="space-y-6">
+        <div>
+          <div className="h-7 w-32 rounded" style={{ background: "var(--surface-raised)" }} />
+          <div className="mt-1 h-4 w-48 rounded" style={{ background: "var(--surface-raised)" }} />
+        </div>
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-lg p-3" style={{ background: "var(--surface-raised)" }}>
+              <div className="animate-pulse space-y-2">
+                <div className="h-3 w-16 rounded" style={{ background: "var(--border-subtle)" }} />
+                <div className="h-6 w-20 rounded" style={{ background: "var(--border-subtle)" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <SkeletonBlock />
+          <SkeletonBlock />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <SkeletonBlock />
+          <SkeletonBlock />
+          <SkeletonBlock />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <SkeletonBlock />
+          <SkeletonBlock />
+          <SkeletonBlock />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SkeletonBlock />
+          <SkeletonBlock />
+        </div>
       </div>
     );
   }
@@ -130,7 +184,7 @@ export default function AnalyticsPage() {
   const aiInsights = calculateAiCoaching(closed);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
           Analytics
@@ -140,20 +194,23 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      {/* Section A: KPIs */}
+      {/* ── Overview ── */}
+      <SectionLabel label="Overview" />
       <AnalyticsKPICards data={kpis} />
 
-      {/* Section B: Equity + Drawdown */}
+      {/* ── Equity & Risk ── */}
+      <SectionLabel label="Equity & Risk" />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Section title="Equity curve">
-          <EquityCurveChart data={equityCurve} />
+          <EquityCurveChart data={equityCurve} startingBalance={STARTING_BALANCE} />
         </Section>
         <Section title="Drawdown analysis">
           <DrawdownChart data={drawdown} />
         </Section>
       </div>
 
-      {/* Section C: Symbol + Session + Day of Week */}
+      {/* ── Performance Breakdown ── */}
+      <SectionLabel label="Performance Breakdown" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Section title="Symbol performance">
           <SymbolTable data={symbolStats} />
@@ -166,7 +223,8 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
-      {/* Section D: Hour Heatmap + Histogram + Duration */}
+      {/* ── Distribution Analysis ── */}
+      <SectionLabel label="Distribution Analysis" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Section title="Hour of day heatmap">
           <HourHeatmap data={hourHeatmap} />
@@ -179,7 +237,8 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
-      {/* Section E: Setup + Risk */}
+      {/* ── Strategy & Risk ── */}
+      <SectionLabel label="Strategy & Risk" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Section title="Setup performance">
           <SetupPerformance strategies={strategyStats} />
@@ -189,7 +248,8 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
-      {/* Section F: Emotion + Calendar Heatmap */}
+      {/* ── Psychology & Calendar ── */}
+      <SectionLabel label="Psychology & Calendar" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Section title="Emotional analytics">
           <EmotionTracker emotions={emotions} bestHours={bestHours} />
@@ -199,8 +259,9 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
-      {/* Section G: AI Insights */}
-      <Section title="AI insights">
+      {/* ── Insights ── */}
+      <SectionLabel label="Insights" />
+      <Section title="AI coaching">
         <AiCoachingPanel insights={aiInsights} />
       </Section>
     </div>

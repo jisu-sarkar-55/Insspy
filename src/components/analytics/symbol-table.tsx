@@ -17,6 +17,7 @@ export function SymbolTable({ data }: Props) {
 
   const best = data.reduce((b, s) => (s.pnl > b.pnl ? s : b), data[0]);
   const worst = data.reduce((w, s) => (s.pnl < w.pnl ? s : w), data[0]);
+  const maxAbsPnl = Math.max(...data.map((s) => Math.abs(s.pnl)), 1);
 
   return (
     <div className="space-y-3">
@@ -43,15 +44,31 @@ export function SymbolTable({ data }: Props) {
           </tr>
         </thead>
         <tbody>
-          {data.map((s) => (
-            <tr key={s.symbol}>
-              <td className="border-b px-2 py-2 text-[11px] font-semibold font-[var(--font-playfair)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>{s.symbol}</td>
-              <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.trades}</td>
-              <td className="border-b px-2 py-2 text-[11px] font-semibold font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: s.winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)" }}>{s.winRate.toFixed(0)}%</td>
-              <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>${s.pnl.toFixed(0)}</td>
-              <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.profitFactor === Infinity ? "∞" : s.profitFactor.toFixed(1)}</td>
-            </tr>
-          ))}
+          {data.map((s) => {
+            const barWidth = (Math.abs(s.pnl) / maxAbsPnl) * 100;
+            return (
+              <tr key={s.symbol}>
+                <td className="border-b px-2 py-2 text-[11px] font-semibold font-[var(--font-playfair)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>{s.symbol}</td>
+                <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.trades}</td>
+                <td className="border-b px-2 py-2 text-[11px] font-semibold font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: s.winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)" }}>{s.winRate.toFixed(0)}%</td>
+                <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)" }}>
+                  <div className="flex items-center gap-1.5">
+                    <span style={{ color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>${s.pnl.toFixed(0)}</span>
+                    <div className="h-1 flex-1 rounded-full" style={{ background: "var(--border-subtle)" }}>
+                      <div
+                        className="h-1 rounded-full"
+                        style={{
+                          width: `${Math.max(barWidth, 4)}%`,
+                          background: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td className="border-b px-2 py-2 text-[11px] font-[var(--font-jetbrains)]" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>{s.profitFactor === Infinity ? "∞" : s.profitFactor.toFixed(1)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

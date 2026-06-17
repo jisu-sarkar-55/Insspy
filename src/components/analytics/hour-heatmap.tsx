@@ -52,7 +52,7 @@ export function HourHeatmap({ data }: Props) {
                     key={h}
                     className="h-5 rounded-[2px] transition-transform hover:scale-110"
                     style={{ background: getColor(cell?.avgPnl || 0, hasData) }}
-                    title={cell && cell.trades > 0 ? `${day} ${h}:00 — ${cell.trades}T, avg $${cell.avgPnl.toFixed(0)}` : `${day} ${h}:00 — no data`}
+                    title={cell && cell.trades > 0 ? `${day} ${String(h).padStart(2, "0")}:00 — ${cell.trades} trade${cell.trades > 1 ? "s" : ""}, avg $${cell.avgPnl.toFixed(0)}` : `${day} ${String(h).padStart(2, "0")}:00 — no trades`}
                   />
                 );
               })}

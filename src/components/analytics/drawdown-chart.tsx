@@ -37,12 +37,12 @@ export function DrawdownChart({ data }: Props) {
           <div className="text-lg font-bold font-[var(--font-playfair)]" style={{ color: data.currentDrawdown > 0 ? "var(--primary)" : "var(--color-profit)" }}>
             -{data.currentDrawdownPct.toFixed(1)}%
           </div>
-          <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{data.currentDrawdownDuration} trades</div>
+          <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{data.currentDrawdownDuration}d duration</div>
         </div>
         <div className="card-surface rounded-lg p-2.5">
           <div className="text-[10px] uppercase tracking-wide font-[var(--font-jetbrains)]" style={{ color: "var(--text-muted)" }}>Max DD Duration</div>
           <div className="text-lg font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>{data.maxDrawdownDuration}</div>
-          <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>trades</div>
+          <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>days</div>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={200}>
