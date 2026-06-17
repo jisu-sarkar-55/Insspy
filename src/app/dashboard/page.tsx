@@ -21,7 +21,7 @@ import {
   calculateStreaks,
   calculateHeatmapData,
   calculateStrategyStats,
-  calculateTraderIQ,
+  calculateTraderScorecard,
   calculateEmotionStats,
   calculateBestHours,
   calculateAiCoaching,
@@ -127,7 +127,7 @@ export default function DashboardPage() {
   });
 
   const strategyStats = calculateStrategyStats(closed);
-  const traderIQ = calculateTraderIQ(closed);
+  const traderIQ = calculateTraderScorecard(closed);
   const emotions = calculateEmotionStats(closed);
   const bestHours = calculateBestHours(closed);
   const aiInsights = calculateAiCoaching(closed);

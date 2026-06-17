@@ -6,7 +6,8 @@ import { calculateTraderScorecard, calculateRiskStats } from "@/lib/calculations
 import { ScoreRing } from "@/components/scorecard/score-ring";
 import { ScoreBreakdown } from "@/components/scorecard/score-breakdown";
 import { WeaknessPanel } from "@/components/scorecard/weakness-panel";
-import { Shield, Lock } from "lucide-react";
+import Link from "next/link";
+import { Shield, Lock, ArrowUpRight } from "lucide-react";
 import type { Trade } from "@/types";
 
 function SkeletonLine({ width }: { width: string }) {
@@ -241,6 +242,14 @@ export default function ScorecardPage() {
               <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                 Score Breakdown
               </span>
+              <Link
+                href="/dashboard"
+                className="ml-auto flex items-center gap-1 text-[10px] font-medium transition-opacity hover:opacity-80"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Trader IQ on Dashboard
+                <ArrowUpRight className="h-2.5 w-2.5" />
+              </Link>
             </div>
             <ScoreBreakdown scores={scoreData} />
           </div>
