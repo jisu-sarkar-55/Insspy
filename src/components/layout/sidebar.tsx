@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
+import { NavLink } from "@/components/layout/nav-link";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -22,7 +21,6 @@ import {
   Library,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const navGroups = [
@@ -114,23 +112,13 @@ export function Sidebar() {
             {group.items.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
+                <NavLink
                   key={item.name}
                   href={item.href}
-                  className={cn(
-                    "mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[12px] transition-all duration-150",
-                  )}
-                  style={{
-                    background: isActive ? "rgba(251, 191, 36, 0.08)" : "transparent",
-                    color: isActive ? "var(--primary)" : "var(--text-secondary)",
-                    borderLeft: isActive ? "2px solid var(--primary)" : "2px solid transparent",
-                    marginLeft: "-2px",
-                    paddingLeft: isActive ? "10px" : "10px",
-                  }}
-                >
-                  <item.icon className="h-4 w-4" style={{ color: isActive ? "var(--primary)" : "var(--text-muted)" }} />
-                  {item.name}
-                </Link>
+                  icon={item.icon}
+                  label={item.name}
+                  isActive={isActive}
+                />
               );
             })}
           </div>

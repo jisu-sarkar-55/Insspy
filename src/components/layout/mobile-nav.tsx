@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -20,6 +22,11 @@ const mobileNavItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const [navigating, setNavigating] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNavigating(null);
+  }, [pathname]);
 
   return (
     <div
@@ -32,16 +39,22 @@ export function MobileNav() {
       <nav className="flex items-center justify-around h-14">
         {mobileNavItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const isLoading = navigating === item.href;
           return (
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => { if (!isActive) setNavigating(item.href); }}
               className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
               style={{
                 color: isActive ? "var(--primary)" : "var(--text-muted)",
               }}
             >
-              <item.icon className="h-5 w-5" />
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <item.icon className="h-5 w-5" />
+              )}
               <span className="text-[9px] font-medium uppercase tracking-wider">
                 {item.name}
               </span>

@@ -20,6 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
 import type { Trade } from "@/types";
 import { useRouter } from "next/navigation";
@@ -31,6 +37,8 @@ export default function TradesPage() {
   const [directionFilter, setDirectionFilter] = useState<string>("all");
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+  const [clearConfirmed, setClearConfirmed] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -65,11 +73,10 @@ export default function TradesPage() {
     }
   }
 
-  async function handleClearAll() {
-    if (!confirm(`Delete ALL ${trades.length} trades? This cannot be undone.`)) return;
-    if (!confirm("Are you absolutely sure? Everything will be permanently erased.")) return;
-
+  async function executeClearAll() {
     setClearing(true);
+    setShowClearDialog(false);
+    setClearConfirmed(false);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setClearing(false);
@@ -103,16 +110,16 @@ export default function TradesPage() {
         </div>
         <div className="flex items-center gap-3">
           {trades.length > 0 && (
-            <Button
-              variant="outline"
-              className="border-zinc-700"
-              style={{ color: "var(--color-loss)" }}
-              onClick={handleClearAll}
-              disabled={clearing}
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              {clearing ? "Clearing..." : "Clear All"}
-            </Button>
+              <Button
+                variant="outline"
+                className="border-zinc-700"
+                style={{ color: "var(--color-loss)" }}
+                onClick={() => setShowClearDialog(true)}
+                disabled={clearing}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                {clearing ? "Clearing..." : "Clear All"}
+              </Button>
           )}
           <Link href="/dashboard/trades/new">
             <Button style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
@@ -264,6 +271,50 @@ export default function TradesPage() {
           </Table>
         </div>
       )}
+      <Dialog open={showClearDialog} onOpenChange={(open) => { setShowClearDialog(open); if (!open) setClearConfirmed(false); }}>
+        <DialogContent style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", maxWidth: "420px" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "var(--text-primary)" }}>Clear all trades?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              This will permanently delete all <strong>{trades.length} trades</strong> from your account. This action <strong>cannot be undone</strong>.
+            </p>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={clearConfirmed}
+                onChange={(e) => setClearConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded"
+                style={{ accentColor: "var(--color-loss)" }}
+              />
+              <span className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+                I understand that all trades will be permanently deleted and this cannot be undone.
+              </span>
+            </label>
+
+            <div className="flex gap-3">
+              <Button
+                className="flex-1"
+                variant="outline"
+                onClick={() => { setShowClearDialog(false); setClearConfirmed(false); }}
+                style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!clearConfirmed}
+                onClick={executeClearAll}
+                style={{ background: !clearConfirmed ? "var(--border-subtle)" : "var(--color-loss)", color: !clearConfirmed ? "var(--text-muted)" : "white" }}
+              >
+                Delete All
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
