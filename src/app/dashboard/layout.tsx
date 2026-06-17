@@ -10,10 +10,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen" style={{ background: "var(--surface-page)" }}>
+    <div style={{ background: "var(--surface-page)" }}>
       <RouteProgress />
       <Sidebar />
-      <main className="flex-1 overflow-auto hide-scrollbar pb-16 md:pb-0">
+      <main className="min-h-screen md:pl-[220px] pb-16 md:pb-0">
         <div className="p-4 md:p-5">{children}</div>
       </main>
       <MobileNav />

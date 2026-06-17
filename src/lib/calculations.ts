@@ -244,8 +244,7 @@ function getHour(dateStr: string): number {
 }
 
 function getSessionLabel(hour: number): string {
-  if (hour >= 13 && hour < 16) return "Overlap";
-  if (hour >= 8 && hour < 16) return "London";
+  if (hour >= 8 && hour < 13) return "London";
   if (hour >= 13 && hour < 21) return "New York";
   if (hour >= 0 && hour < 8) return "Asia";
   return "Off-hours";
@@ -1039,6 +1038,7 @@ export function calculateExecutiveSummary(trades: Trade[]): ExecutiveSummary | n
       estimatedImpact: worstSymbol ? Math.round(Math.abs(worstSymbol.pnl) * 0.3) : 0,
     },
     estimatedImprovement,
+    improvementNote: "If worst-day losses were cut by 50%, this is your potential monthly gain.",
   };
 }
 
@@ -1073,7 +1073,9 @@ export function calculateTopInsightCards(trades: Trade[]): {
     value: bestSymbol.symbol,
     winRate: bestSymbol.winRate,
     profitFactor: bestSymbol.profitFactor === Infinity ? 99.9 : bestSymbol.profitFactor,
-    detail: `You earn ${totalPnl > 0 ? Math.round((bestSymbol.pnl / totalPnl) * 100) : 0}% of profits from ${bestSymbol.symbol}.`,
+    detail: totalPnl > 0
+      ? `You earn ${Math.round((bestSymbol.pnl / totalPnl) * 100)}% of profits from ${bestSymbol.symbol}.`
+      : `${bestSymbol.symbol}: ${bestSymbol.winRate.toFixed(0)}% WR, $${bestSymbol.pnl.toFixed(0)} P&L.`,
     isPositive: true,
   } : null;
 
@@ -1339,11 +1341,13 @@ export function calculateMoneyLeaks(trades: Trade[]): { leaks: MoneyLeak[]; tota
   if (closed.length < 15) return null;
 
   const leaks: MoneyLeak[] = [];
+  const leakCategories = new Set<string>();
 
   const dayStats = calculateDayOfWeekStats(closed);
   const fridayStats = dayStats.find((d) => d.day === "Friday");
   if (fridayStats && fridayStats.pnl < 0) {
     leaks.push({ category: "Friday Trading", amount: Math.round(fridayStats.pnl) });
+    leakCategories.add("friday");
   }
 
   const riskStats = calculateRiskStats(closed);
@@ -1357,6 +1361,7 @@ export function calculateMoneyLeaks(trades: Trade[]): { leaks: MoneyLeak[]; tota
       .reduce((s, t) => s + Math.abs(t.net_pnl || 0), 0);
     if (oversizedLosses > 0) {
       leaks.push({ category: "Oversized Positions", amount: Math.round(oversizedLosses) });
+      leakCategories.add("sizing");
     }
   }
 
@@ -1365,7 +1370,11 @@ export function calculateMoneyLeaks(trades: Trade[]): { leaks: MoneyLeak[]; tota
     ? sessionStats.reduce((worst, s) => (s.pnl < worst.pnl ? s : worst), sessionStats[0])
     : null;
   if (worstSession && worstSession.pnl < 0) {
-    leaks.push({ category: `${worstSession.session} Session`, amount: Math.round(worstSession.pnl) });
+    const sessionLabel = `${worstSession.session} Session`;
+    const existing = leaks.find((l) => l.category === sessionLabel);
+    if (!existing) {
+      leaks.push({ category: sessionLabel, amount: Math.round(worstSession.pnl) });
+    }
   }
 
   const totalAvoidable = leaks.reduce((s, l) => s + Math.abs(l.amount), 0);
@@ -1385,6 +1394,7 @@ export function calculateEdgeDiscovery(trades: Trade[]): EdgeCondition | null {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const day = days[dayIdx];
     const strategy = t.strategy || "Untagged";
+    if (strategy === "Untagged") return;
     const key = `${t.symbol}|${session}|${day}|${strategy}`;
 
     if (!combos.has(key)) combos.set(key, []);
@@ -1441,7 +1451,19 @@ export function calculateWeeklyReview(trades: Trade[]): WeeklyReview | null {
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const weekTrades = closed.filter((t) => new Date(t.entry_time) >= weekAgo);
 
-  if (weekTrades.length < 3) return null;
+  if (weekTrades.length < 3) {
+    return {
+      startDate: weekAgo.toISOString().split("T")[0],
+      endDate: now.toISOString().split("T")[0],
+      trades: 0,
+      profit: 0,
+      winRate: 0,
+      topStrength: "No recent activity",
+      biggestMistake: "Not enough data this week",
+      recommendation: "Try to log at least 3 trades this week to receive a personalized review.",
+      noRecentData: true,
+    };
+  }
 
   const profit = weekTrades.reduce((s, t) => s + (t.net_pnl || 0), 0);
   const wins = weekTrades.filter((t) => t.net_pnl! > 0).length;
@@ -1483,7 +1505,8 @@ export function calculateProjectedPerformance(trades: Trade[]): ProjectedPerform
 
   const dailyPnl = calculateDailyPnl(last30);
   const avgDailyAbs = dailyPnl.reduce((s, d) => s + Math.abs(d.pnl), 0) / Math.max(1, dailyPnl.length);
-  const expectedDrawdown = Math.round((avgDailyAbs * 5 / Math.max(1, Math.abs(expectedMonthlyProfit))) * 100 * 10) / 10;
+  const denom = Math.max(1, Math.abs(expectedMonthlyProfit));
+  const expectedDrawdown = Math.min(30, Math.round((avgDailyAbs * 5 / denom) * 100 * 10) / 10);
 
   const winRate = (last30.filter((t) => t.net_pnl! > 0).length / last30.length) * 100;
   const confidence = Math.min(95, Math.round(50 + closed.length * 0.3 + winRate * 0.3));
@@ -1532,8 +1555,8 @@ export function getInsufficientDataSections(trades: Trade[]): InsufficientDataSe
     { key: "top-insights", required: 10, label: "Top Insights" },
     { key: "pattern-detection", required: 20, label: "Pattern Detection" },
     { key: "opportunity-analysis", required: 15, label: "Opportunity Analysis" },
-    { key: "strengths", required: 10, label: "Strengths Analysis" },
-    { key: "improvement-areas", required: 10, label: "Improvement Areas" },
+    { key: "strengths", required: 5, label: "Strengths Analysis" },
+    { key: "improvement-areas", required: 5, label: "Improvement Areas" },
     { key: "money-leaks", required: 15, label: "Money Leak Report" },
     { key: "edge-discovery", required: 20, label: "Edge Discovery" },
     { key: "weekly-review", required: 5, label: "Weekly Review" },

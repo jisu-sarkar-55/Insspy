@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import type { LosingTradeAnalysis as LosingTradeAnalysisType, Trade } from "@/types";
 
@@ -19,12 +19,17 @@ export function LosingTradeExplainer({
 }: LosingTradeExplainerProps) {
   const [expanded, setExpanded] = useState(false);
 
+  useEffect(() => {
+    if (analysis && !expanded) {
+      setExpanded(true);
+    }
+  }, [analysis, expanded]);
+
   if (!lastLosingTrade) return null;
 
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-coaching rounded-lg p-5"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -32,6 +37,9 @@ export function LosingTradeExplainer({
           <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
             Explain My Last Losing Trade
           </span>
+          {!analysis && !loading && (
+            <span className="animate-pulse inline-flex h-2 w-2 rounded-full" style={{ background: "var(--color-ai)" }} />
+          )}
         </div>
         <button
           onClick={() => {

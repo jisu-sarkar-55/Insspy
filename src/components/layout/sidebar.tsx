@@ -83,7 +83,7 @@ export function Sidebar() {
 
   return (
     <div
-      className="hidden md:flex h-screen w-[220px] flex-col overflow-y-auto border-r hide-scrollbar sticky top-0 flex-shrink-0"
+      className="hidden md:flex fixed top-0 left-0 bottom-0 w-[220px] flex-col overflow-y-auto border-r hide-scrollbar z-40"
       style={{
         background: "var(--surface-sidebar)",
         borderColor: "var(--border-subtle)",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   calculateExecutiveSummary,
@@ -32,6 +32,28 @@ import { ProjectedPerformance } from "@/components/ai-insights/projected-perform
 import { TraderScorecard } from "@/components/ai-insights/trader-scorecard";
 import { LosingTradeExplainer } from "@/components/ai-insights/losing-trade-explainer";
 import { InsufficientData } from "@/components/ai-insights/insufficient-data";
+
+function formatDateRange(trades: Trade[]): string {
+  if (trades.length === 0) return "";
+  const dates = trades.map((t) => new Date(t.entry_time)).sort((a, b) => a.getTime() - b.getTime());
+  const start = dates[0];
+  const end = dates[dates.length - 1];
+  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function SectionLabel({ label, premium }: { label: string; premium?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, var(--border-subtle), transparent)" }} />
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </span>
+      {premium && <span className="premium-badge">Premium</span>}
+      <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, var(--border-subtle))" }} />
+    </div>
+  );
+}
 
 export default function AiInsightsPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -81,15 +103,44 @@ export default function AiInsightsPage() {
     }
   }, []);
 
+  const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
+
+  const insufficient = useMemo(() => getInsufficientDataSections(closed), [closed]);
+  const sectionReady = useCallback((key: string) => !insufficient.find((s) => s.sectionKey === key), [insufficient]);
+  const sectionLocked = useCallback((key: string) => insufficient.find((s) => s.sectionKey === key), [insufficient]);
+
+  const executiveSummary = useMemo(() => calculateExecutiveSummary(closed), [closed]);
+  const topInsights = useMemo(() => calculateTopInsightCards(closed), [closed]);
+  const patterns = useMemo(() => calculatePatternDetections(closed), [closed]);
+  const opportunity = useMemo(() => calculateOpportunityAnalysis(closed), [closed]);
+  const strengths = useMemo(() => calculateStrengths(closed), [closed]);
+  const improvements = useMemo(() => calculateImprovementAreas(closed), [closed]);
+  const moneyLeaks = useMemo(() => calculateMoneyLeaks(closed), [closed]);
+  const edge = useMemo(() => calculateEdgeDiscovery(closed), [closed]);
+  const weeklyReview = useMemo(() => calculateWeeklyReview(closed), [closed]);
+  const projections = useMemo(() => calculateProjectedPerformance(closed), [closed]);
+  const scorecard = useMemo(() => calculateTraderScorecard(closed), [closed]);
+
+  const lastLosingTrade = useMemo(() => closed.find((t) => t.net_pnl! < 0) || null, [closed]);
+  const dateRange = useMemo(() => formatDateRange(closed), [closed]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div style={{ color: "var(--text-muted)" }}>Loading AI insights...</div>
+      <div className="space-y-4">
+        <div className="skeleton-section" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="skeleton-section-sm" />
+          <div className="skeleton-section-sm" />
+        </div>
+        <div className="skeleton-section" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="skeleton-section-sm" />
+          <div className="skeleton-section-sm" />
+        </div>
+        <div className="skeleton-section" />
       </div>
     );
   }
-
-  const closed = trades.filter((t) => t.net_pnl !== null);
 
   if (closed.length === 0) {
     return (
@@ -104,28 +155,29 @@ export default function AiInsightsPage() {
     );
   }
 
-  const insufficient = getInsufficientDataSections(closed);
-  const sectionReady = (key: string) => !insufficient.find((s) => s.sectionKey === key);
-  const sectionLocked = (key: string) => insufficient.find((s) => s.sectionKey === key);
-
-  const executiveSummary = calculateExecutiveSummary(closed);
-  const topInsights = calculateTopInsightCards(closed);
-  const patterns = calculatePatternDetections(closed);
-  const opportunity = calculateOpportunityAnalysis(closed);
-  const strengths = calculateStrengths(closed);
-  const improvements = calculateImprovementAreas(closed);
-  const moneyLeaks = calculateMoneyLeaks(closed);
-  const edge = calculateEdgeDiscovery(closed);
-  const weeklyReview = calculateWeeklyReview(closed);
-  const projections = calculateProjectedPerformance(closed);
-  const scorecard = calculateTraderScorecard(closed);
-
-  const lastLosingTrade = closed.find((t) => t.net_pnl! < 0) || null;
-
   return (
-    <div className="space-y-4">
-      <CoachHeader tradesAnalyzed={closed.length} />
+    <div className="space-y-6">
+      <CoachHeader tradesAnalyzed={closed.length} dateRange={dateRange} />
 
+      {/* ── Featured Row ── */}
+      <SectionLabel label="Overview" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {(() => {
+          const locked = sectionLocked("executive-summary");
+          if (locked) return <InsufficientData section={locked} />;
+          if (executiveSummary) return <ExecutiveSummary data={executiveSummary} />;
+          return null;
+        })()}
+
+        {(() => {
+          const locked = sectionLocked("top-insights");
+          if (locked) return <InsufficientData section={locked} />;
+          if (topInsights.bestInstrument || topInsights.bestSession) return <TopInsights {...topInsights} />;
+          return null;
+        })()}
+      </div>
+
+      {/* ── Losing Trade Explainer ── */}
       {lastLosingTrade && (
         <LosingTradeExplainer
           lastLosingTrade={lastLosingTrade}
@@ -135,74 +187,74 @@ export default function AiInsightsPage() {
         />
       )}
 
-      {(() => {
-        const locked = sectionLocked("executive-summary");
-        if (locked) return <InsufficientData section={locked} />;
-        if (executiveSummary) return <ExecutiveSummary data={executiveSummary} />;
-        return null;
-      })()}
+      {/* ── Deep Analysis ── */}
+      <SectionLabel label="Deep Analysis" premium />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {(() => {
+          const locked = sectionLocked("pattern-detection");
+          if (locked) return <InsufficientData section={locked} />;
+          return (
+            <div className="lg:col-span-2">
+              <PatternDetection {...patterns} />
+            </div>
+          );
+        })()}
 
-      {(() => {
-        const locked = sectionLocked("top-insights");
-        if (locked) return <InsufficientData section={locked} />;
-        if (topInsights.bestInstrument || topInsights.bestSession) return <TopInsights {...topInsights} />;
-        return null;
-      })()}
+        {(() => {
+          const locked = sectionLocked("money-leaks");
+          if (locked) return <InsufficientData section={locked} />;
+          if (moneyLeaks && moneyLeaks.leaks.length > 0) return <MoneyLeakReport leaks={moneyLeaks.leaks} totalAvoidable={moneyLeaks.totalAvoidable} />;
+          return null;
+        })()}
+      </div>
 
-      {(() => {
-        const locked = sectionLocked("pattern-detection");
-        if (locked) return <InsufficientData section={locked} />;
-        return <PatternDetection {...patterns} />;
-      })()}
+      {/* Edge Discovery + Opportunity */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {(() => {
+          const locked = sectionLocked("edge-discovery");
+          if (locked) return <InsufficientData section={locked} />;
+          if (edge) return <EdgeDiscovery data={edge} />;
+          return null;
+        })()}
 
-      {(() => {
-        const locked = sectionLocked("opportunity-analysis");
-        if (locked) return <InsufficientData section={locked} />;
-        if (opportunity) return <OpportunityAnalysis data={opportunity} />;
-        return null;
-      })()}
+        {(() => {
+          const locked = sectionLocked("opportunity-analysis");
+          if (locked) return <InsufficientData section={locked} />;
+          if (opportunity) return <OpportunityAnalysis data={opportunity} />;
+          return null;
+        })()}
+      </div>
 
-      {(() => {
-        const locked = sectionLocked("strengths");
-        if (locked) return <InsufficientData section={locked} />;
-        if (strengths.length === 0) return null;
-        return (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <StrengthsAnalysis items={strengths} />
-            {improvements.length > 0 && <ImprovementAreas areas={improvements} />}
-          </div>
-        );
-      })()}
+      {/* ── Coaching ── */}
+      <SectionLabel label="Coaching" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {(() => {
+          const locked = sectionLocked("strengths");
+          if (locked) return <InsufficientData section={locked} />;
+          if (strengths.length > 0) return <StrengthsAnalysis items={strengths} />;
+          return null;
+        })()}
 
-      {(() => {
-        const locked = sectionLocked("money-leaks");
-        if (locked) return <InsufficientData section={locked} />;
-        if (moneyLeaks && moneyLeaks.leaks.length > 0) return <MoneyLeakReport leaks={moneyLeaks.leaks} totalAvoidable={moneyLeaks.totalAvoidable} />;
-        return null;
-      })()}
+        {improvements.length > 0 && <ImprovementAreas areas={improvements} />}
+      </div>
 
-      {(() => {
-        const locked = sectionLocked("edge-discovery");
-        if (locked) return <InsufficientData section={locked} />;
-        if (edge) return <EdgeDiscovery data={edge} />;
-        return null;
-      })()}
+      {/* ── Projections ── */}
+      <SectionLabel label="Projections" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {sectionReady("weekly-review") && <WeeklyReview data={weeklyReview} />}
 
-      {sectionReady("weekly-review") && (
-        <WeeklyReview data={weeklyReview} />
-      )}
+        {(() => {
+          const locked = sectionLocked("projections");
+          if (locked) return <InsufficientData section={locked} />;
+          return <ProjectedPerformance data={projections} />;
+        })()}
 
-      {(() => {
-        const locked = sectionLocked("projections");
-        if (locked) return <InsufficientData section={locked} />;
-        return <ProjectedPerformance data={projections} />;
-      })()}
-
-      {(() => {
-        const locked = sectionLocked("scorecard");
-        if (locked) return <InsufficientData section={locked} />;
-        return <TraderScorecard data={scorecard} />;
-      })()}
+        {(() => {
+          const locked = sectionLocked("scorecard");
+          if (locked) return <InsufficientData section={locked} />;
+          return <TraderScorecard data={scorecard} />;
+        })()}
+      </div>
     </div>
   );
 }

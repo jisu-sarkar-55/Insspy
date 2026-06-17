@@ -10,8 +10,8 @@ interface WeeklyReviewProps {
 export function WeeklyReview({ data }: WeeklyReviewProps) {
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-premium rounded-lg p-5"
+      style={{ background: "var(--surface-card)" }}
     >
       <div className="mb-4 flex items-center gap-2">
         <Calendar className="h-4 w-4" style={{ color: "var(--color-ai)" }} />
@@ -20,7 +20,7 @@ export function WeeklyReview({ data }: WeeklyReviewProps) {
         </div>
       </div>
 
-      {data ? (
+      {data && !data.noRecentData ? (
         <div className="space-y-3">
           <div className="flex gap-6">
             <div>
@@ -71,7 +71,12 @@ export function WeeklyReview({ data }: WeeklyReviewProps) {
           className="rounded-lg p-6 text-center text-[12px]"
           style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}
         >
-          Not enough data this week — add more trades to see your weekly review.
+          <div className="text-sm font-semibold font-[var(--font-playfair)] mb-1" style={{ color: "var(--text-secondary)" }}>
+            No Recent Activity
+          </div>
+          <div className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            Add at least 3 trades this week to see your personalized weekly review.
+          </div>
         </div>
       )}
     </div>

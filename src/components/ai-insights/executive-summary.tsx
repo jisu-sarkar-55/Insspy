@@ -10,8 +10,8 @@ interface ExecutiveSummaryProps {
 export function ExecutiveSummary({ data }: ExecutiveSummaryProps) {
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-featured rounded-lg p-5"
+      style={{ background: "var(--surface-card)" }}
     >
       <div className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
         Executive Summary
@@ -72,9 +72,9 @@ export function ExecutiveSummary({ data }: ExecutiveSummaryProps) {
           </div>
           {data.biggestLeak.estimatedImpact > 0 && (
             <div className="mt-1 text-[11px]" style={{ color: "var(--text-secondary)" }}>
-              Estimated monthly improvement:{" "}
+              {data.improvementNote}{" "}
               <span className="font-semibold" style={{ color: "var(--color-profit)" }}>
-                +${data.estimatedImprovement.toLocaleString()} if corrected
+                +${data.estimatedImprovement.toLocaleString()}
               </span>
             </div>
           )}

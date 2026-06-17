@@ -31,8 +31,8 @@ export function TraderScorecard({ data }: TraderScorecardProps) {
 
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-featured rounded-lg p-5"
+      style={{ background: "var(--surface-card)" }}
     >
       <div className="mb-4 flex items-center gap-2">
         <Shield className="h-4 w-4" style={{ color: "var(--color-profit)" }} />

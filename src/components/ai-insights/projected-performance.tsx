@@ -11,8 +11,8 @@ export function ProjectedPerformance({ data }: ProjectedPerformanceProps) {
 
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-premium rounded-lg p-5"
+      style={{ background: "var(--surface-card)" }}
     >
       <div className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
         Projected Performance

@@ -10,8 +10,8 @@ interface StrengthsAnalysisProps {
 export function StrengthsAnalysis({ items }: StrengthsAnalysisProps) {
   return (
     <div
-      className="card-surface rounded-lg border border-border p-5"
-      style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+      className="card-featured rounded-lg p-5"
+      style={{ background: "var(--surface-card)" }}
     >
       <div className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
         Your Strengths

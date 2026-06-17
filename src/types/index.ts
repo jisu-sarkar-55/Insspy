@@ -276,6 +276,7 @@ export interface ExecutiveSummary {
     estimatedImpact: number;
   };
   estimatedImprovement: number;
+  improvementNote: string;
 }
 
 export interface TopInsightCard {
@@ -351,6 +352,7 @@ export interface WeeklyReview {
   topStrength: string;
   biggestMistake: string;
   recommendation: string;
+  noRecentData?: boolean;
 }
 
 export interface ProjectedPerformance {
