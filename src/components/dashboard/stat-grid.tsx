@@ -1,10 +1,16 @@
 "use client";
 
-import { DollarSign, Target, TrendingUp, Shield, Zap } from "lucide-react";
+import { DollarSign, Target, TrendingUp, TrendingDown, Zap, Activity } from "lucide-react";
 import type { DashboardStats } from "@/types";
 
 interface StatGridProps {
   stats: DashboardStats;
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export function StatGrid({ stats }: StatGridProps) {
@@ -46,13 +52,52 @@ export function StatGrid({ stats }: StatGridProps) {
       label: "Best day",
       value: `$${stats.bestDay.toFixed(0)}`,
       icon: TrendingUp,
-      color: "var(--color-profit)",
+      color: stats.bestDay > 0 ? "var(--color-profit)" : stats.bestDay < 0 ? "var(--color-loss)" : "var(--text-muted)",
+      sub: stats.bestDayDate ? `${formatDate(stats.bestDayDate)} · ${stats.bestDayTrades} trade${stats.bestDayTrades !== 1 ? "s" : ""}` : undefined,
     },
     {
       label: "Worst day",
-      value: `$${stats.worstDay.toFixed(0)}`,
-      icon: Shield,
+      icon: TrendingDown,
+      color: stats.worstDay < 0 ? "var(--color-loss)" : "var(--text-muted)",
+      render: () =>
+        stats.worstDay < 0 ? (
+          <div>
+            <div className="text-2xl font-bold leading-none" style={{ fontFamily: "var(--font-playfair)", color: "var(--color-loss)" }}>
+              ${stats.worstDay.toFixed(0)}
+            </div>
+            {stats.worstDayDate && (
+              <div className="mt-1.5 text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>
+                {formatDate(stats.worstDayDate)} · {stats.worstDayTrades} trade{stats.worstDayTrades !== 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+            No loss days
+          </div>
+        ),
+    },
+    {
+      label: "Biggest loss",
+      icon: Activity,
       color: "var(--color-loss)",
+      render: () =>
+        stats.biggestLoss < 0 ? (
+          <div>
+            <div className="text-2xl font-bold leading-none" style={{ fontFamily: "var(--font-playfair)", color: "var(--color-loss)" }}>
+              ${stats.biggestLoss.toFixed(0)}
+            </div>
+            {stats.biggestLossDate && (
+              <div className="mt-1.5 text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>
+                {formatDate(stats.biggestLossDate)}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+            No losing trades
+          </div>
+        ),
     },
   ];
 
@@ -71,13 +116,17 @@ export function StatGrid({ stats }: StatGridProps) {
             <card.icon className="h-3 w-3" />
             {card.label}
           </div>
-          <div
-            className="text-2xl font-bold leading-none"
-            style={{ fontFamily: "var(--font-playfair)", color: card.color }}
-          >
-            {card.value}
-          </div>
-          {card.sub && (
+          {"render" in card && card.render ? (
+            card.render()
+          ) : (
+            <div
+              className="text-2xl font-bold leading-none"
+              style={{ fontFamily: "var(--font-playfair)", color: card.color }}
+            >
+              {card.value}
+            </div>
+          )}
+          {"sub" in card && card.sub && (
             <div
               className="mt-1.5 text-[10px] font-medium"
               style={{ color: "var(--text-muted)" }}

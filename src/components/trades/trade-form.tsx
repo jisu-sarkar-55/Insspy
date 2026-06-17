@@ -29,7 +29,7 @@ interface TradeFormProps {
   isEditing?: boolean;
 }
 
-const strategies = [
+const PREDEFINED_STRATEGIES = [
   "Breakout",
   "ICT",
   "SMC",
@@ -40,6 +40,8 @@ const strategies = [
   "Gap Fill",
   "Other",
 ];
+
+const CUSTOM_STRATEGY_VALUE = "__custom__";
 
 export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
   const [formData, setFormData] = useState<TradeFormData>({
@@ -71,30 +73,36 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playbooks, setPlaybooks] = useState<SetupPlaybook[]>([]);
+  const [showCustomStrategy, setShowCustomStrategy] = useState(
+    () => !!initialData?.strategy && !PREDEFINED_STRATEGIES.includes(initialData.strategy)
+  );
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchPlaybooks() {
       const { data } = await supabase
         .from("setup_playbooks")
         .select("*")
         .eq("is_active", true)
         .order("name");
-      if (data) setPlaybooks(data);
+      if (!cancelled && data) setPlaybooks(data);
     }
     fetchPlaybooks();
-  }, [supabase]);
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const netPnl = formData.net_pnl ?? 0;
+    const netPnl = formData.net_pnl ?? null;
     const commission = formData.commission || 0;
     const swap = formData.swap || 0;
-    const pnl = netPnl + commission + swap;
+    const pnl = netPnl !== null ? netPnl + commission + swap : null;
 
     const payload = {
       symbol: formData.symbol,
@@ -112,7 +120,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
       swap,
       pnl,
       net_pnl: netPnl,
-      strategy: formData.strategy,
+      strategy: formData.strategy || null,
       notes: formData.notes,
       confidence_before: formData.confidence_before,
       fear_level: formData.fear_level,
@@ -138,7 +146,6 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
     }
 
     router.push("/dashboard/trades");
-    router.refresh();
   };
 
   const updateField = (field: keyof TradeFormData, value: unknown) => {
@@ -303,20 +310,39 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
                 Strategy
               </Label>
               <Select
-                value={formData.strategy}
-                onValueChange={(value) => updateField("strategy", value)}
+                value={showCustomStrategy ? CUSTOM_STRATEGY_VALUE : (formData.strategy || CUSTOM_STRATEGY_VALUE)}
+                onValueChange={(value) => {
+                  if (value === CUSTOM_STRATEGY_VALUE) {
+                    setShowCustomStrategy(true);
+                    updateField("strategy", "");
+                  } else {
+                    setShowCustomStrategy(false);
+                    updateField("strategy", value);
+                  }
+                }}
               >
                 <SelectTrigger style={inputStyle}>
                   <SelectValue placeholder="Select strategy" />
                 </SelectTrigger>
                 <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
-                  {strategies.map((s) => (
+                  {PREDEFINED_STRATEGIES.map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
                     </SelectItem>
                   ))}
+                  <SelectItem value={CUSTOM_STRATEGY_VALUE}>Custom...</SelectItem>
                 </SelectContent>
               </Select>
+              {showCustomStrategy && (
+                <Input
+                  id="strategy"
+                  placeholder="Enter your strategy name"
+                  value={formData.strategy}
+                  onChange={(e) => updateField("strategy", e.target.value)}
+                  style={inputStyle}
+                  autoFocus
+                />
+              )}
             </div>
           </div>
         </CardContent>

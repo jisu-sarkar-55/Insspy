@@ -1,37 +1,23 @@
 "use client";
 
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar } from "lucide-react";
 import type { WeeklyReview as WeeklyReviewType } from "@/types";
 
 interface WeeklyReviewProps {
   data: WeeklyReviewType | null;
-  onGenerate: () => void;
-  loading: boolean;
 }
 
-export function WeeklyReview({ data, onGenerate, loading }: WeeklyReviewProps) {
+export function WeeklyReview({ data }: WeeklyReviewProps) {
   return (
     <div
       className="card-surface rounded-lg border border-border p-5"
       style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center gap-2">
+        <Calendar className="h-4 w-4" style={{ color: "var(--color-ai)" }} />
         <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
           Weekly AI Review
         </div>
-        <button
-          onClick={onGenerate}
-          disabled={loading}
-          className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-semibold"
-          style={{ background: "var(--color-ai-bg)", color: "var(--color-ai)", border: "1px solid rgba(192, 132, 252, 0.2)" }}
-        >
-          {loading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Calendar className="h-3 w-3" />
-          )}
-          {data ? "Refresh Review" : "Generate Review"}
-        </button>
       </div>
 
       {data ? (
@@ -85,7 +71,7 @@ export function WeeklyReview({ data, onGenerate, loading }: WeeklyReviewProps) {
           className="rounded-lg p-6 text-center text-[12px]"
           style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}
         >
-          Click &quot;Generate Review&quot; to get a weekly summary of your trading performance.
+          Not enough data this week — add more trades to see your weekly review.
         </div>
       )}
     </div>

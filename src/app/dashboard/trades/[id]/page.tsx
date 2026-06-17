@@ -20,22 +20,44 @@ export default function TradeDetailPage() {
   const router = useRouter();
   const [trade, setTrade] = useState<Trade | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [playbookName, setPlaybookName] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    async function fetchTrade() {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .eq("id", params.id)
-        .single();
+    let cancelled = false;
 
-      setTrade(data);
-      setLoading(false);
+    async function fetchTrade() {
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("trades")
+          .select("*")
+          .eq("id", params.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+        if (!cancelled) {
+          setTrade(data);
+          if (data?.setup_playbook_id) {
+            const { data: pb } = await supabase
+              .from("setup_playbooks")
+              .select("name")
+              .eq("id", data.setup_playbook_id)
+              .single();
+            if (!cancelled && pb) setPlaybookName(pb.name);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load trade");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
 
     fetchTrade();
-  }, [params.id, supabase]);
+    return () => { cancelled = true; };
+  }, [params.id]);
 
   async function handleDelete() {
     if (!confirm("Are you sure you want to delete this trade?")) return;
@@ -54,6 +76,24 @@ export default function TradeDetailPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div style={{ color: "var(--text-muted)" }}>Loading trade...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div
+          className="inline-block rounded-lg p-4 text-sm mb-4"
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)", color: "var(--color-loss)" }}
+        >
+          {error}
+        </div>
+        <div>
+          <Link href="/dashboard/trades">
+            <Button>Back to Trades</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -183,6 +223,14 @@ export default function TradeDetailPage() {
                 <span style={{ color: "var(--text-muted)" }}>Strategy</span>
                 <Badge variant="outline" style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
                   {trade.strategy}
+                </Badge>
+              </div>
+            )}
+            {playbookName && (
+              <div className="flex justify-between">
+                <span style={{ color: "var(--text-muted)" }}>Playbook</span>
+                <Badge variant="outline" style={{ borderColor: "var(--border-subtle)", color: "var(--color-ai)" }}>
+                  {playbookName}
                 </Badge>
               </div>
             )}

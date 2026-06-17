@@ -30,6 +30,7 @@ export default function TradesPage() {
   const [strategyFilter, setStrategyFilter] = useState<string>("all");
   const [directionFilter, setDirectionFilter] = useState<string>("all");
   const [clearing, setClearing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -38,15 +39,20 @@ export default function TradesPage() {
   }, []);
 
   async function fetchTrades() {
-    const { data } = await supabase
-      .from("trades")
-      .select("*")
-      .order("entry_time", { ascending: false });
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("trades")
+        .select("*")
+        .order("entry_time", { ascending: false });
 
-    if (data) {
-      setTrades(data);
+      if (fetchError) throw fetchError;
+      if (data) setTrades(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load trades");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function handleDelete(id: string) {
@@ -146,6 +152,13 @@ export default function TradesPage() {
 
       {loading ? (
         <div className="text-center py-12" style={{ color: "var(--text-muted)" }}>Loading trades...</div>
+      ) : error ? (
+        <div
+          className="rounded-lg p-4 text-sm"
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)", color: "var(--color-loss)" }}
+        >
+          {error}
+        </div>
       ) : filteredTrades.length === 0 ? (
         <div className="text-center py-12">
           <p className="mb-4" style={{ color: "var(--text-muted)" }}>

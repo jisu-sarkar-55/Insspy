@@ -9,49 +9,91 @@ import type { Goal, GoalFormData } from "@/types";
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createClient();
     let cancelled = false;
-    async function fetchGoals() {
-      const { data } = await supabase
-        .from("goals")
-        .select("*")
-        .order("created_at", { ascending: false });
 
-      if (!cancelled && data) setGoals(data);
-      if (!cancelled) setLoading(false);
+    async function fetchGoals() {
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("goals")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (fetchError) throw fetchError;
+        if (!cancelled && data) setGoals(data);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load goals");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
     fetchGoals();
     return () => { cancelled = true; };
-  }, [supabase]);
+  }, []);
 
-  const handleCreate = async (formData: GoalFormData) => {
+  const handleCreate = async (formData: GoalFormData): Promise<boolean> => {
     setCreating(true);
-    const res = await fetch("/api/goals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    setError(null);
+    try {
+      const res = await fetch("/api/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to create goal" }));
+        throw new Error(err.error || "Failed to create goal");
+      }
+      const data = await res.json();
       setGoals([data, ...goals]);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create goal");
+      return false;
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
+  };
+
+  const handleToggle = async (id: string, completed: boolean) => {
+    const status = completed ? "completed" : "active";
+    try {
+      const res = await fetch(`/api/goals/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to update goal" }));
+        throw new Error(err.error || "Failed to update goal");
+      }
+      setGoals(goals.map((g) => (g.id === id ? { ...g, status } : g)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update goal");
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this goal?")) return;
-    const res = await fetch(`/api/goals/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/goals/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed to delete goal" }));
+        throw new Error(err.error || "Failed to delete goal");
+      }
       setGoals(goals.filter((g) => g.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete goal");
     }
   };
 
   const activeGoals = goals.filter((g) => g.status === "active");
   const completedGoals = goals.filter((g) => g.status === "completed");
-  const failedGoals = goals.filter((g) => g.status === "failed");
 
   if (loading) {
     return (
@@ -67,11 +109,20 @@ export default function GoalsPage() {
         <div>
           <h1 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>Goals</h1>
           <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-            Set targets and track your progress
+            Track your trading objectives
           </p>
         </div>
         <CreateGoalDialog onSubmit={handleCreate} loading={creating} />
       </div>
+
+      {error && (
+        <div
+          className="rounded-lg p-3 text-sm"
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)", color: "var(--color-loss)" }}
+        >
+          {error}
+        </div>
+      )}
 
       {goals.length === 0 ? (
         <div
@@ -82,19 +133,19 @@ export default function GoalsPage() {
             No goals yet
           </div>
           <div className="text-[12px]" style={{ color: "var(--text-muted)" }}>
-            Create your first goal to start tracking your trading performance targets.
+            Create your first goal to start tracking.
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {activeGoals.length > 0 && (
             <div>
-              <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-                Active Goals ({activeGoals.length})
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                Active &mdash; {activeGoals.length}
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-2">
                 {activeGoals.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} onDelete={handleDelete} />
+                  <GoalCard key={goal.id} goal={goal} onDelete={handleDelete} onToggle={handleToggle} />
                 ))}
               </div>
             </div>
@@ -102,25 +153,12 @@ export default function GoalsPage() {
 
           {completedGoals.length > 0 && (
             <div>
-              <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-                Completed ({completedGoals.length})
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                Completed &mdash; {completedGoals.length}
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-2">
                 {completedGoals.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} onDelete={handleDelete} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {failedGoals.length > 0 && (
-            <div>
-              <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-                Failed ({failedGoals.length})
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {failedGoals.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} onDelete={handleDelete} />
+                  <GoalCard key={goal.id} goal={goal} onDelete={handleDelete} onToggle={handleToggle} />
                 ))}
               </div>
             </div>

@@ -36,27 +36,31 @@ import { InsufficientData } from "@/components/ai-insights/insufficient-data";
 export default function AiInsightsPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
-  const [weeklyLoading, setWeeklyLoading] = useState(false);
   const [explainLoading, setExplainLoading] = useState(false);
   const [losingTradeAnalysis, setLosingTradeAnalysis] = useState<LosingTradeAnalysisType | null>(null);
 
-  const supabase = createClient();
-
   useEffect(() => {
-    async function fetchTrades() {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .order("entry_time", { ascending: false });
+    const supabase = createClient();
+    let cancelled = false;
 
-      if (data) {
-        setTrades(data);
+    async function fetchTrades() {
+      try {
+        const { data, error } = await supabase
+          .from("trades")
+          .select("*")
+          .order("entry_time", { ascending: false });
+        if (error) throw error;
+        if (!cancelled && data) setTrades(data);
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchTrades();
-  }, [supabase]);
+    return () => { cancelled = true; };
+  }, []);
 
   const handleExplainTrade = useCallback(async (tradeId: string) => {
     setExplainLoading(true);
@@ -70,8 +74,8 @@ export default function AiInsightsPage() {
       if (response.ok) {
         setLosingTradeAnalysis(data);
       }
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error("Failed to explain trade:", err);
     } finally {
       setExplainLoading(false);
     }
@@ -101,8 +105,8 @@ export default function AiInsightsPage() {
   }
 
   const insufficient = getInsufficientDataSections(closed);
-  const hasSection = (key: string) => !insufficient.some((s) => s.sectionKey === key);
-  const getSection = (key: string) => insufficient.find((s) => s.sectionKey === key);
+  const sectionReady = (key: string) => !insufficient.find((s) => s.sectionKey === key);
+  const sectionLocked = (key: string) => insufficient.find((s) => s.sectionKey === key);
 
   const executiveSummary = calculateExecutiveSummary(closed);
   const topInsights = calculateTopInsightCards(closed);
@@ -131,76 +135,74 @@ export default function AiInsightsPage() {
         />
       )}
 
-      {hasSection("executive-summary") && executiveSummary && (
-        <ExecutiveSummary data={executiveSummary} />
-      )}
-      {getSection("executive-summary") && (
-        <InsufficientData section={getSection("executive-summary")!} />
+      {(() => {
+        const locked = sectionLocked("executive-summary");
+        if (locked) return <InsufficientData section={locked} />;
+        if (executiveSummary) return <ExecutiveSummary data={executiveSummary} />;
+        return null;
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("top-insights");
+        if (locked) return <InsufficientData section={locked} />;
+        if (topInsights.bestInstrument || topInsights.bestSession) return <TopInsights {...topInsights} />;
+        return null;
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("pattern-detection");
+        if (locked) return <InsufficientData section={locked} />;
+        return <PatternDetection {...patterns} />;
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("opportunity-analysis");
+        if (locked) return <InsufficientData section={locked} />;
+        if (opportunity) return <OpportunityAnalysis data={opportunity} />;
+        return null;
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("strengths");
+        if (locked) return <InsufficientData section={locked} />;
+        if (strengths.length === 0) return null;
+        return (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <StrengthsAnalysis items={strengths} />
+            {improvements.length > 0 && <ImprovementAreas areas={improvements} />}
+          </div>
+        );
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("money-leaks");
+        if (locked) return <InsufficientData section={locked} />;
+        if (moneyLeaks && moneyLeaks.leaks.length > 0) return <MoneyLeakReport leaks={moneyLeaks.leaks} totalAvoidable={moneyLeaks.totalAvoidable} />;
+        return null;
+      })()}
+
+      {(() => {
+        const locked = sectionLocked("edge-discovery");
+        if (locked) return <InsufficientData section={locked} />;
+        if (edge) return <EdgeDiscovery data={edge} />;
+        return null;
+      })()}
+
+      {sectionReady("weekly-review") && (
+        <WeeklyReview data={weeklyReview} />
       )}
 
-      {hasSection("top-insights") && (topInsights.bestInstrument || topInsights.bestSession) && (
-        <TopInsights {...topInsights} />
-      )}
-      {getSection("top-insights") && (
-        <InsufficientData section={getSection("top-insights")!} />
-      )}
+      {(() => {
+        const locked = sectionLocked("projections");
+        if (locked) return <InsufficientData section={locked} />;
+        return <ProjectedPerformance data={projections} />;
+      })()}
 
-      {hasSection("pattern-detection") && (
-        <PatternDetection {...patterns} />
-      )}
-      {getSection("pattern-detection") && (
-        <InsufficientData section={getSection("pattern-detection")!} />
-      )}
-
-      {hasSection("opportunity-analysis") && opportunity && (
-        <OpportunityAnalysis data={opportunity} />
-      )}
-
-      {hasSection("strengths") && strengths.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <StrengthsAnalysis items={strengths} />
-          {improvements.length > 0 && <ImprovementAreas areas={improvements} />}
-        </div>
-      )}
-      {getSection("strengths") && (
-        <InsufficientData section={getSection("strengths")!} />
-      )}
-
-      {hasSection("money-leaks") && moneyLeaks && moneyLeaks.leaks.length > 0 && (
-        <MoneyLeakReport leaks={moneyLeaks.leaks} totalAvoidable={moneyLeaks.totalAvoidable} />
-      )}
-      {getSection("money-leaks") && (
-        <InsufficientData section={getSection("money-leaks")!} />
-      )}
-
-      {hasSection("edge-discovery") && edge && (
-        <EdgeDiscovery data={edge} />
-      )}
-      {getSection("edge-discovery") && (
-        <InsufficientData section={getSection("edge-discovery")!} />
-      )}
-
-      {hasSection("weekly-review") && (
-        <WeeklyReview
-          data={weeklyReview}
-          loading={weeklyLoading}
-          onGenerate={() => setWeeklyLoading(!weeklyLoading)}
-        />
-      )}
-
-      {hasSection("projections") && (
-        <ProjectedPerformance data={projections} />
-      )}
-      {getSection("projections") && (
-        <InsufficientData section={getSection("projections")!} />
-      )}
-
-      {hasSection("scorecard") && (
-        <TraderScorecard data={scorecard} />
-      )}
-      {getSection("scorecard") && (
-        <InsufficientData section={getSection("scorecard")!} />
-      )}
+      {(() => {
+        const locked = sectionLocked("scorecard");
+        if (locked) return <InsufficientData section={locked} />;
+        return <TraderScorecard data={scorecard} />;
+      })()}
     </div>
   );
 }

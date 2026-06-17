@@ -66,7 +66,13 @@ export interface DashboardStats {
   averageWin: number;
   averageLoss: number;
   bestDay: number;
+  bestDayDate: string | null;
+  bestDayTrades: number;
   worstDay: number;
+  worstDayDate: string | null;
+  worstDayTrades: number;
+  biggestLoss: number;
+  biggestLossDate: string | null;
   totalWinningTrades: number;
   totalLosingTrades: number;
 }

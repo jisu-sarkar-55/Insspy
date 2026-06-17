@@ -48,7 +48,13 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
       averageWin: 0,
       averageLoss: 0,
       bestDay: 0,
+      bestDayDate: null,
+      bestDayTrades: 0,
       worstDay: 0,
+      worstDayDate: null,
+      worstDayTrades: 0,
+      biggestLoss: 0,
+      biggestLossDate: null,
       totalWinningTrades: 0,
       totalLosingTrades: 0,
     };
@@ -67,8 +73,16 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
     losingTrades.length > 0 ? grossLoss / losingTrades.length : 0;
 
   const dailyPnl = calculateDailyPnl(closedTrades);
-  const bestDay = dailyPnl.reduce((max, d) => Math.max(max, d.pnl), 0);
-  const worstDay = dailyPnl.reduce((min, d) => Math.min(min, d.pnl), 0);
+  const bestDay = dailyPnl.length > 0 ? Math.max(...dailyPnl.map((d) => d.pnl)) : 0;
+  const worstDay = dailyPnl.length > 0 ? Math.min(...dailyPnl.map((d) => d.pnl)) : 0;
+  const bestDayEntry = dailyPnl.find((d) => d.pnl === bestDay) || null;
+  const worstDayEntry = dailyPnl.find((d) => d.pnl === worstDay) || null;
+
+  const worstTrade = losingTrades.reduce((worst, t) =>
+    (t.net_pnl ?? 0) < (worst.net_pnl ?? 0) ? t : worst,
+    losingTrades[0]);
+  const biggestLoss = worstTrade?.net_pnl ?? 0;
+  const biggestLossDate = worstTrade?.entry_time?.split("T")[0] ?? null;
 
   return {
     totalTrades: closedTrades.length,
@@ -78,7 +92,13 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
     averageWin,
     averageLoss,
     bestDay,
+    bestDayDate: bestDayEntry?.date || null,
+    bestDayTrades: bestDayEntry?.trades || 0,
     worstDay,
+    worstDayDate: worstDayEntry?.date || null,
+    worstDayTrades: worstDayEntry?.trades || 0,
+    biggestLoss,
+    biggestLossDate,
     totalWinningTrades: winningTrades.length,
     totalLosingTrades: losingTrades.length,
   };
