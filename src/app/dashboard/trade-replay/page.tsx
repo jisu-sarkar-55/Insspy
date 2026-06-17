@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { TradeReplay } from "@/components/analytics/trade-replay";
 import { AlertCircle, Play } from "lucide-react";
 import type { Trade } from "@/types";
+import { PremiumGate } from "@/components/premium";
 
 function SkeletonCard() {
   return (
@@ -63,63 +64,70 @@ export default function TradeReplayPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 animate-fade-in">
-        <div>
-          <div className="h-7 w-28 rounded mb-1" style={{ background: "var(--surface-raised)" }} />
-          <div className="h-4 w-56 rounded" style={{ background: "var(--surface-raised)" }} />
-        </div>
-        <div
-          className="rounded-lg border overflow-hidden"
-          style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
-        >
-          <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ borderBottomWidth: 1, borderColor: "var(--border-subtle)" }}>
-                <SkeletonCard />
-              </div>
-            ))}
+      <PremiumGate>
+        <div className="space-y-4 animate-fade-in">
+          <div>
+            <div className="h-7 w-28 rounded mb-1" style={{ background: "var(--surface-raised)" }} />
+            <div className="h-4 w-56 rounded" style={{ background: "var(--surface-raised)" }} />
+          </div>
+          <div
+            className="rounded-lg border overflow-hidden"
+            style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
+          >
+            <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ borderBottomWidth: 1, borderColor: "var(--border-subtle)" }}>
+                  <SkeletonCard />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <div className="py-12 text-center animate-fade-in">
-        <div className="flex flex-col items-center gap-3">
-          <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
-          <h2
-            className="text-xl font-bold font-[var(--font-playfair)]"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Failed to Load Data
-          </h2>
-          <p className="text-sm max-w-md" style={{ color: "var(--text-muted)" }}>
-            {fetchError}
-          </p>
+      <PremiumGate>
+        <div className="py-12 text-center animate-fade-in">
+          <div className="flex flex-col items-center gap-3">
+            <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
+            <h2
+              className="text-xl font-bold font-[var(--font-playfair)]"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Failed to Load Data
+            </h2>
+            <p className="text-sm max-w-md" style={{ color: "var(--text-muted)" }}>
+              {fetchError}
+            </p>
+          </div>
         </div>
-      </div>
+      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <div className="py-12 text-center animate-fade-in">
-        <h2
-          className="mb-2 text-2xl font-bold font-[var(--font-playfair)]"
-          style={{ color: "var(--text-primary)" }}
-        >
-          No Trade Data
-        </h2>
-        <p style={{ color: "var(--text-muted)" }}>
-          Add or import trades to replay them.
-        </p>
-      </div>
+      <PremiumGate>
+        <div className="py-12 text-center animate-fade-in">
+          <h2
+            className="mb-2 text-2xl font-bold font-[var(--font-playfair)]"
+            style={{ color: "var(--text-primary)" }}
+          >
+            No Trade Data
+          </h2>
+          <p style={{ color: "var(--text-muted)" }}>
+            Add or import trades to replay them.
+          </p>
+        </div>
+      </PremiumGate>
     );
   }
 
   return (
+    <PremiumGate>
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
@@ -182,5 +190,6 @@ export default function TradeReplayPage() {
         </div>
       </div>
     </div>
+    </PremiumGate>
   );
 }

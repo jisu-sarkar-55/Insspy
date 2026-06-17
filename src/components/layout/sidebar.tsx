@@ -23,13 +23,20 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-const navGroups = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  premium?: boolean;
+}
+
+const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-      { name: "AI Coaching", href: "/dashboard/ai-insights", icon: Brain },
+      { name: "AI Coaching", href: "/dashboard/ai-insights", icon: Brain, premium: true },
     ],
   },
   {
@@ -43,7 +50,7 @@ const navGroups = [
   {
     label: "Strategy",
     items: [
-      { name: "Setup Playbook", href: "/dashboard/setup-playbook", icon: Library },
+      { name: "Setup Playbook", href: "/dashboard/setup-playbook", icon: Library, premium: true },
     ],
   },
   {
@@ -51,15 +58,15 @@ const navGroups = [
     items: [
       { name: "Goals", href: "/dashboard/goals", icon: Target },
       { name: "Challenges", href: "/dashboard/challenges", icon: Trophy },
-      { name: "Scorecard", href: "/dashboard/scorecard", icon: ShieldCheck },
+      { name: "Scorecard", href: "/dashboard/scorecard", icon: ShieldCheck, premium: true },
     ],
   },
   {
     label: "Elite Features",
     items: [
-      { name: "Trade Replay", href: "/dashboard/trade-replay", icon: Play },
-      { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Users },
-      { name: "Reports", href: "/dashboard/reports", icon: FileText },
+      { name: "Trade Replay", href: "/dashboard/trade-replay", icon: Play, premium: true },
+      { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Users, premium: true },
+      { name: "Reports", href: "/dashboard/reports", icon: FileText, premium: true },
     ],
   },
   {
@@ -83,7 +90,7 @@ export function Sidebar() {
 
   return (
     <div
-      className="hidden md:flex fixed top-0 left-0 bottom-0 w-[220px] flex-col overflow-y-auto border-r hide-scrollbar z-40"
+      className="hidden md:flex fixed top-0 left-0 bottom-0 w-[180px] flex-col overflow-y-auto border-r hide-scrollbar z-40"
       style={{
         background: "var(--surface-sidebar)",
         borderColor: "var(--border-subtle)",
@@ -118,6 +125,7 @@ export function Sidebar() {
                   icon={item.icon}
                   label={item.name}
                   isActive={isActive}
+                  premium={item.premium}
                 />
               );
             })}

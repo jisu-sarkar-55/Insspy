@@ -32,6 +32,7 @@ import { ProjectedPerformance } from "@/components/ai-insights/projected-perform
 import { TraderScorecard } from "@/components/ai-insights/trader-scorecard";
 import { LosingTradeExplainer } from "@/components/ai-insights/losing-trade-explainer";
 import { InsufficientData } from "@/components/ai-insights/insufficient-data";
+import { PremiumGate } from "@/components/premium";
 
 function formatDateRange(trades: Trade[]): string {
   if (trades.length === 0) return "";
@@ -126,6 +127,7 @@ export default function AiInsightsPage() {
 
   if (loading) {
     return (
+      <PremiumGate>
       <div className="space-y-4">
         <div className="skeleton-section" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -139,11 +141,13 @@ export default function AiInsightsPage() {
         </div>
         <div className="skeleton-section" />
       </div>
+      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
+      <PremiumGate>
       <div className="py-12 text-center">
         <h2 className="mb-2 text-2xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
           No Trade Data
@@ -152,10 +156,12 @@ export default function AiInsightsPage() {
           Add or import trades to unlock your AI coaching insights.
         </p>
       </div>
+      </PremiumGate>
     );
   }
 
   return (
+    <PremiumGate>
     <div className="space-y-6">
       <CoachHeader tradesAnalyzed={closed.length} dateRange={dateRange} />
 
@@ -256,5 +262,6 @@ export default function AiInsightsPage() {
         })()}
       </div>
     </div>
+    </PremiumGate>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, type ComponentType } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FileText, Calendar, Building2, Download, AlertCircle } from "lucide-react";
 import type { Trade } from "@/types";
+import { PremiumGate } from "@/components/premium";
 
 interface ReportType {
   id: string;
@@ -147,51 +148,58 @@ export default function ReportsPage() {
 
   if (loading || pdfEngineLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        <div>
-          <div className="h-7 w-24 rounded mb-2" style={{ background: "var(--surface-raised)" }} />
-          <div className="h-4 w-48 rounded" style={{ background: "var(--surface-raised)" }} />
+      <PremiumGate>
+        <div className="space-y-6 animate-fade-in">
+          <div>
+            <div className="h-7 w-24 rounded mb-2" style={{ background: "var(--surface-raised)" }} />
+            <div className="h-4 w-48 rounded" style={{ background: "var(--surface-raised)" }} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+          <PreviewSkeleton />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
-        <PreviewSkeleton />
-      </div>
+      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <div className="py-12 text-center animate-fade-in">
-        <div className="flex flex-col items-center gap-3">
-          <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
-          <h2 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-            Failed to Load Data
-          </h2>
-          <p className="text-sm max-w-md" style={{ color: "var(--text-muted)" }}>
-            {fetchError}
-          </p>
+      <PremiumGate>
+        <div className="py-12 text-center animate-fade-in">
+          <div className="flex flex-col items-center gap-3">
+            <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
+            <h2 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
+              Failed to Load Data
+            </h2>
+            <p className="text-sm max-w-md" style={{ color: "var(--text-muted)" }}>
+              {fetchError}
+            </p>
+          </div>
         </div>
-      </div>
+      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <div className="py-12 text-center animate-fade-in">
-        <h2 className="mb-2 text-2xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-          No Trade Data
-        </h2>
-        <p style={{ color: "var(--text-muted)" }}>
-          Add or import trades to generate reports.
-        </p>
-      </div>
+      <PremiumGate>
+        <div className="py-12 text-center animate-fade-in">
+          <h2 className="mb-2 text-2xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
+            No Trade Data
+          </h2>
+          <p style={{ color: "var(--text-muted)" }}>
+            Add or import trades to generate reports.
+          </p>
+        </div>
+      </PremiumGate>
     );
   }
 
   return (
+    <PremiumGate>
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
@@ -404,5 +412,6 @@ export default function ReportsPage() {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 }

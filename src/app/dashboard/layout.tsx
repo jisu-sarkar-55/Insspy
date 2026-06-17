@@ -13,7 +13,7 @@ export default function DashboardLayout({
     <div style={{ background: "var(--surface-page)" }}>
       <RouteProgress />
       <Sidebar />
-      <main className="min-h-screen md:pl-[220px] pb-16 md:pb-0">
+      <main className="min-h-screen md:pl-[180px] pb-16 md:pb-0">
         <div className="p-4 md:p-5">{children}</div>
       </main>
       <MobileNav />

@@ -9,6 +9,7 @@ import { WeaknessPanel } from "@/components/scorecard/weakness-panel";
 import Link from "next/link";
 import { Shield, Lock, ArrowUpRight } from "lucide-react";
 import type { Trade } from "@/types";
+import { PremiumGate } from "@/components/premium";
 
 function SkeletonLine({ width }: { width: string }) {
   return <div className={`h-3 rounded ${width}`} style={{ background: "var(--border-subtle)" }} />;
@@ -71,97 +72,107 @@ export default function ScorecardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="space-y-1">
-          <div className="h-7 w-36 rounded" style={{ background: "var(--surface-raised)" }} />
-          <div className="h-4 w-52 rounded" style={{ background: "var(--surface-raised)" }} />
-        </div>
-        <div className="rounded-xl border p-6" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
-          <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
-            <SkeletonRing />
-            <div className="flex-1 w-full">
-              <SkeletonLine width="w-32" />
-              <div className="mt-4">
-                <SkeletonBars />
+      <PremiumGate>
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <div className="h-7 w-36 rounded" style={{ background: "var(--surface-raised)" }} />
+            <div className="h-4 w-52 rounded" style={{ background: "var(--surface-raised)" }} />
+          </div>
+          <div className="rounded-xl border p-6" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
+            <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
+              <SkeletonRing />
+              <div className="flex-1 w-full">
+                <SkeletonLine width="w-32" />
+                <div className="mt-4">
+                  <SkeletonBars />
+                </div>
               </div>
             </div>
           </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="h-32 rounded-xl border" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }} />
+            <div className="h-32 rounded-xl border" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }} />
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="h-32 rounded-xl border" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }} />
-          <div className="h-32 rounded-xl border" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }} />
-        </div>
-      </div>
+      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div style={{ color: "var(--color-loss)" }}>{fetchError}</div>
-      </div>
+      <PremiumGate>
+        <div className="flex items-center justify-center h-64">
+          <div style={{ color: "var(--color-loss)" }}>{fetchError}</div>
+        </div>
+      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <div className="py-12 text-center">
-        <div className="text-4xl mb-3">📊</div>
-        <h2 className="mb-2 text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-          No Trade Data
-        </h2>
-        <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
-          Add or import trades to unlock your scorecard.
-        </p>
-      </div>
+      <PremiumGate>
+        <div className="py-12 text-center">
+          <div className="text-4xl mb-3">📊</div>
+          <h2 className="mb-2 text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
+            No Trade Data
+          </h2>
+          <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+            Add or import trades to unlock your scorecard.
+          </p>
+        </div>
+      </PremiumGate>
     );
   }
 
   if (closed.length < 10) {
     return (
-      <div className="space-y-5">
-        <div>
-          <h1 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-            Trader Scorecard
-          </h1>
-          <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-            Premium performance analysis
-          </p>
-        </div>
-        <div className="rounded-xl border p-8 text-center" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
-          <div className="flex justify-center mb-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(251, 191, 36, 0.1)" }}>
-              <Lock className="h-7 w-7" style={{ color: "var(--color-warning)" }} />
+      <PremiumGate>
+        <div className="space-y-5">
+          <div>
+            <h1 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
+              Trader Scorecard
+            </h1>
+            <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+              Premium performance analysis
+            </p>
+          </div>
+          <div className="rounded-xl border p-8 text-center" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
+            <div className="flex justify-center mb-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(251, 191, 36, 0.1)" }}>
+                <Lock className="h-7 w-7" style={{ color: "var(--color-warning)" }} />
+              </div>
+            </div>
+            <div className="text-[14px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+              Scorecard Locked
+            </div>
+            <div className="text-[12px] mb-4" style={{ color: "var(--text-muted)" }}>
+              Add at least 10 closed trades to unlock your premium scorecard.
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5" style={{ background: "var(--surface-raised)" }}>
+              <span className="text-[11px] font-semibold font-[var(--font-jetbrains)]" style={{ color: "var(--color-warning)" }}>
+                {closed.length}
+              </span>
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>/ 10 trades</span>
+              <div className="h-1.5 w-16 rounded-full" style={{ background: "var(--border-subtle)" }}>
+                <div
+                  className="h-1.5 rounded-full"
+                  style={{ width: `${(closed.length / 10) * 100}%`, background: "var(--color-warning)" }}
+                />
+              </div>
             </div>
           </div>
-          <div className="text-[14px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-            Scorecard Locked
-          </div>
-          <div className="text-[12px] mb-4" style={{ color: "var(--text-muted)" }}>
-            Add at least 10 closed trades to unlock your premium scorecard.
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5" style={{ background: "var(--surface-raised)" }}>
-            <span className="text-[11px] font-semibold font-[var(--font-jetbrains)]" style={{ color: "var(--color-warning)" }}>
-              {closed.length}
-            </span>
-            <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>/ 10 trades</span>
-            <div className="h-1.5 w-16 rounded-full" style={{ background: "var(--border-subtle)" }}>
-              <div
-                className="h-1.5 rounded-full"
-                style={{ width: `${(closed.length / 10) * 100}%`, background: "var(--color-warning)" }}
-              />
-            </div>
-          </div>
         </div>
-      </div>
+      </PremiumGate>
     );
   }
 
   if (!scorecard) {
     return (
-      <div className="py-12 text-center" style={{ color: "var(--text-muted)" }}>
-        Unable to compute scorecard.
-      </div>
+      <PremiumGate>
+        <div className="py-12 text-center" style={{ color: "var(--text-muted)" }}>
+          Unable to compute scorecard.
+        </div>
+      </PremiumGate>
     );
   }
 
@@ -214,6 +225,7 @@ export default function ScorecardPage() {
   }));
 
   return (
+    <PremiumGate>
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -355,5 +367,6 @@ export default function ScorecardPage() {
         </div>
       </div>
     </div>
+    </PremiumGate>
   );
 }

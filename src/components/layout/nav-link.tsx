@@ -13,9 +13,17 @@ interface NavLinkProps {
   label: string;
   isActive: boolean;
   onClick?: () => void;
+  premium?: boolean;
 }
 
-export function NavLink({ href, icon: Icon, label, isActive, onClick }: NavLinkProps) {
+export function NavLink({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+  onClick,
+  premium,
+}: NavLinkProps) {
   const pathname = usePathname();
   const [navigating, setNavigating] = useState(false);
 
@@ -43,19 +51,43 @@ export function NavLink({ href, icon: Icon, label, isActive, onClick }: NavLinkP
         "mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[12px] transition-all duration-150",
       )}
       style={{
-        background: isActive ? "rgba(251, 191, 36, 0.08)" : navigating ? "rgba(251, 191, 36, 0.05)" : "transparent",
-        color: isActive ? "var(--primary)" : navigating ? "var(--primary)" : "var(--text-secondary)",
-        borderLeft: isActive ? "2px solid var(--primary)" : "2px solid transparent",
+        background: isActive
+          ? "rgba(251, 191, 36, 0.08)"
+          : navigating
+            ? "rgba(251, 191, 36, 0.05)"
+            : "transparent",
+        color: isActive
+          ? "var(--primary)"
+          : navigating
+            ? "var(--primary)"
+            : "var(--text-secondary)",
+        borderLeft: isActive
+          ? "2px solid var(--primary)"
+          : "2px solid transparent",
         marginLeft: "-2px",
         paddingLeft: "10px",
       }}
     >
       {navigating ? (
-        <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--primary)" }} />
+        <Loader2
+          className="h-4 w-4 animate-spin"
+          style={{ color: "var(--primary)" }}
+        />
       ) : (
-        <Icon className="h-4 w-4" style={{ color: isActive ? "var(--primary)" : "var(--text-muted)" }} />
+        <Icon
+          className="h-4 w-4 shrink-0"
+          style={{ color: isActive ? "var(--primary)" : "var(--text-muted)" }}
+        />
       )}
-      {label}
+      <span className="flex-1">{label}</span>
+      {premium && (
+        <span
+          className="premium-badge leading-none"
+          style={{ fontSize: "10px", padding: "1px 6px" }}
+        >
+          ⚡
+        </span>
+      )}
     </Link>
   );
 }

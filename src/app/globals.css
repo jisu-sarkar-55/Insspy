@@ -544,20 +544,22 @@ input:focus, textarea:focus, select:focus {
   pointer-events: none;
 }
 
-/* ── Premium Badge ── */
+/* ── Premium Badge (Vintage Gold) ── */
 .premium-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 7px;
+  padding: 2px 8px 2px 7px;
   border-radius: 999px;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, rgba(192, 132, 252, 0.15), rgba(251, 191, 36, 0.1));
-  color: var(--color-ai);
-  border: 1px solid rgba(192, 132, 252, 0.2);
+  font-family: var(--font-playfair);
+  background: linear-gradient(135deg, rgba(180, 140, 60, 0.15), rgba(220, 180, 80, 0.08));
+  color: #b8860b;
+  border: 1px solid rgba(180, 140, 60, 0.3);
+  box-shadow: 0 0 6px rgba(180, 140, 60, 0.08);
 }
 
 /* ── Section Loading Skeleton ── */
