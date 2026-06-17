@@ -366,7 +366,27 @@ export interface TraderScorecard {
   patience: number;
   execution: number;
   consistency: number;
+  psychology: number;
+  discipline: number;
   overall: number;
+  overallGrade: string;
+  weaknesses: { pillar: string; label: string; score: number; tip: string }[];
+  trends: {
+    riskManagement: "up" | "down" | "stable";
+    patience: "up" | "down" | "stable";
+    execution: "up" | "down" | "stable";
+    consistency: "up" | "down" | "stable";
+    psychology: "up" | "down" | "stable";
+    discipline: "up" | "down" | "stable";
+  };
+  pillarDetails: {
+    riskManagement: string;
+    patience: string;
+    execution: string;
+    consistency: string;
+    psychology: string;
+    discipline: string;
+  };
 }
 
 export interface LosingTradeAnalysis {

@@ -1546,32 +1546,249 @@ export function calculateProjectedPerformance(trades: Trade[]): ProjectedPerform
   };
 }
 
+function getGrade(score: number): string {
+  if (score >= 90) return "Elite Trader";
+  if (score >= 75) return "Pro Trader";
+  if (score >= 60) return "Advanced Trader";
+  if (score >= 40) return "Apprentice Trader";
+  return "Novice Trader";
+}
+
+type TrendDir = "up" | "down" | "stable";
+
+function trendDir(a: number, b: number): TrendDir {
+  if (Math.abs(a - b) < 5) return "stable";
+  return a > b ? "up" : "down";
+}
+
 export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | null {
   const closed = trades.filter((t) => t.net_pnl !== null);
   if (closed.length < 10) return null;
 
   const riskStats = calculateRiskStats(closed);
   const flags = calculateBehaviourFlags(closed);
+  const avgRR = calculateAverageRR(closed);
 
-  const riskManagement = Math.round(
-    Math.min(100, riskStats.stopLossPct * 0.4 + riskStats.riskConsistency * 0.4 + 20)
-  );
+  const winningTrades = closed.filter((t) => t.net_pnl! > 0);
+  const losingTrades = closed.filter((t) => t.net_pnl! < 0);
+  const winRate = (winningTrades.length / closed.length) * 100;
+  const planAdherence = closed.filter((t) => t.followed_plan === true).length / closed.length;
 
   const avgTradesPerDay = closed.length / Math.max(1,
     (new Date(closed[closed.length - 1].entry_time).getTime() -
       new Date(closed[0].entry_time).getTime()) / (1000 * 60 * 60 * 24)
   );
-  const patience = Math.round(Math.min(100, Math.max(0, 100 - (avgTradesPerDay - 3) * 12)));
-
-  const avgRR = calculateAverageRR(closed);
-  const execution = Math.round(Math.min(100, avgRR * 30 + 25));
 
   const planFlag = flags.find((f) => f.id === "plan");
-  const consistency = planFlag?.status === "ok" ? 85 : planFlag?.status === "warn" ? 60 : 40;
+  const revengeFlag = flags.find((f) => f.id === "revenge");
+  const overtradingFlag = flags.find((f) => f.id === "overtrading");
 
-  const overall = Math.round((riskManagement + patience + execution + consistency) / 4);
+  // ── Risk Management ──
+  const slUsageScore = riskStats.stopLossPct; // 0-100
+  const riskConsistencyScore = riskStats.riskConsistency; // 0-100
+  const riskStdDev = riskStats.largestRiskPct > 0
+    ? Math.sqrt(Math.pow(riskStats.largestRiskPct - riskStats.avgRiskPct, 2))
+    : 0;
+  const riskVarianceScore = Math.max(0, 100 - riskStdDev * 15);
+  let appropriateRiskScore = 100;
+  if (riskStats.avgRiskPct < 0.5) appropriateRiskScore = Math.round((riskStats.avgRiskPct / 0.5) * 100);
+  else if (riskStats.avgRiskPct > 2) appropriateRiskScore = Math.max(0, 100 - (riskStats.avgRiskPct - 2) * 40);
+  const riskManagement = Math.round(
+    slUsageScore * 0.25 + riskConsistencyScore * 0.25 + riskVarianceScore * 0.25 + appropriateRiskScore * 0.25
+  );
 
-  return { riskManagement, patience, execution, consistency, overall };
+  // ── Execution ──
+  const rrScore = Math.min(avgRR / 2.0, 1) * 50;
+  const wrScore = (winRate / 100) * 30;
+  const planScore = planAdherence * 20;
+  const execution = Math.round(Math.min(100, rrScore + wrScore + planScore));
+
+  // ── Consistency ──
+  const planFlagScore = planFlag?.status === "ok" ? 40 : planFlag?.status === "warn" ? 20 : 10;
+  const lotConScore = riskStats.riskConsistency * 0.3;
+  const dailyTradeVariance = (() => {
+    const dailyCounts = new Map<string, number>();
+    closed.forEach((t) => {
+      const d = t.entry_time.split("T")[0];
+      dailyCounts.set(d, (dailyCounts.get(d) || 0) + 1);
+    });
+    const counts = Array.from(dailyCounts.values());
+    if (counts.length < 2) return 30;
+    const avg = counts.reduce((s, c) => s + c, 0) / counts.length;
+    const variance = counts.reduce((s, c) => s + Math.pow(c - avg, 2), 0) / counts.length;
+    const std = Math.sqrt(variance);
+    return Math.max(0, 30 - std * 5);
+  })();
+  const consistency = Math.round(Math.min(100, planFlagScore + lotConScore + dailyTradeVariance));
+
+  // ── Patience ──
+  const tpdScore = (() => {
+    if (avgTradesPerDay <= 2) return 95;
+    if (avgTradesPerDay <= 4) return 85;
+    if (avgTradesPerDay <= 6) return 65;
+    if (avgTradesPerDay <= 10) return 40;
+    return 20;
+  })();
+  const sessionFocusPct = (() => {
+    const focused = closed.filter((t) => {
+      const h = new Date(t.entry_time).getUTCHours();
+      const session = h >= 8 && h < 13 ? "London" : h >= 13 && h < 21 ? "NY" : "";
+      return session !== "";
+    }).length;
+    return (focused / closed.length) * 100;
+  })();
+  const sessionScore = (sessionFocusPct / 100) * 20;
+  const patience = Math.round(Math.min(100, tpdScore + sessionScore));
+
+  // ── Psychology ──
+  const tradesWithEmotions = closed.filter((t) =>
+    t.fear_level !== null || t.greed_level !== null || t.confidence_before !== null
+  );
+  const emotionTagPct = tradesWithEmotions.length / closed.length;
+  const taggingScore = emotionTagPct * 35;
+
+  const calmTrades = closed.filter((t) =>
+    (t.fear_level ?? 5) < 5 && (t.greed_level ?? 5) < 5 && (t.confidence_before ?? 5) >= 5
+  );
+  const emotionalTrades = closed.filter((t) =>
+    (t.fear_level ?? 5) >= 6 || (t.greed_level ?? 5) >= 7
+  );
+  const calmWR = calmTrades.length > 0
+    ? calmTrades.filter((t) => t.net_pnl! > 0).length / calmTrades.length
+    : 0.5;
+  const emotionalWR = emotionalTrades.length > 0
+    ? emotionalTrades.filter((t) => t.net_pnl! > 0).length / emotionalTrades.length
+    : 0.5;
+
+  let calmScore = 20;
+  if (tradesWithEmotions.length >= 3) {
+    if (calmWR > emotionalWR + 0.1) calmScore = 35;
+    else if (calmWR > emotionalWR) calmScore = 30;
+    else if (Math.abs(calmWR - emotionalWR) < 0.05) calmScore = 20;
+    else calmScore = 10;
+  }
+
+  const revengeScore = revengeFlag?.status === "ok" ? 30 : revengeFlag?.status === "bad" ? 0 : 15;
+  const psychology = Math.round(Math.min(100, taggingScore + calmScore + revengeScore));
+
+  // ── Discipline ──
+  const discPlanScore = planAdherence * 40;
+  const mistakesPerTrade = (() => {
+    const withMistakes = closed.filter((t) => t.mistakes && t.mistakes.length > 0);
+    if (withMistakes.length === 0) return -1;
+    const totalMistakes = closed.reduce((s, t) => s + (t.mistakes?.length || 0), 0);
+    return totalMistakes / closed.length;
+  })();
+  let discMistakeScore = 30;
+  if (mistakesPerTrade < 0) discMistakeScore = 30;
+  else if (mistakesPerTrade <= 0.2) discMistakeScore = 50;
+  else if (mistakesPerTrade <= 0.5) discMistakeScore = 35;
+  else if (mistakesPerTrade <= 1) discMistakeScore = 20;
+  else discMistakeScore = 5;
+
+  const discOvertradingScore = overtradingFlag?.status === "ok" ? 10 : overtradingFlag?.status === "warn" ? 5 : 0;
+  const discipline = Math.round(Math.min(100, discPlanScore + discMistakeScore + discOvertradingScore));
+
+  // ── Overall ──
+  const overall = Math.round(
+    riskManagement * 0.25 + execution * 0.20 + consistency * 0.15 + patience * 0.15 + psychology * 0.15 + discipline * 0.10
+  );
+
+  // ── Weaknesses ──
+  const pillars: { key: keyof TraderScorecard; label: string; score: number }[] = [
+    { key: "riskManagement", label: "Risk Management", score: riskManagement },
+    { key: "execution", label: "Execution", score: execution },
+    { key: "consistency", label: "Consistency", score: consistency },
+    { key: "patience", label: "Patience", score: patience },
+    { key: "psychology", label: "Psychology", score: psychology },
+    { key: "discipline", label: "Discipline", score: discipline },
+  ];
+  const sorted = [...pillars].sort((a, b) => a.score - b.score);
+  const weaknesses = sorted.slice(0, 2).map((p) => {
+    const tips: Record<string, string> = {
+      riskManagement: "Increase stop loss usage and keep risk between 0.5%–2% per trade for consistent sizing.",
+      execution: "Let winners run to at least 2R. Use trailing stops instead of manual exits to capture more profit.",
+      consistency: "Follow your trading plan on every entry. Reduce emotional deviations and stick to your rules.",
+      patience: "Trade less — focus on higher-quality setups. Limit to 2–4 trades per day during liquid sessions.",
+      psychology: "Tag emotions on every trade. Track whether calm entries outperform emotional ones to build self-awareness.",
+      discipline: "Increase plan adherence to 100%. Review mistakes after each trade to avoid repeating them.",
+    };
+    return {
+      pillar: p.key,
+      label: p.label,
+      score: p.score,
+      tip: tips[p.key] || "Focus on improving this area through consistent practice.",
+    };
+  });
+
+  // ── Trends ──
+  const mid = Math.floor(closed.length / 2);
+  const early = closed.slice(0, mid);
+  const late = closed.slice(mid);
+
+  function roughPillar(pillar: string, batch: Trade[]): number {
+    if (batch.length < 3) return 50;
+    const r = calculateRiskStats(batch);
+    const f = calculateBehaviourFlags(batch);
+    const rr = calculateAverageRR(batch);
+    const wins = batch.filter((t) => t.net_pnl! > 0).length;
+    const wr = (wins / batch.length) * 100;
+    const plan = batch.filter((t) => t.followed_plan === true).length / batch.length;
+    const tpd = batch.length / Math.max(1,
+      (new Date(batch[batch.length - 1].entry_time).getTime() -
+        new Date(batch[0].entry_time).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    switch (pillar) {
+      case "riskManagement": return Math.round(r.stopLossPct * 0.25 + r.riskConsistency * 0.25 + 30);
+      case "patience": return Math.round(Math.min(100, Math.max(0, 100 - (tpd - 3) * 10)));
+      case "execution": return Math.round(Math.min(100, Math.min(rr / 2, 1) * 50 + (wr / 100) * 30 + plan * 20));
+      case "consistency": {
+        const pf = f.find((x) => x.id === "plan");
+        return pf?.status === "ok" ? 80 : pf?.status === "warn" ? 55 : 35;
+      }
+      case "psychology": {
+        const emotionBatch = batch.filter((t) => t.fear_level !== null || t.greed_level !== null || t.confidence_before !== null);
+        const tagRate = emotionBatch.length / batch.length;
+        return Math.round(Math.min(100, tagRate * 40 + (f.find((x) => x.id === "revenge")?.status === "ok" ? 30 : 10)));
+      }
+      case "discipline": return Math.round(Math.min(100, plan * 50 + (f.find((x) => x.id === "overtrading")?.status === "ok" ? 20 : 5)));
+      default: return 50;
+    }
+  }
+
+  const trends = {
+    riskManagement: trendDir(roughPillar("riskManagement", late), roughPillar("riskManagement", early)),
+    patience: trendDir(roughPillar("patience", late), roughPillar("patience", early)),
+    execution: trendDir(roughPillar("execution", late), roughPillar("execution", early)),
+    consistency: trendDir(roughPillar("consistency", late), roughPillar("consistency", early)),
+    psychology: trendDir(roughPillar("psychology", late), roughPillar("psychology", early)),
+    discipline: trendDir(roughPillar("discipline", late), roughPillar("discipline", early)),
+  };
+
+  // ── Pillar Details ──
+  const pillarDetails = {
+    riskManagement: `Stop loss used on ${riskStats.stopLossPct.toFixed(0)}% of trades. Sizing consistency: ${riskStats.riskConsistency.toFixed(0)}%. Average risk: ${riskStats.avgRiskPct.toFixed(2)}% per trade.`,
+    patience: `Average ${avgTradesPerDay.toFixed(1)} trades per day. ${avgTradesPerDay <= 4 ? "Healthy trade frequency." : avgTradesPerDay <= 6 ? "Moderate frequency — consider fewer, higher-quality setups." : "High frequency — overtrading may reduce edge."} ${sessionFocusPct >= 70 ? "Strong session focus." : "Consider focusing on London/NY sessions."}`,
+    execution: `Average R:R of ${avgRR.toFixed(2)}. Win rate: ${winRate.toFixed(1)}%. ${avgRR >= 1.5 ? "Good risk-reward discipline." : avgRR >= 1 ? "Moderate R:R — work on letting winners run." : "Low R:R — consider trailing stops to capture more profit."}`,
+    consistency: `Plan adherence: ${(planAdherence * 100).toFixed(0)}%. ${planFlag?.status === "ok" ? "Strong routine and discipline." : "Work on following your plan every trade."}`,
+    psychology: `Emotions tagged on ${(emotionTagPct * 100).toFixed(0)}% of trades. ${tradesWithEmotions.length >= 3 ? (calmWR > emotionalWR ? "Calm entries outperform emotional ones — maintain composure." : "Emotional entries match calm ones — keep building awareness.") : "Tag emotions on more trades to unlock deeper psychology insights."}`,
+    discipline: `Plan followed on ${(planAdherence * 100).toFixed(0)}% of trades. ${mistakesPerTrade < 0 ? "No mistakes recorded — tracking helps identify patterns." : mistakesPerTrade <= 0.3 ? `${(mistakesPerTrade * 100).toFixed(0)} mistakes per trade — strong self-awareness.` : `Average ${mistakesPerTrade.toFixed(1)} mistakes per trade — review and reduce recurring errors.`}`,
+  };
+
+  return {
+    riskManagement,
+    patience,
+    execution,
+    consistency,
+    psychology,
+    discipline,
+    overall,
+    overallGrade: getGrade(overall),
+    weaknesses,
+    trends,
+    pillarDetails,
+  };
 }
 
 export function getInsufficientDataSections(trades: Trade[]): InsufficientDataSection[] {
