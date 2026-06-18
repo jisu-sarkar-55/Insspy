@@ -82,12 +82,11 @@ export default function ChallengesPage() {
     let cancelled = false;
     async function fetchTrades() {
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("*")
-          .order("entry_time", { ascending: false });
-        if (error) throw error;
-        if (!cancelled && data) setTrades(data);
+        await supabase.auth.getUser();
+        const res = await fetch("/api/trades");
+        if (!res.ok) throw new Error("Failed to load trades");
+        const data = await res.json();
+        if (!cancelled) setTrades(data);
       } catch (err) {
         if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
       } finally {

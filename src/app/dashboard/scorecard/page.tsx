@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { calculateTraderScorecard, calculateRiskStats } from "@/lib/calculations";
 import { ScoreRing } from "@/components/scorecard/score-ring";
 import { ScoreBreakdown } from "@/components/scorecard/score-breakdown";
@@ -44,18 +43,14 @@ export default function ScorecardPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     async function fetchTrades() {
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("*")
-          .order("entry_time", { ascending: false });
-        if (error) throw error;
-        if (!cancelled && data) setTrades(data);
+        const res = await fetch("/api/trades");
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data)) setTrades(data);
       } catch (err) {
         if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
       } finally {
@@ -64,7 +59,7 @@ export default function ScorecardPage() {
     }
     fetchTrades();
     return () => { cancelled = true; };
-  }, [supabase]);
+  }, []);
 
   const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
   const scorecard = useMemo(() => closed.length >= 10 ? calculateTraderScorecard(closed) : null, [closed]);

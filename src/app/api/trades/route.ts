@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -18,35 +19,20 @@ export async function GET(request: NextRequest) {
   const startDate = searchParams.get("start_date");
   const endDate = searchParams.get("end_date");
 
-  let query = supabase
-    .from("trades")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("entry_time", { ascending: false });
-
-  if (accountId) {
-    query = query.eq("account_id", accountId);
+  try {
+    const data = await sql`
+      SELECT * FROM trades
+      WHERE user_id = ${user.id}
+      ${accountId ? sql`AND account_id = ${accountId}` : sql``}
+      ${strategy ? sql`AND strategy = ${strategy}` : sql``}
+      ${startDate ? sql`AND entry_time >= ${startDate}` : sql``}
+      ${endDate ? sql`AND entry_time <= ${endDate}` : sql``}
+      ORDER BY entry_time DESC
+    `;
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  if (strategy) {
-    query = query.eq("strategy", strategy);
-  }
-
-  if (startDate) {
-    query = query.gte("entry_time", startDate);
-  }
-
-  if (endDate) {
-    query = query.lte("entry_time", endDate);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
@@ -65,20 +51,13 @@ export async function POST(request: NextRequest) {
   const netPnl = body.net_pnl ?? ((body.pnl || 0) + (body.commission || 0) + (body.swap || 0));
   const pnl = body.pnl ?? (netPnl - (body.commission || 0) - (body.swap || 0));
 
-  const { data, error } = await supabase
-    .from("trades")
-    .insert({
-      ...body,
-      user_id: user.id,
-      pnl,
-      net_pnl: netPnl,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const data = await sql`
+      INSERT INTO trades ${sql({ ...body, user_id: user.id, pnl, net_pnl: netPnl })}
+      RETURNING *
+    `;
+    return NextResponse.json(data[0], { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json(data, { status: 201 });
 }

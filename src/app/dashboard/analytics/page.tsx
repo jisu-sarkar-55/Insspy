@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { EquityCurveChart } from "@/components/charts/equity-curve";
 import { SessionPerformance } from "@/components/dashboard/session-performance";
 import { SetupPerformance } from "@/components/dashboard/setup-performance";
@@ -79,17 +78,13 @@ export default function AnalyticsPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
     let cancelled = false;
 
     async function fetchTrades() {
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("*")
-          .order("entry_time", { ascending: false });
-        if (error) throw error;
-        if (!cancelled && data) setTrades(data);
+        const res = await fetch("/api/trades");
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data)) setTrades(data);
       } catch (err) {
         if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
       } finally {

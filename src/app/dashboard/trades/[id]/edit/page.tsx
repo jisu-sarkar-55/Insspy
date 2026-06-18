@@ -21,13 +21,10 @@ export default function EditTradePage() {
     async function fetchTrade() {
       setError(null);
       try {
-        const { data, error: fetchError } = await supabase
-          .from("trades")
-          .select("*")
-          .eq("id", params.id)
-          .single();
-
-        if (fetchError) throw fetchError;
+        await supabase.auth.getUser();
+        const res = await fetch(`/api/trades/${params.id}`);
+        if (!res.ok) throw new Error("Failed to load trade");
+        const data = await res.json();
         if (!cancelled) setTrade(data);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load trade");

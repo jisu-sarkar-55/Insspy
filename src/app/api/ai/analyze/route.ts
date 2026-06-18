@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 import { analyzeTrades } from "@/lib/openrouter";
+import type { Trade } from "@/types";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -15,54 +17,45 @@ export async function POST(request: NextRequest) {
 
   const { account_id, strategy, limit = 100 } = await request.json();
 
-  let query = supabase
-    .from("trades")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("entry_time", { ascending: false })
-    .limit(limit);
+  try {
+    const trades = await sql`
+      SELECT * FROM trades
+      WHERE user_id = ${user.id}
+      ${account_id ? sql`AND account_id = ${account_id}` : sql``}
+      ${strategy ? sql`AND strategy = ${strategy}` : sql``}
+      ORDER BY entry_time DESC
+      LIMIT ${limit}
+    `;
 
-  if (account_id) {
-    query = query.eq("account_id", account_id);
+    if (trades.length === 0) {
+      return NextResponse.json(
+        { error: "No trades found for analysis" },
+        { status: 404 }
+      );
+    }
+
+    const analysis = await analyzeTrades(trades as unknown as Trade[]);
+
+    let savedId: string | undefined;
+    try {
+      const tradeIds = trades.map((t: any) => t.id);
+      const insightsJson = JSON.stringify(analysis);
+      const [savedAnalysis] = await sql`
+        INSERT INTO ai_analyses (user_id, trade_ids, analysis_text, insights)
+        VALUES (${user.id}, ${tradeIds}, ${analysis.summary}, ${insightsJson})
+        RETURNING *
+      `;
+      savedId = savedAnalysis?.id;
+    } catch (saveError) {
+      console.error("Error saving analysis:", saveError);
+    }
+
+    return NextResponse.json({
+      analysis,
+      trades_analyzed: trades.length,
+      saved_id: savedId,
+    });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  if (strategy) {
-    query = query.eq("strategy", strategy);
-  }
-
-  const { data: trades, error } = await query;
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!trades || trades.length === 0) {
-    return NextResponse.json(
-      { error: "No trades found for analysis" },
-      { status: 404 }
-    );
-  }
-
-  const analysis = await analyzeTrades(trades);
-
-  const { data: savedAnalysis, error: saveError } = await supabase
-    .from("ai_analyses")
-    .insert({
-      user_id: user.id,
-      trade_ids: trades.map((t) => t.id),
-      analysis_text: analysis.summary,
-      insights: analysis,
-    })
-    .select()
-    .single();
-
-  if (saveError) {
-    console.error("Error saving analysis:", saveError);
-  }
-
-  return NextResponse.json({
-    analysis,
-    trades_analyzed: trades.length,
-    saved_id: savedAnalysis?.id,
-  });
 }

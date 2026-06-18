@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Crown, Sparkles } from "lucide-react";
+import { CheckoutModal } from "./checkout-modal";
+import type { PricingPlan } from "@/types";
 
 interface PremiumGateProps {
   children: ReactNode;
@@ -10,18 +12,50 @@ interface PremiumGateProps {
 
 export function PremiumGate({ children }: PremiumGateProps) {
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [plans, setPlans] = useState<PricingPlan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function check() {
       const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled || !user) {
+        if (!cancelled) setIsPremium(false);
+        return;
+      }
+
+      if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        setIsPremium(true);
+        return;
+      }
+
+      const res = await fetch("/api/user/subscription");
+      const sub = res.ok ? await res.json() : null;
+
       if (cancelled) return;
-      setIsPremium(data?.user?.user_metadata?.tier === "premium");
+      setIsPremium(!!sub);
     }
     check();
     return () => { cancelled = true; };
   }, []);
+
+  const handleUpgrade = async () => {
+    const res = await fetch("/api/pricing");
+    const plansData = res.ok ? await res.json() : null;
+
+    if (plansData && plansData.length > 0) {
+      setPlans(plansData as PricingPlan[]);
+      setSelectedPlan(plansData[0] as PricingPlan);
+      setShowCheckout(true);
+    }
+  };
+
+  const handleCheckoutSuccess = () => {
+    setShowCheckout(false);
+    setIsPremium(true);
+  };
 
   if (isPremium === null) {
     return <>{children}</>;
@@ -78,6 +112,7 @@ export function PremiumGate({ children }: PremiumGateProps) {
               background: "linear-gradient(135deg, var(--color-ai), #7c3aed)",
               color: "white",
             }}
+            onClick={handleUpgrade}
           >
             <Sparkles className="h-4 w-4" />
             Upgrade to Premium
@@ -94,6 +129,15 @@ export function PremiumGate({ children }: PremiumGateProps) {
           </div>
         </div>
       </div>
+
+      {selectedPlan && (
+        <CheckoutModal
+          plan={selectedPlan}
+          open={showCheckout}
+          onClose={() => { setShowCheckout(false); setSelectedPlan(null); }}
+          onSuccess={handleCheckoutSuccess}
+        />
+      )}
     </>
   );
 }

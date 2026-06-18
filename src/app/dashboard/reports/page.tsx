@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo, type ComponentType } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { FileText, Calendar, Building2, Download, AlertCircle } from "lucide-react";
 import type { Trade } from "@/types";
 import { PremiumGate } from "@/components/premium";
@@ -61,7 +60,6 @@ export default function ReportsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [PDFDownloadLink, setPDFDownloadLink] = useState<ComponentType<any> | null>(null);
   const [pdfEngineLoading, setPdfEngineLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
@@ -90,13 +88,11 @@ export default function ReportsPage() {
     let cancelled = false;
     async function fetchTrades() {
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("*")
-          .order("entry_time", { ascending: false });
+        const res = await fetch("/api/trades");
         if (cancelled) return;
-        if (error) throw error;
-        if (data) setTrades(data);
+        const data = await res.json();
+        if (cancelled) return;
+        if (Array.isArray(data)) setTrades(data);
       } catch (err: unknown) {
         if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
       } finally {
@@ -105,7 +101,7 @@ export default function ReportsPage() {
     }
     fetchTrades();
     return () => { cancelled = true; };
-  }, [supabase]);
+  }, []);
 
   const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
 

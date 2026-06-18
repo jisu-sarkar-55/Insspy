@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 
 interface Mt5Trade {
   ticket: string;
@@ -150,20 +151,20 @@ export async function POST(request: NextRequest) {
       mt5_ticket: t.ticket,
     }));
 
-    const { data, error } = await supabase
-      .from("trades")
-      .insert(insertData)
-      .select();
+    try {
+      const data = await sql`
+        INSERT INTO trades ${sql(insertData, 'user_id', 'symbol', 'direction', 'entry_price', 'exit_price', 'lot_size', 'entry_time', 'exit_time', 'pnl', 'commission', 'swap', 'net_pnl', 'source', 'mt5_ticket')}
+        RETURNING *
+      `;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({
+        success: true,
+        imported: data.length,
+        trades: data,
+      });
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
-
-    return NextResponse.json({
-      success: true,
-      imported: data.length,
-      trades: data,
-    });
   } catch (err) {
     console.error("Import error:", err);
     return NextResponse.json(

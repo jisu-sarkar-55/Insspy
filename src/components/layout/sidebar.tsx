@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { max } from "date-fns/fp";
 
 interface NavItem {
   name: string;
@@ -111,6 +111,25 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    async function checkPremium() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        setIsPremium(true);
+        return;
+      }
+
+      const res = await fetch("/api/user/subscription");
+      const sub = res.ok ? await res.json() : null;
+
+      setIsPremium(!!sub);
+    }
+    checkPremium();
+  }, [supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -159,7 +178,7 @@ export function Sidebar() {
                   icon={item.icon}
                   label={item.name}
                   isActive={isActive}
-                  premium={item.premium}
+                  premium={item.premium && !isPremium}
                 />
               );
             })}

@@ -51,13 +51,10 @@ export default function TradesPage() {
   async function fetchTrades() {
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
-        .from("trades")
-        .select("*")
-        .order("entry_time", { ascending: false });
-
-      if (fetchError) throw fetchError;
-      if (data) setTrades(data);
+      const res = await fetch("/api/trades");
+      const data = await res.json();
+      if (Array.isArray(data)) setTrades(data);
+      else throw new Error(data.error || "Failed to load trades");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load trades");
     } finally {
@@ -66,10 +63,13 @@ export default function TradesPage() {
   }
 
   async function handleDelete(id: string) {
-    const { error } = await supabase.from("trades").delete().eq("id", id);
-
-    if (!error) {
-      setTrades(trades.filter((t) => t.id !== id));
+    try {
+      const res = await fetch(`/api/trades/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTrades(trades.filter((t) => t.id !== id));
+      }
+    } catch {
+      // ignore
     }
     setDeleteTarget(null);
   }
@@ -84,10 +84,13 @@ export default function TradesPage() {
       return;
     }
 
-    const { error } = await supabase.from("trades").delete().eq("user_id", user.id);
-
-    if (!error) {
+    try {
+      await Promise.all(trades.map(t =>
+        fetch(`/api/trades/${t.id}`, { method: "DELETE" })
+      ));
       setTrades([]);
+    } catch {
+      // ignore
     }
     setClearing(false);
   }

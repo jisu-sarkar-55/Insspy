@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { TradeReplay } from "@/components/analytics/trade-replay";
 import { AlertCircle, Play } from "lucide-react";
 import type { Trade } from "@/types";
@@ -28,19 +27,15 @@ export default function TradeReplayPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     async function fetchTrades() {
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("*")
-          .order("entry_time", { ascending: false });
+        const res = await fetch("/api/trades");
+        const data = await res.json();
         if (cancelled) return;
-        if (error) throw error;
-        if (data) setTrades(data);
+        if (Array.isArray(data)) setTrades(data);
       } catch (err: unknown) {
         if (!cancelled) {
           setFetchError(err instanceof Error ? err.message : "Failed to load trades");
@@ -51,7 +46,7 @@ export default function TradeReplayPage() {
     }
     fetchTrades();
     return () => { cancelled = true; };
-  }, [supabase]);
+  }, []);
 
   const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
   const totalPnl = closed.reduce((s, t) => s + (t.net_pnl || 0), 0);

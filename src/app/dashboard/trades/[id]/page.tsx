@@ -32,21 +32,16 @@ export default function TradeDetailPage() {
     async function fetchTrade() {
       setError(null);
       try {
-        const { data, error: fetchError } = await supabase
-          .from("trades")
-          .select("*")
-          .eq("id", params.id)
-          .single();
-
-        if (fetchError) throw fetchError;
+        await supabase.auth.getUser();
+        const res = await fetch(`/api/trades/${params.id}`);
+        if (!res.ok) throw new Error("Failed to load trade");
+        const data = await res.json();
         if (!cancelled) {
           setTrade(data);
           if (data?.setup_playbook_id) {
-            const { data: pb } = await supabase
-              .from("setup_playbooks")
-              .select("name")
-              .eq("id", data.setup_playbook_id)
-              .single();
+            const pbRes = await fetch(`/api/setup-playbooks`);
+            const pbs = await pbRes.json();
+            const pb = pbs.find((p: { id: string }) => p.id === data.setup_playbook_id);
             if (!cancelled && pb) setPlaybookName(pb.name);
           }
         }
@@ -62,13 +57,13 @@ export default function TradeDetailPage() {
   }, [params.id]);
 
   async function handleDelete() {
-    const { error } = await supabase
-      .from("trades")
-      .delete()
-      .eq("id", params.id);
-
-    if (!error) {
-      router.push("/dashboard/trades");
+    try {
+      const res = await fetch(`/api/trades/${params.id}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/dashboard/trades");
+      }
+    } catch {
+      // fail silently
     }
   }
 

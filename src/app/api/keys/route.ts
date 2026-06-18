@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 import crypto from "crypto";
 
 function generateApiKey(): string {
@@ -18,17 +19,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
-    .from("api_keys")
-    .select("id, name, key, last_used, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  try {
+    const data = await sql`
+      SELECT id, name, key, last_used, created_at FROM api_keys
+      WHERE user_id = ${user.id}
+      ORDER BY created_at DESC
+    `;
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json(data);
 }
 
 export async function POST() {
@@ -44,21 +45,17 @@ export async function POST() {
 
   const key = generateApiKey();
 
-  const { data, error } = await supabase
-    .from("api_keys")
-    .insert({
-      user_id: user.id,
-      key,
-      name: "MT5 Sync Key",
-    })
-    .select()
-    .single();
+  try {
+    const [data] = await sql`
+      INSERT INTO api_keys (user_id, key, name)
+      VALUES (${user.id}, ${key}, ${"MT5 Sync Key"})
+      RETURNING *
+    `;
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json(data, { status: 201 });
 }
 
 export async function DELETE(request: NextRequest) {
@@ -74,15 +71,13 @@ export async function DELETE(request: NextRequest) {
 
   const { keyId } = await request.json();
 
-  const { error } = await supabase
-    .from("api_keys")
-    .delete()
-    .eq("id", keyId)
-    .eq("user_id", user.id);
+  try {
+    await sql`
+      DELETE FROM api_keys WHERE id = ${keyId} AND user_id = ${user.id}
+    `;
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
 }

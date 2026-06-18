@@ -83,12 +83,12 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
     let cancelled = false;
 
     async function fetchPlaybooks() {
-      const { data } = await supabase
-        .from("setup_playbooks")
-        .select("*")
-        .eq("is_active", true)
-        .order("name");
-      if (!cancelled && data) setPlaybooks(data);
+      const res = await fetch("/api/setup-playbooks");
+      const data = await res.json();
+      if (!cancelled && data) {
+        const active = data.filter((p: SetupPlaybook) => p.is_active);
+        setPlaybooks(active);
+      }
     }
     fetchPlaybooks();
     return () => { cancelled = true; };
@@ -129,18 +129,24 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
       setup_playbook_id: formData.setup_playbook_id || null,
     };
 
-    let result;
+    let result: Response;
     if (isEditing && initialData) {
-      result = await supabase
-        .from("trades")
-        .update(payload)
-        .eq("id", initialData.id);
+      result = await fetch(`/api/trades/${initialData.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     } else {
-      result = await supabase.from("trades").insert(payload);
+      result = await fetch("/api/trades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
 
-    if (result.error) {
-      setError(result.error.message);
+    if (!result.ok) {
+      const errData = await result.json().catch(() => ({ error: "Failed to save trade" }));
+      setError(errData.error || "Failed to save trade");
       setLoading(false);
       return;
     }

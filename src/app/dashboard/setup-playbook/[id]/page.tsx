@@ -29,11 +29,9 @@ export default function SetupPlaybookDetailPage() {
   useEffect(() => {
     let cancelled = false;
     async function fetchPlaybook() {
-      const { data } = await supabase
-        .from("setup_playbooks")
-        .select("*")
-        .eq("id", params.id)
-        .single();
+      await supabase.auth.getUser();
+      const res = await fetch(`/api/setup-playbooks/${params.id}`);
+      const data = await res.json();
 
       if (!cancelled && data) {
         setPlaybook(data);
@@ -43,13 +41,13 @@ export default function SetupPlaybookDetailPage() {
     }
 
     async function fetchStats(playbookId: string) {
-      const { data: trades } = await supabase
-        .from("trades")
-        .select("*")
-        .eq("setup_playbook_id", playbookId)
-        .not("net_pnl", "is", null);
+      const res = await fetch("/api/trades");
+      const allTrades: Trade[] = await res.json();
+      const trades = allTrades.filter(
+        (t) => t.setup_playbook_id === playbookId && t.net_pnl != null
+      );
 
-      if (trades && trades.length > 0) {
+      if (trades.length > 0) {
         const totalTrades = trades.length;
         const winTrades = trades.filter((t: Trade) => (t.net_pnl || 0) > 0);
         const winRate = (winTrades.length / totalTrades) * 100;

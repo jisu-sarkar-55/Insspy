@@ -21,13 +21,11 @@ export default function GoalsPage() {
     async function fetchGoals() {
       setError(null);
       try {
-        const { data, error: fetchError } = await supabase
-          .from("goals")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (fetchError) throw fetchError;
-        if (!cancelled && data) setGoals(data);
+        await supabase.auth.getUser();
+        const res = await fetch("/api/goals");
+        if (!res.ok) throw new Error("Failed to load goals");
+        const data = await res.json();
+        if (!cancelled) setGoals(data);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load goals");
       } finally {

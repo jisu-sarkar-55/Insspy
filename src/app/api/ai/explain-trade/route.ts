@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 import { explainLosingTrade } from "@/lib/openrouter";
 import { analyzeLosingTrade } from "@/lib/calculations";
+import type { Trade } from "@/types";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -20,37 +22,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "trade_id is required" }, { status: 400 });
   }
 
-  const { data: trade, error: tradeError } = await supabase
-    .from("trades")
-    .select("*")
-    .eq("id", trade_id)
-    .eq("user_id", user.id)
-    .single();
+  try {
+    const [trade] = await sql`
+      SELECT * FROM trades WHERE id = ${trade_id} AND user_id = ${user.id}
+    `;
 
-  if (tradeError || !trade) {
-    return NextResponse.json({ error: "Trade not found" }, { status: 404 });
+    if (!trade) {
+      return NextResponse.json({ error: "Trade not found" }, { status: 404 });
+    }
+
+    const allTrades = await sql`
+      SELECT * FROM trades WHERE user_id = ${user.id} ORDER BY entry_time DESC LIMIT 20
+    `;
+
+    const localAnalysis = analyzeLosingTrade(trade as unknown as Trade, allTrades as unknown as Trade[]);
+
+    const aiAnalysis = await explainLosingTrade(trade as unknown as Trade, allTrades as unknown as Trade[], {
+      session: localAnalysis.session,
+      consecutiveLossCount: localAnalysis.consecutiveLossCount,
+      similarEntryWinRate: localAnalysis.similarEntryWinRate,
+      possibleReasons: localAnalysis.possibleReasons,
+    });
+
+    return NextResponse.json({
+      trade,
+      localAnalysis,
+      aiAnalysis,
+    });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
-
-  const { data: recentTrades } = await supabase
-    .from("trades")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("entry_time", { ascending: false })
-    .limit(20);
-
-  const allTrades = recentTrades || [];
-  const localAnalysis = analyzeLosingTrade(trade, allTrades);
-
-  const aiAnalysis = await explainLosingTrade(trade, allTrades, {
-    session: localAnalysis.session,
-    consecutiveLossCount: localAnalysis.consecutiveLossCount,
-    similarEntryWinRate: localAnalysis.similarEntryWinRate,
-    possibleReasons: localAnalysis.possibleReasons,
-  });
-
-  return NextResponse.json({
-    trade,
-    localAnalysis,
-    aiAnalysis,
-  });
 }

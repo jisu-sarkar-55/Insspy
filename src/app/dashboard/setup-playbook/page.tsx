@@ -17,11 +17,9 @@ export default function SetupPlaybookPage() {
   useEffect(() => {
     let cancelled = false;
     async function fetchPlaybooks() {
-      const { data } = await supabase
-        .from("setup_playbooks")
-        .select("*")
-        .order("created_at", { ascending: false });
-
+      await supabase.auth.getUser();
+      const res = await fetch("/api/setup-playbooks");
+      const data = await res.json();
       if (!cancelled && data) setPlaybooks(data);
       if (!cancelled) setLoading(false);
     }

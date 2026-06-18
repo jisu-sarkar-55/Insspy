@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { TraderIQ } from "@/components/dashboard/trader-iq";
 import { AiCoachingPanel } from "@/components/dashboard/ai-coaching-panel";
 import { StatGrid } from "@/components/dashboard/stat-grid";
@@ -53,23 +52,23 @@ function SectionHeader({ title, link }: { title: string; link?: string }) {
 export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchTrades() {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .order("entry_time", { ascending: false });
-
-      if (data) {
-        setTrades(data);
+      try {
+        const res = await fetch("/api/trades");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setTrades(data);
+        }
+      } catch {
+        // Silently fail - leave empty
       }
       setLoading(false);
     }
 
     fetchTrades();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (

@@ -490,3 +490,123 @@ export interface SetupPlaybookFormData {
   screenshot_urls: string[];
   examples?: string;
 }
+
+// ─── SUBSCRIPTION / PAYMENT TYPES ───────────────────────────────
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  timezone: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PricingPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  interval: "month" | "year" | null;
+  trial_days: number;
+  features: Record<string, unknown>;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export type SubscriptionStatus =
+  | "active"
+  | "canceled"
+  | "past_due"
+  | "expired"
+  | "trialing"
+  | "incomplete";
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: SubscriptionStatus;
+  current_period_start: string;
+  current_period_end: string;
+  trial_start: string | null;
+  trial_end: string | null;
+  canceled_at: string | null;
+  coupon_id: string | null;
+  razorpay_subscription_id: string | null;
+  razorpay_order_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  plan?: PricingPlan;
+}
+
+export type PaymentStatus = "succeeded" | "pending" | "failed" | "refunded";
+
+export interface Payment {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  processor: string;
+  razorpay_payment_id: string | null;
+  razorpay_order_id: string | null;
+  razorpay_signature: string | null;
+  coupon_id: string | null;
+  discount_amount: number;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export type CouponDiscountType = "percentage" | "fixed";
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  min_amount: number | null;
+  max_uses: number | null;
+  max_uses_per_user: number;
+  current_uses: number;
+  applies_to_plan_ids: string[] | null;
+  starts_at: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface CouponUsage {
+  id: string;
+  coupon_id: string;
+  user_id: string;
+  used_at: string;
+}
+
+export interface CheckoutResponse {
+  order_id: string;
+  amount: number;
+  currency: string;
+  plan: PricingPlan;
+  coupon: Coupon | null;
+  discount_amount: number;
+  final_amount: number;
+  mock: boolean;
+}
+
+export interface VerifyPaymentResponse {
+  success: boolean;
+  subscription: Subscription;
+}
+
+export interface CouponValidationResult {
+  valid: boolean;
+  coupon?: Coupon;
+  discount_amount?: number;
+  final_amount?: number;
+  error?: string;
+}

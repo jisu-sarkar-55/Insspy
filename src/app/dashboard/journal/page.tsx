@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,24 +24,23 @@ export default function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchTrades() {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .not("notes", "is", null)
-        .order("entry_time", { ascending: false });
-
-      if (data) {
-        setTrades(data);
+      try {
+        const res = await fetch("/api/trades");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setTrades(data.filter((t: Trade) => t.notes != null));
+        }
+      } catch {
+        // ignore
       }
       setLoading(false);
     }
 
     fetchTrades();
-  }, [supabase]);
+  }, []);
 
   const filteredTrades = useMemo(() => {
     let result = trades;
