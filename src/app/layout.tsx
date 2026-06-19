@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -43,6 +44,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen antialiased">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
