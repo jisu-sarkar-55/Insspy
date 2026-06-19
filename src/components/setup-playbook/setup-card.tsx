@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Clock, Target, Trash2, TrendingUp, ImageIcon } from "lucide-react";
 import type { SetupPlaybook } from "@/types";
-import { ConfirmDialog } from "@/components/premium/confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface SetupCardProps {
   playbook: SetupPlaybook;

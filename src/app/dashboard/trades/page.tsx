@@ -28,7 +28,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
-import { ConfirmDialog } from "@/components/premium/confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { AdBanner } from "@/components/ads";
 import type { Trade } from "@/types";
 
 export default function TradesPage() {
@@ -325,6 +326,10 @@ export default function TradesPage() {
         description="Are you sure you want to delete this trade? This cannot be undone."
         onConfirm={() => { if (deleteTarget) handleDelete(deleteTarget); }}
       />
+
+      <div className="pt-4">
+        <AdBanner slot="trades-banner" format="banner" />
+      </div>
     </div>
   );
 }

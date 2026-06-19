@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sql } from "@/lib/db";
+import { checkCsvImportLimit } from "@/lib/limits";
 
 interface Mt5Trade {
   ticket: string;
@@ -34,7 +35,6 @@ function parseCsvLines(text: string): string[] {
 
 function parseDealLevelCsv(csvText: string): Mt5Trade[] {
   const lines = parseCsvLines(csvText);
-  if (lines.length < 2) return [];
   if (lines.length < 2) return [];
 
   const delimiter = detectDelimiter(lines[0]);
@@ -222,6 +222,18 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const limitCheck = await checkCsvImportLimit(user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: `CSV import limit reached (${limitCheck.current}/${limitCheck.limit}).`,
+        usage: limitCheck,
+      }, { status: 429 });
+    }
+  } catch {
+    return NextResponse.json({ error: "Failed to check import limit" }, { status: 500 });
+  }
+
+  try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -263,7 +275,7 @@ export async function POST(request: NextRequest) {
       commission: Math.abs(t.commission),
       swap: t.swap,
       net_pnl: t.profit,
-      source: "mt5" as const,
+      source: "csv" as const,
       mt5_ticket: t.ticket,
     }));
 
@@ -272,6 +284,10 @@ export async function POST(request: NextRequest) {
         INSERT INTO trades ${sql(insertData, 'user_id', 'symbol', 'direction', 'entry_price', 'exit_price', 'lot_size', 'entry_time', 'exit_time', 'pnl', 'commission', 'swap', 'net_pnl', 'source', 'mt5_ticket')}
         RETURNING *
       `;
+
+      await sql`
+        INSERT INTO import_log (user_id, source, trades_count) VALUES (${user.id}, 'csv', ${data.length})
+      `.catch(() => {});
 
       return NextResponse.json({
         success: true,

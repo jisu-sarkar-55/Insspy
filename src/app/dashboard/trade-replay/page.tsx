@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import { TradeReplay } from "@/components/analytics/trade-replay";
 import { AlertCircle, Play } from "lucide-react";
 import type { Trade } from "@/types";
-import { PremiumGate } from "@/components/premium";
 
 function SkeletonCard() {
   return (
@@ -59,7 +58,6 @@ export default function TradeReplayPage() {
 
   if (loading) {
     return (
-      <PremiumGate>
         <div className="space-y-4 animate-fade-in">
           <div>
             <div className="h-7 w-28 rounded mb-1" style={{ background: "var(--surface-raised)" }} />
@@ -78,13 +76,11 @@ export default function TradeReplayPage() {
             </div>
           </div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center animate-fade-in">
           <div className="flex flex-col items-center gap-3">
             <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
@@ -99,13 +95,11 @@ export default function TradeReplayPage() {
             </p>
           </div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center animate-fade-in">
           <h2
             className="mb-2 text-2xl font-bold font-[var(--font-playfair)]"
@@ -117,12 +111,10 @@ export default function TradeReplayPage() {
             Add or import trades to replay them.
           </p>
         </div>
-      </PremiumGate>
     );
   }
 
   return (
-    <PremiumGate>
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
@@ -185,6 +177,5 @@ export default function TradeReplayPage() {
         </div>
       </div>
     </div>
-    </PremiumGate>
   );
 }

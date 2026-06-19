@@ -32,7 +32,6 @@ import { ProjectedPerformance } from "@/components/ai-insights/projected-perform
 import { TraderScorecard } from "@/components/ai-insights/trader-scorecard";
 import { LosingTradeExplainer } from "@/components/ai-insights/losing-trade-explainer";
 import { InsufficientData } from "@/components/ai-insights/insufficient-data";
-import { PremiumGate } from "@/components/premium";
 
 function formatDateRange(trades: Trade[]): string {
   if (trades.length === 0) return "";
@@ -61,6 +60,7 @@ export default function AiInsightsPage() {
   const [loading, setLoading] = useState(true);
   const [explainLoading, setExplainLoading] = useState(false);
   const [losingTradeAnalysis, setLosingTradeAnalysis] = useState<LosingTradeAnalysisType | null>(null);
+  const [aiUsage, setAiUsage] = useState<{ current: number; limit: number } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -81,6 +81,14 @@ export default function AiInsightsPage() {
     }
 
     fetchTrades();
+
+    fetch("/api/user/usage")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled && d.ai_analyses) setAiUsage(d.ai_analyses);
+      })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, []);
 
@@ -126,7 +134,6 @@ export default function AiInsightsPage() {
 
   if (loading) {
     return (
-      <PremiumGate>
       <div className="space-y-4">
         <div className="skeleton-section" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -140,13 +147,11 @@ export default function AiInsightsPage() {
         </div>
         <div className="skeleton-section" />
       </div>
-      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <PremiumGate>
       <div className="py-12 text-center">
         <h2 className="mb-2 text-2xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
           No Trade Data
@@ -155,14 +160,33 @@ export default function AiInsightsPage() {
           Add or import trades to unlock your AI coaching insights.
         </p>
       </div>
-      </PremiumGate>
     );
   }
 
   return (
-    <PremiumGate>
     <div className="space-y-6">
       <CoachHeader tradesAnalyzed={closed.length} dateRange={dateRange} />
+
+      {aiUsage && (
+        <div
+          className="rounded-lg p-3 text-xs"
+          style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
+        >
+          <div className="flex justify-between mb-1.5" style={{ color: "var(--text-secondary)" }}>
+            <span>AI analyses used this month</span>
+            <span style={{ color: "var(--text-muted)" }}>{aiUsage.current} / {aiUsage.limit}</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-page)" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min((aiUsage.current / aiUsage.limit) * 100, 100)}%`,
+                background: aiUsage.current / aiUsage.limit >= 0.9 ? "var(--color-loss)" : aiUsage.current / aiUsage.limit >= 0.75 ? "var(--color-warning)" : "var(--color-ai)",
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Featured Row ── */}
       <SectionLabel label="Overview" />
@@ -261,6 +285,5 @@ export default function AiInsightsPage() {
         })()}
       </div>
     </div>
-    </PremiumGate>
   );
 }

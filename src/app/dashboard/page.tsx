@@ -11,6 +11,7 @@ import { BehaviourFlags } from "@/components/dashboard/behaviour-flags";
 import { StreakTracker } from "@/components/dashboard/streak-tracker";
 import { SetupPerformance } from "@/components/dashboard/setup-performance";
 import { EmotionTracker } from "@/components/dashboard/emotion-tracker";
+import { AdBanner } from "@/components/ads";
 import Link from "next/link";
 import {
   calculateDashboardStats,
@@ -153,15 +154,20 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
         <TraderIQ data={traderIQ} />
-        <div
-          className="rounded-lg border p-4 card-surface"
-          style={{ borderColor: "var(--border-subtle)" }}
-        >
-          <AiCoachingPanel insights={aiInsights} />
+        <div className="space-y-5">
+          <div
+            className="rounded-lg border p-4 card-surface"
+            style={{ borderColor: "var(--border-subtle)" }}
+          >
+            <AiCoachingPanel insights={aiInsights} />
+          </div>
+          <AdBanner slot="dashboard-native" format="native" />
         </div>
       </div>
 
       <StatGrid stats={stats} />
+
+      <AdBanner slot="dashboard-banner" format="banner" />
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div

@@ -13,7 +13,6 @@ interface NavLinkProps {
   label: string;
   isActive: boolean;
   onClick?: () => void;
-  premium?: boolean;
 }
 
 export function NavLink({
@@ -22,7 +21,6 @@ export function NavLink({
   label,
   isActive,
   onClick,
-  premium,
 }: NavLinkProps) {
   const pathname = usePathname();
   const [navigating, setNavigating] = useState(false);
@@ -80,14 +78,6 @@ export function NavLink({
         />
       )}
       <span className="flex-1">{label}</span>
-      {premium && (
-        <span
-          className="premium-badge leading-none"
-          style={{ fontSize: "10px", padding: "1px 6px" }}
-        >
-          ⚡
-        </span>
-      )}
     </Link>
   );
 }

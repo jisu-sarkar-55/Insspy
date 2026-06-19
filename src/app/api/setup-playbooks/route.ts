@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sql } from "@/lib/db";
+import { checkPlaybooksLimit } from "@/lib/limits";
 
 export async function GET() {
   const supabase = await createClient();
@@ -34,7 +35,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+
+  try {
+    const limitCheck = await checkPlaybooksLimit(user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: `Setup playbook limit reached (${limitCheck.current}/${limitCheck.limit}). Delete existing playbooks to create more.`,
+        usage: limitCheck,
+      }, { status: 429 });
+    }
+
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+  }
 
   try {
     const data = await sql`

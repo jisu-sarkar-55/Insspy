@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { Trade } from "@/types";
-import { ConfirmDialog } from "@/components/premium/confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function TradeDetailPage() {
   const params = useParams();

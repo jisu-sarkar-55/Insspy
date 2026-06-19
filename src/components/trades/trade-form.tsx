@@ -73,6 +73,8 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playbooks, setPlaybooks] = useState<SetupPlaybook[]>([]);
+  const [usageCurrent, setUsageCurrent] = useState<number | null>(null);
+  const [usageLimit, setUsageLimit] = useState<number | null>(null);
   const [showCustomStrategy, setShowCustomStrategy] = useState(
     () => !!initialData?.strategy && !PREDEFINED_STRATEGIES.includes(initialData.strategy)
   );
@@ -91,6 +93,17 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
       }
     }
     fetchPlaybooks();
+
+    fetch("/api/user/usage")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled && d.trades) {
+          setUsageCurrent(d.trades.current);
+          setUsageLimit(d.trades.limit);
+        }
+      })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, []);
 
@@ -560,6 +573,27 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      {!isEditing && usageCurrent !== null && usageLimit !== null && (
+        <div
+          className="rounded-lg p-3 text-xs"
+          style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
+        >
+          <div className="flex justify-between mb-1.5" style={{ color: "var(--text-secondary)" }}>
+            <span>Trade usage</span>
+            <span style={{ color: "var(--text-muted)" }}>{usageCurrent} / {usageLimit}</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-page)" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min((usageCurrent / usageLimit) * 100, 100)}%`,
+                background: usageCurrent / usageLimit >= 0.9 ? "var(--color-loss)" : usageCurrent / usageLimit >= 0.75 ? "var(--color-warning)" : "var(--color-ai)",
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-4">
         <Button

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { sql } from "@/lib/db";
 import { explainLosingTrade } from "@/lib/openrouter";
 import { analyzeLosingTrade } from "@/lib/calculations";
+import { checkAiLimit } from "@/lib/limits";
 import type { Trade } from "@/types";
 
 export async function POST(request: NextRequest) {
@@ -16,7 +17,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { trade_id } = await request.json();
+  let trade_id: string | undefined;
+
+  try {
+    const limitCheck = await checkAiLimit(user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: `AI analysis limit reached (${limitCheck.current}/${limitCheck.limit} this month).`,
+        usage: limitCheck,
+      }, { status: 429 });
+    }
+
+    const body = await request.json();
+    trade_id = body.trade_id;
+  } catch {
+    return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
+  }
 
   if (!trade_id) {
     return NextResponse.json({ error: "trade_id is required" }, { status: 400 });

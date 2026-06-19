@@ -8,8 +8,6 @@ import { WeaknessPanel } from "@/components/scorecard/weakness-panel";
 import Link from "next/link";
 import { Shield, Lock, ArrowUpRight } from "lucide-react";
 import type { Trade } from "@/types";
-import { PremiumGate } from "@/components/premium";
-
 function SkeletonLine({ width }: { width: string }) {
   return <div className={`h-3 rounded ${width}`} style={{ background: "var(--border-subtle)" }} />;
 }
@@ -67,7 +65,6 @@ export default function ScorecardPage() {
 
   if (loading) {
     return (
-      <PremiumGate>
         <div className="space-y-6">
           <div className="space-y-1">
             <div className="h-7 w-36 rounded" style={{ background: "var(--surface-raised)" }} />
@@ -89,23 +86,19 @@ export default function ScorecardPage() {
             <div className="h-32 rounded-xl border" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }} />
           </div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <PremiumGate>
         <div className="flex items-center justify-center h-64">
           <div style={{ color: "var(--color-loss)" }}>{fetchError}</div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center">
           <div className="text-4xl mb-3">📊</div>
           <h2 className="mb-2 text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
@@ -115,13 +108,11 @@ export default function ScorecardPage() {
             Add or import trades to unlock your scorecard.
           </p>
         </div>
-      </PremiumGate>
     );
   }
 
   if (closed.length < 10) {
     return (
-      <PremiumGate>
         <div className="space-y-5">
           <div>
             <h1 className="text-xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
@@ -157,17 +148,14 @@ export default function ScorecardPage() {
             </div>
           </div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (!scorecard) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center" style={{ color: "var(--text-muted)" }}>
           Unable to compute scorecard.
         </div>
-      </PremiumGate>
     );
   }
 
@@ -220,7 +208,6 @@ export default function ScorecardPage() {
   }));
 
   return (
-    <PremiumGate>
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -362,6 +349,5 @@ export default function ScorecardPage() {
         </div>
       </div>
     </div>
-    </PremiumGate>
   );
 }

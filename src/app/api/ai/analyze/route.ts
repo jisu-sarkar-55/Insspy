@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sql } from "@/lib/db";
 import { analyzeTrades } from "@/lib/openrouter";
+import { checkAiLimit } from "@/lib/limits";
 import type { Trade } from "@/types";
 
 export async function POST(request: NextRequest) {
@@ -15,7 +16,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { account_id, strategy, limit = 100 } = await request.json();
+  let account_id: string | undefined;
+  let strategy: string | undefined;
+  let queryLimit = 100;
+
+  try {
+    const limitCheck = await checkAiLimit(user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: `AI analysis limit reached (${limitCheck.current}/${limitCheck.limit} this month).`,
+        usage: limitCheck,
+      }, { status: 429 });
+    }
+
+    const body = await request.json();
+    account_id = body.account_id;
+    strategy = body.strategy;
+    queryLimit = body.limit ?? 100;
+  } catch {
+    return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
+  }
 
   try {
     const trades = await sql`
@@ -24,7 +44,7 @@ export async function POST(request: NextRequest) {
       ${account_id ? sql`AND account_id = ${account_id}` : sql``}
       ${strategy ? sql`AND strategy = ${strategy}` : sql``}
       ORDER BY entry_time DESC
-      LIMIT ${limit}
+      LIMIT ${queryLimit}
     `;
 
     if (trades.length === 0) {

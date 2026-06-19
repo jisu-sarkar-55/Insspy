@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo, type ComponentType } from "react";
-import { FileText, Calendar, Building2, Download, AlertCircle } from "lucide-react";
+import { FileText, Calendar, Building2, Download, AlertCircle, AlertTriangle } from "lucide-react";
 import type { Trade } from "@/types";
-import { PremiumGate } from "@/components/premium";
 
 interface ReportType {
   id: string;
@@ -58,15 +57,17 @@ export default function ReportsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [PDFViewer, setPDFViewer] = useState<ComponentType<any> | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [PDFDownloadLink, setPDFDownloadLink] = useState<ComponentType<any> | null>(null);
+  const [pdfGenerate, setPdfGenerate] = useState<((doc: any) => { toBlob: () => Promise<Blob> }) | null>(null);
   const [pdfEngineLoading, setPdfEngineLoading] = useState(true);
+  const [reportUsage, setReportUsage] = useState<{ current: number; limit: number } | null>(null);
+  const [downloadMsg, setDownloadMsg] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     import("@react-pdf/renderer").then((mod) => {
       if (cancelled) return;
       setPDFViewer(() => mod.PDFViewer);
-      setPDFDownloadLink(() => mod.PDFDownloadLink);
+      setPdfGenerate(() => mod.pdf);
       setPdfEngineLoading(false);
     });
     return () => { cancelled = true; };
@@ -86,20 +87,27 @@ export default function ReportsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    async function fetchTrades() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/trades");
+        const [tradesRes, usageRes] = await Promise.all([
+          fetch("/api/trades"),
+          fetch("/api/user/usage"),
+        ]);
         if (cancelled) return;
-        const data = await res.json();
+        const tradesData = await tradesRes.json();
         if (cancelled) return;
-        if (Array.isArray(data)) setTrades(data);
+        if (Array.isArray(tradesData)) setTrades(tradesData);
+        if (usageRes.ok) {
+          const usageData = await usageRes.json();
+          if (usageData.report_downloads) setReportUsage(usageData.report_downloads);
+        }
       } catch (err: unknown) {
-        if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load trades");
+        if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-    fetchTrades();
+    fetchData();
     return () => { cancelled = true; };
   }, []);
 
@@ -136,6 +144,39 @@ export default function ReportsPage() {
 
   const selectedReportData = reportTypes.find((r) => r.id === selectedReport) || reportTypes[0];
 
+  const downloadsRemaining = reportUsage ? (reportUsage.limit - reportUsage.current) : null;
+
+  async function handleDownload(pdfDoc: React.ReactElement, fileName: string) {
+    if (!pdfGenerate) return;
+    if (reportUsage && reportUsage.current >= reportUsage.limit) return;
+
+    const res = await fetch("/api/reports/download", { method: "POST" });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setDownloadMsg(data?.error || "Download limit reached");
+      setTimeout(() => setDownloadMsg(null), 3000);
+      return;
+    }
+
+    setReportUsage((prev) => prev ? { ...prev, current: prev.current + 1 } : prev);
+
+    try {
+      const blob = await pdfGenerate(pdfDoc).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadMsg("Failed to generate PDF");
+      setTimeout(() => setDownloadMsg(null), 3000);
+    }
+  }
+
   const totalPnl = closed.reduce((s, t) => s + (t.net_pnl || 0), 0);
   const dateRange =
     closed.length > 0
@@ -144,7 +185,6 @@ export default function ReportsPage() {
 
   if (loading || pdfEngineLoading) {
     return (
-      <PremiumGate>
         <div className="space-y-6 animate-fade-in">
           <div>
             <div className="h-7 w-24 rounded mb-2" style={{ background: "var(--surface-raised)" }} />
@@ -157,13 +197,11 @@ export default function ReportsPage() {
           </div>
           <PreviewSkeleton />
         </div>
-      </PremiumGate>
     );
   }
 
   if (fetchError) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center animate-fade-in">
           <div className="flex flex-col items-center gap-3">
             <AlertCircle className="h-8 w-8" style={{ color: "var(--color-loss)" }} />
@@ -175,13 +213,11 @@ export default function ReportsPage() {
             </p>
           </div>
         </div>
-      </PremiumGate>
     );
   }
 
   if (closed.length === 0) {
     return (
-      <PremiumGate>
         <div className="py-12 text-center animate-fade-in">
           <h2 className="mb-2 text-2xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
             No Trade Data
@@ -190,12 +226,10 @@ export default function ReportsPage() {
             Add or import trades to generate reports.
           </p>
         </div>
-      </PremiumGate>
     );
   }
 
   return (
-    <PremiumGate>
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
@@ -206,11 +240,24 @@ export default function ReportsPage() {
             Generate PDF reports of your trading performance
           </p>
         </div>
-        <div
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium"
-          style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))", color: "var(--color-premium, #8b5cf6)" }}
-        >
-          <span className="text-[10px]">✦</span> Premium
+        <div className="flex items-center gap-2">
+          {downloadsRemaining !== null && (
+            <div
+              className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium"
+              style={{
+                background: downloadsRemaining > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+                color: downloadsRemaining > 0 ? "var(--color-profit)" : "var(--color-loss)",
+              }}
+            >
+              <Download className="h-3 w-3" />
+              {downloadsRemaining} / {reportUsage?.limit} downloads left
+            </div>
+          )}
+          {downloadMsg && (
+            <div className="text-[11px] px-2 py-1 rounded" style={{ background: "var(--surface-raised)", color: "var(--color-loss)" }}>
+              {downloadMsg}
+            </div>
+          )}
         </div>
       </div>
 
@@ -302,36 +349,24 @@ export default function ReportsPage() {
                   </span>
                 </div>
 
-                {PDFDownloadLink && (
-                  <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                    <PDFDownloadLink
-                      document={<report.component trades={closed} />}
-                      fileName={`${report.id}-report.pdf`}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        borderRadius: "0.5rem",
-                        padding: "0.375rem 0.75rem",
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        background: "var(--color-profit)",
-                        color: "var(--surface-page)",
-                        textDecoration: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {({ loading: pdfLoading }: { loading: boolean }) =>
-                        pdfLoading ? "Generating..." : (
-                          <>
-                            <Download className="h-3.5 w-3.5" />
-                            Download PDF
-                          </>
-                        )
-                      }
-                    </PDFDownloadLink>
+                {pdfGenerate && (downloadsRemaining === null || downloadsRemaining > 0) ? (
+                  <div
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium cursor-pointer transition-opacity hover:opacity-80"
+                    style={{ background: "var(--color-profit)", color: "var(--surface-page)" }}
+                    onClick={(e) => { e.stopPropagation(); handleDownload(<report.component trades={closed} />, `${report.id}-report.pdf`); }}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download PDF
                   </div>
-                )}
+                ) : pdfGenerate && downloadsRemaining !== null ? (
+                  <div
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium"
+                    style={{ background: "var(--surface-raised)", color: "var(--text-muted)", cursor: "not-allowed" }}
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Downloads used
+                  </div>
+                ) : null}
               </div>
             );
           })}
@@ -367,34 +402,24 @@ export default function ReportsPage() {
                   {dateRange}
                 </span>
               </div>
-              {PDFDownloadLink && (
-                <PDFDownloadLink
-                  document={<selectedReportData.component trades={closed} />}
-                  fileName={`${selectedReportData.id}-report.pdf`}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    borderRadius: "0.5rem",
-                    padding: "0.375rem 0.75rem",
-                    fontSize: "11px",
-                    fontWeight: 500,
-                    background: "var(--color-profit)",
-                    color: "var(--surface-page)",
-                    textDecoration: "none",
-                    cursor: "pointer",
-                  }}
+              {pdfGenerate && (downloadsRemaining === null || downloadsRemaining > 0) ? (
+                <div
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium cursor-pointer transition-opacity hover:opacity-80"
+                  style={{ background: "var(--color-profit)", color: "var(--surface-page)" }}
+                  onClick={() => handleDownload(<selectedReportData.component trades={closed} />, `${selectedReportData.id}-report.pdf`)}
                 >
-                  {({ loading: pdfLoading }: { loading: boolean }) =>
-                    pdfLoading ? "Generating..." : (
-                      <>
-                        <Download className="h-3.5 w-3.5" />
-                        Download PDF
-                      </>
-                    )
-                  }
-                </PDFDownloadLink>
-              )}
+                  <Download className="h-3.5 w-3.5" />
+                  Download PDF
+                </div>
+              ) : pdfGenerate && downloadsRemaining !== null ? (
+                <div
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium"
+                  style={{ background: "var(--surface-raised)", color: "var(--text-muted)", cursor: "not-allowed" }}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Downloads used
+                </div>
+              ) : null}
             </div>
             <div
               className="min-h-[400px] h-[70vh] rounded-b-lg overflow-hidden"
@@ -408,6 +433,5 @@ export default function ReportsPage() {
         </div>
       )}
     </div>
-    </PremiumGate>
   );
 }

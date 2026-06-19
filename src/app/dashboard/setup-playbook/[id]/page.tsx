@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Clock, Target, TrendingUp, Trash2 } from "lucide-react";
 import { ScreenshotGallery } from "@/components/setup-playbook/screenshot-gallery";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
-import { ConfirmDialog } from "@/components/premium/confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { SetupPlaybook, SetupPlaybookFormData, Trade } from "@/types";
 
 interface PlaybookStats {

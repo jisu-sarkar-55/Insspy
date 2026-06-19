@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,12 +23,12 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AdBanner } from "@/components/ads";
 
 interface NavItem {
   name: string;
   href: string;
   icon: typeof LayoutDashboard;
-  premium?: boolean;
 }
 
 const navGroups: { label: string; items: NavItem[] }[] = [
@@ -38,12 +37,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-      {
-        name: "AI Coaching",
-        href: "/dashboard/ai-insights",
-        icon: Brain,
-        premium: true,
-      },
+      { name: "AI Coaching", href: "/dashboard/ai-insights", icon: Brain },
     ],
   },
   {
@@ -57,12 +51,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Strategy",
     items: [
-      {
-        name: "Setup Playbook",
-        href: "/dashboard/setup-playbook",
-        icon: Library,
-        premium: true,
-      },
+      { name: "Setup Playbook", href: "/dashboard/setup-playbook", icon: Library },
     ],
   },
   {
@@ -70,35 +59,15 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { name: "Goals", href: "/dashboard/goals", icon: Target },
       { name: "Challenges", href: "/dashboard/challenges", icon: Trophy },
-      {
-        name: "Scorecard",
-        href: "/dashboard/scorecard",
-        icon: ShieldCheck,
-        premium: true,
-      },
+      { name: "Scorecard", href: "/dashboard/scorecard", icon: ShieldCheck },
     ],
   },
   {
     label: "Elite Features",
     items: [
-      {
-        name: "Trade Replay",
-        href: "/dashboard/trade-replay",
-        icon: Play,
-        premium: true,
-      },
-      {
-        name: "Leaderboard",
-        href: "/dashboard/leaderboard",
-        icon: Users,
-        premium: true,
-      },
-      {
-        name: "Reports",
-        href: "/dashboard/reports",
-        icon: FileText,
-        premium: true,
-      },
+      { name: "Trade Replay", href: "/dashboard/trade-replay", icon: Play },
+      { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Users },
+      { name: "Reports", href: "/dashboard/reports", icon: FileText },
     ],
   },
   {
@@ -111,25 +80,6 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-  const [isPremium, setIsPremium] = useState(false);
-
-  useEffect(() => {
-    async function checkPremium() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        setIsPremium(true);
-        return;
-      }
-
-      const res = await fetch("/api/user/subscription");
-      const sub = res.ok ? await res.json() : null;
-
-      setIsPremium(!!sub);
-    }
-    checkPremium();
-  }, [supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -178,7 +128,6 @@ export function Sidebar() {
                   icon={item.icon}
                   label={item.name}
                   isActive={isActive}
-                  premium={item.premium && !isPremium}
                 />
               );
             })}
@@ -186,8 +135,12 @@ export function Sidebar() {
         ))}
       </div>
 
+      <div className="border-t px-2 py-2" style={{ borderColor: "var(--border-subtle)" }}>
+        <AdBanner slot="sidebar" format="sidebar" />
+      </div>
+
       <div
-        className="mt-auto border-t p-3"
+        className="border-t p-3"
         style={{ borderColor: "var(--border-subtle)" }}
       >
         <Button

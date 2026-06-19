@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sql } from "@/lib/db";
+import { checkGoalsLimit } from "@/lib/limits";
 
 export async function GET() {
   const supabase = await createClient();
@@ -34,7 +35,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+
+  try {
+    const limitCheck = await checkGoalsLimit(user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: `Active goal limit reached (${limitCheck.current}/${limitCheck.limit}). Complete or delete existing goals to create more.`,
+        usage: limitCheck,
+      }, { status: 429 });
+    }
+
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+  }
 
   try {
     const data = await sql`

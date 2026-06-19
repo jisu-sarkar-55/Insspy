@@ -6,7 +6,6 @@ import { SetupCard } from "@/components/setup-playbook/setup-card";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
 import { Library, Target, TrendingUp, Image, BarChart3 } from "lucide-react";
 import type { SetupPlaybook, SetupPlaybookFormData } from "@/types";
-import { PremiumGate } from "@/components/premium";
 
 export default function SetupPlaybookPage() {
   const [playbooks, setPlaybooks] = useState<SetupPlaybook[]>([]);
@@ -52,7 +51,6 @@ export default function SetupPlaybookPage() {
 
   if (loading) {
     return (
-      <PremiumGate>
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2" style={{ color: "var(--text-muted)" }}>
           <div
@@ -62,12 +60,10 @@ export default function SetupPlaybookPage() {
           Loading playbooks...
         </div>
       </div>
-      </PremiumGate>
     );
   }
 
   return (
-    <PremiumGate>
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
@@ -141,6 +137,5 @@ export default function SetupPlaybookPage() {
         </div>
       )}
     </div>
-    </PremiumGate>
   );
 }

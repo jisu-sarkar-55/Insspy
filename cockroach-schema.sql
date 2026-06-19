@@ -112,6 +112,27 @@ CREATE TABLE IF NOT EXISTS api_keys (
 CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys(key);
 
+CREATE TABLE IF NOT EXISTS report_downloads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  report_type TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_report_downloads_user_id ON report_downloads(user_id);
+CREATE INDEX IF NOT EXISTS idx_report_downloads_created ON report_downloads(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS import_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  source TEXT NOT NULL,
+  trades_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_import_log_user_id ON import_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_import_log_source ON import_log(user_id, source);
+
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY,
   display_name TEXT,
@@ -119,90 +140,3 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
-CREATE TABLE IF NOT EXISTS pricing_plans (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  price DECIMAL(10,2) NOT NULL,
-  currency TEXT DEFAULT 'INR',
-  interval TEXT CHECK (interval IS NULL OR interval IN ('month', 'year')),
-  trial_days INT DEFAULT 7,
-  features JSONB DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
-  sort_order INT DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS coupons (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code TEXT UNIQUE NOT NULL,
-  description TEXT,
-  discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
-  discount_value DECIMAL(10,2) NOT NULL,
-  min_amount DECIMAL(10,2),
-  max_uses INT,
-  max_uses_per_user INT DEFAULT 1,
-  current_uses INT DEFAULT 0,
-  applies_to_plan_ids UUID[],
-  starts_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS coupon_usages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  coupon_id UUID NOT NULL,
-  user_id UUID NOT NULL,
-  used_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(coupon_id, user_id)
-);
-
-CREATE TABLE IF NOT EXISTS subscriptions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  plan_id UUID NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'canceled', 'past_due', 'expired', 'trialing', 'incomplete')),
-  current_period_start TIMESTAMPTZ NOT NULL,
-  current_period_end TIMESTAMPTZ NOT NULL,
-  trial_start TIMESTAMPTZ,
-  trial_end TIMESTAMPTZ,
-  canceled_at TIMESTAMPTZ,
-  coupon_id UUID,
-  razorpay_subscription_id TEXT,
-  razorpay_order_id TEXT,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_order_id ON subscriptions(razorpay_order_id);
-
-CREATE TABLE IF NOT EXISTS payments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  subscription_id UUID,
-  amount DECIMAL(10,2) NOT NULL,
-  currency TEXT DEFAULT 'INR',
-  status TEXT NOT NULL CHECK (status IN ('succeeded', 'pending', 'failed', 'refunded')),
-  processor TEXT DEFAULT 'razorpay',
-  razorpay_payment_id TEXT,
-  razorpay_order_id TEXT,
-  razorpay_signature TEXT,
-  coupon_id UUID,
-  discount_amount DECIMAL(10,2) DEFAULT 0,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
-
--- Seed default pricing plans
-INSERT INTO pricing_plans (name, description, price, currency, interval, trial_days, features, sort_order) VALUES
-  ('premium_monthly', 'Premium Monthly — full access, cancel anytime', 499.00, 'INR', 'month', 7, '{"ai_coaching":true,"advanced_analytics":true,"unlimited_history":true,"priority_support":true,"mt5_sync":true,"psychology_tracking":true,"scorecard":true,"reports":true,"trade_replay":true,"leaderboard":true,"setup_playbook":true}', 1),
-  ('premium_yearly', 'Premium Yearly — 2 months free with annual plan', 4999.00, 'INR', 'year', 7, '{"ai_coaching":true,"advanced_analytics":true,"unlimited_history":true,"priority_support":true,"mt5_sync":true,"psychology_tracking":true,"scorecard":true,"reports":true,"trade_replay":true,"leaderboard":true,"setup_playbook":true}', 2),
-  ('premium_lifetime', 'Premium Lifetime — one-time payment, forever access', 9999.00, 'INR', NULL, 0, '{"ai_coaching":true,"advanced_analytics":true,"unlimited_history":true,"priority_support":true,"mt5_sync":true,"psychology_tracking":true,"scorecard":true,"reports":true,"trade_replay":true,"leaderboard":true,"setup_playbook":true}', 3)
-ON CONFLICT DO NOTHING;

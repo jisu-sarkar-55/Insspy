@@ -17,10 +17,8 @@ import {
   X,
   LayoutDashboard,
   Settings,
-  Loader2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import type { PricingPlan } from "@/types";
+import { useState } from "react";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView();
@@ -44,18 +42,6 @@ function Stars({ count = 5 }: { count?: number }) {
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
-  const [pricingLoading, setPricingLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/pricing")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setPricingPlans(data);
-      })
-      .catch(() => {})
-      .finally(() => setPricingLoading(false));
-  }, []);
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "var(--surface-page)" }}>
@@ -649,82 +635,49 @@ export default function HomePage() {
               </div>
             </Reveal>
 
-            {pricingLoading ? (
-              <Reveal delay={1}>
-                <div className="rounded-xl border p-7 flex items-center justify-center min-h-[300px]" style={{ borderColor: "rgba(160, 135, 90, 0.2)", background: "var(--surface-card)" }}>
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--text-muted)" }} />
+            <Reveal delay={1}>
+              <div
+                className="rounded-xl border p-7 relative"
+                style={{
+                  borderColor: "rgba(251, 191, 36, 0.3)",
+                  background: "rgba(251, 191, 36, 0.03)",
+                }}
+              >
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                >
+                  Most Popular
                 </div>
-              </Reveal>
-            ) : (
-              pricingPlans.filter((p) => p.is_active).map((plan, idx) => {
-                const isHighlighted = plan.name === "premium_yearly" || (pricingPlans.length === 1 && plan.name === "premium_monthly");
-                const priceDisplay = plan.price.toLocaleString("en-IN", { style: "currency", currency: plan.currency || "INR", maximumFractionDigits: 0 });
-                const planLabel = plan.name === "premium_monthly" ? "Premium Monthly"
-                  : plan.name === "premium_yearly" ? "Premium Yearly"
-                  : "Premium Lifetime";
-
-                return (
-                  <Reveal key={plan.id} delay={1}>
-                    <div
-                      className={`rounded-xl border p-7 relative ${isHighlighted ? "animate-glow-pulse" : ""}`}
-                      style={{
-                        borderColor: isHighlighted ? "rgba(251, 191, 36, 0.3)" : "rgba(160, 135, 90, 0.2)",
-                        background: isHighlighted ? "rgba(251, 191, 36, 0.03)" : "var(--surface-card)",
-                      }}
-                    >
-                      {isHighlighted && (
-                        <div
-                          className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-                          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                        >
-                          Most Popular
-                        </div>
-                      )}
-
-                      <div className="mb-6">
-                        <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
-                          {planLabel}
-                        </h3>
-                        <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-                            {priceDisplay}
-                          </span>
-                          {plan.interval && (
-                            <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-                              /{plan.interval === "month" ? "month" : "year"}
-                            </span>
-                          )}
-                        </div>
-                        {plan.trial_days > 0 && (
-                          <div className="text-xs mt-1" style={{ color: "var(--color-ai)" }}>
-                            {plan.trial_days}-day free trial
-                          </div>
-                        )}
-                      </div>
-
-                      <ul className="space-y-3 mb-7">
-                        {['AI-powered insights & coaching', 'Advanced analytics & charts', 'Psychology tracking', 'Unlimited data history', 'Priority support', 'MT5 auto-sync', 'Scorecard & Reports', 'Trade Replay', 'Setup Playbooks', 'Leaderboard'].map((feature) => (
-                          <li key={feature} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--text-secondary)" }}>
-                            <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Link href="/auth/signup" className="block">
-                        <Button
-                          className="w-full text-[11px] uppercase tracking-wider font-semibold"
-                          variant={isHighlighted ? "default" : "outline"}
-                          size="lg"
-                        >
-                          Start {planLabel}
-                        </Button>
-                      </Link>
-                    </div>
-                  </Reveal>
-                );
-              })
-            )}
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+                    Premium Monthly
+                  </h3>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
+                      ₹499
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>/month</span>
+                  </div>
+                  <div className="text-xs mt-1" style={{ color: "var(--color-ai)" }}>
+                    7-day free trial
+                  </div>
+                </div>
+                <ul className="space-y-3 mb-7">
+                  {['AI-powered insights & coaching', 'Advanced analytics & charts', 'Psychology tracking', 'Unlimited data history', 'Priority support', 'MT5 auto-sync', 'Scorecard & Reports', 'Trade Replay', 'Setup Playbooks', 'Leaderboard'].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--text-secondary)" }}>
+                      <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/auth/signup" className="block">
+                  <Button className="w-full text-[11px] uppercase tracking-wider font-semibold" variant="default" size="lg">
+                    Coming Soon
+                  </Button>
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
