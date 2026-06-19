@@ -16,6 +16,103 @@ interface Mt5Trade {
   profit: number;
 }
 
+function parseNumber(value: string): number {
+  return parseFloat(value.replace(/\s/g, "")) || 0;
+}
+
+function parseDealLevelCsv(csvText: string): Mt5Trade[] {
+  const lines = csvText.trim().split("\n");
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+
+  const timeIdx = headers.indexOf("time");
+  const dealIdx = headers.indexOf("deal");
+  const symbolIdx = headers.indexOf("symbol");
+  const typeIdx = headers.indexOf("type");
+  const directionIdx = headers.indexOf("direction");
+  const volumeIdx = headers.indexOf("volume");
+  const priceIdx = headers.indexOf("price");
+  const commissionIdx = headers.indexOf("commission");
+  const feeIdx = headers.indexOf("fee");
+  const swapIdx = headers.indexOf("swap");
+  const profitIdx = headers.indexOf("profit");
+
+  interface Deal {
+    time: string;
+    deal: string;
+    symbol: string;
+    type: string;
+    direction: string;
+    volume: number;
+    price: number;
+    commission: number;
+    fee: number;
+    swap: number;
+    profit: number;
+  }
+
+  const deals: Deal[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(",").map((v) => v.trim());
+    if (values.length < 10) continue;
+
+    const type = (typeIdx >= 0 ? values[typeIdx] : "").toLowerCase();
+    if (type === "balance" || type === "credit" || type === "interest") continue;
+
+    deals.push({
+      time: timeIdx >= 0 ? values[timeIdx] : "",
+      deal: dealIdx >= 0 ? values[dealIdx] : `import-${i}`,
+      symbol: symbolIdx >= 0 ? values[symbolIdx] : "UNKNOWN",
+      type,
+      direction: directionIdx >= 0 ? values[directionIdx].toLowerCase() : "",
+      volume: volumeIdx >= 0 ? parseNumber(values[volumeIdx]) : 0,
+      price: priceIdx >= 0 ? parseNumber(values[priceIdx]) : 0,
+      commission: commissionIdx >= 0 ? parseNumber(values[commissionIdx]) : 0,
+      fee: feeIdx >= 0 ? parseNumber(values[feeIdx]) : 0,
+      swap: swapIdx >= 0 ? parseNumber(values[swapIdx]) : 0,
+      profit: profitIdx >= 0 ? parseNumber(values[profitIdx]) : 0,
+    });
+  }
+
+  deals.sort((a, b) => a.time.localeCompare(b.time));
+
+  const trades: Mt5Trade[] = [];
+  const openPositions = new Map<string, Deal[]>();
+
+  for (const deal of deals) {
+    if (deal.direction === "in") {
+      const key = deal.symbol;
+      if (!openPositions.has(key)) openPositions.set(key, []);
+      openPositions.get(key)!.push(deal);
+    } else if (deal.direction === "out") {
+      const key = deal.symbol;
+      const positions = openPositions.get(key);
+      if (!positions || positions.length === 0) continue;
+
+      const entry = positions.shift()!;
+      if (positions.length === 0) openPositions.delete(key);
+
+      trades.push({
+        ticket: entry.deal,
+        symbol: deal.symbol,
+        direction: entry.type as "buy" | "sell",
+        volume: entry.volume,
+        open_time: entry.time,
+        close_time: deal.time,
+        open_price: entry.price,
+        close_price: deal.price,
+        commission: deal.commission + deal.fee,
+        swap: deal.swap,
+        profit: deal.profit,
+      });
+    }
+  }
+
+  return trades;
+}
+
 function parseMt5Csv(csvText: string): Mt5Trade[] {
   const lines = csvText.trim().split("\n");
   if (lines.length < 2) return [];
@@ -125,7 +222,11 @@ export async function POST(request: NextRequest) {
     }
 
     const text = await file.text();
-    const trades = parseMt5Csv(text);
+
+    const firstLine = text.trim().split("\n")[0].toLowerCase();
+    const isDealFormat = firstLine.includes("deal") && firstLine.includes("direction");
+
+    const trades = isDealFormat ? parseDealLevelCsv(text) : parseMt5Csv(text);
 
     if (trades.length === 0) {
       return NextResponse.json(

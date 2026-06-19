@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
 
 export default function ImportPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -37,6 +37,29 @@ export default function ImportPage() {
       setFile(selectedFile);
       setResult(null);
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = ["Time", "Deal", "Symbol", "Type", "Direction", "Volume", "Price", "Order", "Commission", "Fee", "Swap", "Profit", "Balance"];
+    const exampleRows = [
+      ["2026.06.15 17:19:29", "8722896376", "EURUSD", "buy", "in", "0.71", "1.16119", "9089905397", "0.00", "0.00", "0.00", "0.00", "3000.00"],
+      ["2026.06.15 17:20:01", "8722913386", "EURUSD", "sell", "out", "0.71", "1.16123", "9089921355", "0.00", "0.00", "0.00", "2.84", "3002.84"],
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...exampleRows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mt5-import-template.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleUpload = async () => {
@@ -127,6 +150,20 @@ export default function ImportPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Prefer to paste from an MT5 HTML report? Download our template, copy trade rows from your report, and paste them in.
+            </p>
+            <Button
+              onClick={handleDownloadTemplate}
+              variant="outline"
+              size="sm"
+              style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Template
+            </Button>
+          </div>
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
@@ -218,16 +255,20 @@ export default function ImportPage() {
 
       <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
-          <CardTitle style={{ color: "var(--text-primary)" }}>Supported MT5 Formats</CardTitle>
+          <CardTitle style={{ color: "var(--text-primary)" }}>Supported Formats</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm space-y-2" style={{ color: "var(--text-secondary)" }}>
-            <p>The import supports standard MT5 CSV exports with columns like:</p>
+          <div className="text-sm space-y-3" style={{ color: "var(--text-secondary)" }}>
+            <p><strong>1. MT5 Deal Export (recommended)</strong> — export from MT5 History tab → right-click → &ldquo;Save as Report&rdquo; or copy the deal table:</p>
+            <code className="block p-3 rounded text-xs" style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}>
+              Time, Deal, Symbol, Type, Direction, Volume, Price, Order, Commission, Fee, Swap, Profit, Balance
+            </code>
+            <p><strong>2. MT5 Trade Export</strong> — standard MT5 CSV with one row per trade:</p>
             <code className="block p-3 rounded text-xs" style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}>
               #, Symbol, Type, Volume, Open Time, Close Time, Open Price, Close Price, Commission, Swap, Profit
             </code>
             <p style={{ color: "var(--text-muted)" }}>
-              Column names are auto-detected. The importer looks for: ticket, symbol, type, volume/size/lots, time, price, profit/pnl.
+              The importer auto-detects the format. Deal-level exports are matched using FIFO (first-in, first-out) to reconstruct complete trades.
             </p>
           </div>
         </CardContent>

@@ -35,6 +35,34 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { ids } = await request.json();
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: "No trade IDs provided" }, { status: 400 });
+    }
+
+    const result = await sql`
+      DELETE FROM trades WHERE id = ANY(${ids}) AND user_id = ${user.id}
+    `;
+
+    return NextResponse.json({ success: true, deleted: result.count });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
 

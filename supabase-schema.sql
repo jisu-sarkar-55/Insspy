@@ -50,6 +50,12 @@ CREATE TABLE IF NOT EXISTS ai_analyses (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_trades_user_id ON trades(user_id);
+CREATE INDEX IF NOT EXISTS idx_trades_user_entry ON trades(user_id, entry_time DESC);
+CREATE INDEX IF NOT EXISTS idx_trades_mt5_ticket ON trades(mt5_ticket);
+CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades(account_id);
+CREATE INDEX IF NOT EXISTS idx_trades_strategy ON trades(strategy);
+
 ALTER TABLE trading_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_analyses ENABLE ROW LEVEL SECURITY;

@@ -1,7 +1,8 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +30,6 @@ import {
 import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
 import { ConfirmDialog } from "@/components/premium/confirm-dialog";
 import type { Trade } from "@/types";
-import { useRouter } from "next/navigation";
 
 export default function TradesPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -41,26 +41,26 @@ export default function TradesPage() {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [clearConfirmed, setClearConfirmed] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
-    fetchTrades();
-  }, []);
-
-  async function fetchTrades() {
+    let cancelled = false;
     setError(null);
-    try {
-      const res = await fetch("/api/trades");
-      const data = await res.json();
-      if (Array.isArray(data)) setTrades(data);
-      else throw new Error(data.error || "Failed to load trades");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load trades");
-    } finally {
-      setLoading(false);
-    }
-  }
+    fetch("/api/trades")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data)) setTrades(data);
+        else throw new Error(data.error || "Failed to load trades");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load trades");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleDelete(id: string) {
     try {
@@ -78,17 +78,15 @@ export default function TradesPage() {
     setClearing(true);
     setShowClearDialog(false);
     setClearConfirmed(false);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setClearing(false);
-      return;
-    }
 
     try {
-      await Promise.all(trades.map(t =>
-        fetch(`/api/trades/${t.id}`, { method: "DELETE" })
-      ));
-      setTrades([]);
+      const ids = trades.map(t => t.id);
+      const res = await fetch("/api/trades", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (res.ok) setTrades([]);
     } catch {
       // ignore
     }
