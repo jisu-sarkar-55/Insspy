@@ -17,7 +17,7 @@ const mobileNavItems = [
   { name: "Trades", href: "/dashboard/trades", icon: TrendingUp },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "AI", href: "/dashboard/ai-insights", icon: Brain },
-  { name: "More", href: "/dashboard/settings", icon: MoreHorizontal },
+  { name: "More", href: "/dashboard/more", icon: MoreHorizontal },
 ];
 
 export function MobileNav() {
