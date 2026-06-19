@@ -155,7 +155,7 @@ export default function ImportPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg" style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Prefer to paste from an MT5 HTML report? Download our template, copy trade rows from your report, and paste them in.
             </p>
@@ -163,6 +163,7 @@ export default function ImportPage() {
               onClick={handleDownloadTemplate}
               variant="outline"
               size="sm"
+              className="w-full sm:w-auto"
               style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}
             >
               <Download className="h-4 w-4 mr-2" />
@@ -172,7 +173,7 @@ export default function ImportPage() {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer`}
+            className={`border-2 border-dashed rounded-lg p-6 sm:p-12 text-center transition-colors cursor-pointer`}
             style={{
               borderColor: file ? "var(--color-profit)" : "var(--border-subtle)",
               background: file ? "var(--color-profit-bg)" : "var(--surface-raised)",
@@ -226,10 +227,11 @@ export default function ImportPage() {
             </div>
           )}
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button
               onClick={handleUpload}
               disabled={!file || loading}
+              className="w-full sm:w-auto"
               style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {loading ? (
@@ -249,6 +251,7 @@ export default function ImportPage() {
               <Button
                 onClick={() => router.push("/dashboard/trades")}
                 variant="outline"
+                className="w-full sm:w-auto"
                 style={{ borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}
               >
                 View Trades

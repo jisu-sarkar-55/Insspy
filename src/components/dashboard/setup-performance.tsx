@@ -31,7 +31,8 @@ export function SetupPerformance({ strategies }: SetupPerformanceProps) {
   const sorted = [...strategies].sort((a, b) => b.netPnl - a.netPnl);
 
   return (
-    <table className="w-full border-collapse">
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse" style={{ minWidth: 400 }}>
       <thead>
         <tr>
           {["Setup", "Trades", "Win rate", "Net P&L", "Status"].map(
@@ -113,5 +114,6 @@ export function SetupPerformance({ strategies }: SetupPerformanceProps) {
         })}
       </tbody>
     </table>
+    </div>
   );
 }

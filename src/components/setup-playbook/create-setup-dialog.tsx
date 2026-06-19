@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RulesEditor } from "./rules-editor";
-import { Clock, Target, TrendingUp, ImagePlus, FileText, Layers, X } from "lucide-react";
+import { Target, ImagePlus, FileText, Layers, X } from "lucide-react";
 import type { SetupPlaybook, SetupPlaybookFormData } from "@/types";
 
 interface CreateSetupDialogProps {
@@ -127,7 +127,7 @@ export function CreateSetupDialog({
         {mode === "create" ? "+ New Playbook" : "Edit"}
       </DialogTrigger>
       <DialogContent
-        className="max-w-2xl max-h-[85vh] overflow-y-auto"
+        className="sm:max-w-2xl w-[calc(100%-2rem)] max-h-[85vh] overflow-y-auto"
         style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}
       >
         <DialogHeader>

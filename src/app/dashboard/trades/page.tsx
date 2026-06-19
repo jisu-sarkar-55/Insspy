@@ -133,9 +133,9 @@ export default function TradesPage() {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <Select value={strategyFilter} onValueChange={(value) => value && setStrategyFilter(value)}>
-          <SelectTrigger className="w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
+          <SelectTrigger className="w-full sm:w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
             <SelectValue placeholder="All Strategies" />
           </SelectTrigger>
           <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>
@@ -149,7 +149,7 @@ export default function TradesPage() {
         </Select>
 
         <Select value={directionFilter} onValueChange={(value) => value && setDirectionFilter(value)}>
-          <SelectTrigger className="w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
+          <SelectTrigger className="w-full sm:w-[180px]" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>
             <SelectValue placeholder="All Directions" />
           </SelectTrigger>
           <SelectContent style={{ background: "var(--surface-raised)", borderColor: "var(--border-subtle)" }}>

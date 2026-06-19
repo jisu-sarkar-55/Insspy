@@ -72,13 +72,13 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button className="text-[11px] uppercase tracking-wider font-semibold">
+                <Button className="text-[11px] sm:text-xs uppercase tracking-wider font-semibold h-11">
                   Get Started Free
                 </Button>
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-md"
+                className="md:hidden p-3 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -90,10 +90,10 @@ export default function HomePage() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t px-4 py-3" style={{ borderColor: "rgba(160, 135, 90, 0.15)", background: "rgba(20, 18, 16, 0.98)" }}>
             <div className="flex flex-col gap-1">
-              <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Features</Link>
-              <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>How It Works</Link>
-              <Link href="#limits" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Limits</Link>
-              <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Sign In</Link>
+              <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="flex items-center px-3 py-3 min-h-[44px] text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Features</Link>
+              <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="flex items-center px-3 py-3 min-h-[44px] text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>How It Works</Link>
+              <Link href="#limits" onClick={() => setMobileMenuOpen(false)} className="flex items-center px-3 py-3 min-h-[44px] text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Limits</Link>
+              <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center px-3 py-3 min-h-[44px] text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Sign In</Link>
             </div>
           </div>
         )}
@@ -127,13 +127,13 @@ export default function HomePage() {
               <Reveal delay={3}>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Link href="/auth/signup">
-                    <Button size="lg" className="px-8 text-[11px] uppercase tracking-wider font-semibold h-10">
+                    <Button size="lg" className="px-8 text-[11px] sm:text-xs uppercase tracking-wider font-semibold h-11">
                       Start Journaling Free
                       <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
                   </Link>
                   <Link href="/auth/login">
-                    <Button size="lg" variant="outline" className="px-8 text-[11px] uppercase tracking-wider font-semibold h-10">
+                    <Button size="lg" variant="outline" className="px-8 text-[11px] sm:text-xs uppercase tracking-wider font-semibold h-11">
                       Sign In
                     </Button>
                   </Link>
@@ -266,7 +266,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Social Proof ── */}
-      <section className="py-16 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
@@ -320,7 +320,7 @@ export default function HomePage() {
 
 
       {/* ── Features ── */}
-      <section id="features" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+      <section id="features" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
@@ -367,7 +367,7 @@ export default function HomePage() {
 
 
       {/* ── Dashboard Preview ── */}
-      <section className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
@@ -493,7 +493,7 @@ export default function HomePage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+      <section id="how-it-works" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-4xl mx-auto">
           <Reveal className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
@@ -550,7 +550,7 @@ export default function HomePage() {
 
 
       {/* ── Limits ── */}
-      <section id="limits" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+      <section id="cta" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-3xl mx-auto">
           <Reveal className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
@@ -601,7 +601,7 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 md:py-28 px-4" style={{
+      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8" style={{
         background: "linear-gradient(180deg, var(--surface-page) 0%, rgba(251, 191, 36, 0.04) 50%, var(--surface-page) 100%)",
       }}>
         <div className="max-w-3xl mx-auto text-center">
@@ -637,27 +637,27 @@ export default function HomePage() {
             <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Product</h4>
               <div className="flex flex-col gap-2">
-                <Link href="#features" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Features</Link>
-                <Link href="#limits" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Limits</Link>
-                <Link href="/auth/signup" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Sign Up</Link>
+                <Link href="#features" className="block py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Features</Link>
+                <Link href="#limits" className="block py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Limits</Link>
+                <Link href="/auth/signup" className="block py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Sign Up</Link>
               </div>
             </div>
             <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Connect</h4>
               <div className="flex flex-col gap-2">
-                <a href="https://www.instagram.com/insspy_official?=d3JvdGI2ZXFpZjc1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                <a href="https://www.instagram.com/insspy_official?=d3JvdGI2ZXFpZjc1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
                   Instagram <ExternalLink className="h-3 w-3" />
                 </a>
-                <a href="https://x.com/Insspy_official" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                <a href="https://x.com/Insspy_official" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
                   X (Twitter) <ExternalLink className="h-3 w-3" />
                 </a>
-                <a href="https://t.me/insspy" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                <a href="https://t.me/insspy" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
                   Telegram <ExternalLink className="h-3 w-3" />
                 </a>
-                <a href="https://youtube.com/@insspy_official?si=-Q3NqABzJ_px1opW" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                <a href="https://youtube.com/@insspy_official?si=-Q3NqABzJ_px1opW" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
                   YouTube <ExternalLink className="h-3 w-3" />
                 </a>
-                <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+                <span className="inline-flex items-center gap-1.5 py-2 text-sm" style={{ color: "var(--text-muted)" }}>
                   <Mail className="h-3 w-3" /> support@insspy.com
                 </span>
               </div>
@@ -665,8 +665,8 @@ export default function HomePage() {
             <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Legal</h4>
               <div className="flex flex-col gap-2">
-                <Link href="/privacy" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Privacy Policy</Link>
-                <Link href="/terms" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Terms of Service</Link>
+                <Link href="/privacy" className="block py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Privacy Policy</Link>
+                <Link href="/terms" className="block py-2 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Terms of Service</Link>
               </div>
             </div>
           </div>

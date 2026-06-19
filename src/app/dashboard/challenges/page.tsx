@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { CHALLENGES, computeChallengeProgress } from "@/lib/challenges";
 import { ChallengeCard } from "@/components/challenges/challenge-card";
 import { AdBanner } from "@/components/ads/ad-banner";
@@ -77,13 +76,11 @@ export default function ChallengesPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("all");
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     async function fetchTrades() {
       try {
-        await supabase.auth.getUser();
         const res = await fetch("/api/trades");
         if (!res.ok) throw new Error("Failed to load trades");
         const data = await res.json();
@@ -96,7 +93,7 @@ export default function ChallengesPage() {
     }
     fetchTrades();
     return () => { cancelled = true; };
-  }, [supabase]);
+  }, []);
 
   const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
 
@@ -175,7 +172,7 @@ export default function ChallengesPage() {
       </div>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label="Total Challenges" value={CHALLENGES.length} color="var(--text-primary)" />
         <StatCard label="Completed" value={completed.length} color="var(--color-profit)" />
         <StatCard label="In Progress" value={active.length} color="var(--color-warning)" />

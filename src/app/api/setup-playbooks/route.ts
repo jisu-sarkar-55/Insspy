@@ -36,6 +36,11 @@ export async function POST(request: NextRequest) {
   }
 
   let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
   try {
     const limitCheck = await checkPlaybooksLimit(user.id);
@@ -46,14 +51,14 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
-  }
+    const allowed = ["name", "description", "entry_rules", "exit_rules", "timeframe", "market_conditions", "screenshot_urls", "examples", "is_active"];
+    const insertData: Record<string, unknown> = { user_id: user.id };
+    for (const key of allowed) {
+      if (key in body) insertData[key] = body[key];
+    }
 
-  try {
     const data = await sql`
-      INSERT INTO setup_playbooks ${sql({ ...body, user_id: user.id })}
+      INSERT INTO setup_playbooks ${sql(insertData)}
       RETURNING *
     `;
     return NextResponse.json(data[0], { status: 201 });

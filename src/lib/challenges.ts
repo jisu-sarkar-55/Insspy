@@ -194,12 +194,6 @@ function getSessionLabel(hour: number): string {
   return "Off-hours";
 }
 
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24)
-  );
-}
-
 export function computeChallengeProgress(
   challengeId: string,
   trades: Trade[],
@@ -366,13 +360,13 @@ function computeWinStreak(trades: Trade[]): ChallengeProgress {
 
   return {
     challengeId: "win-streak",
-    progress: Math.min(100, Math.round((currentStreak / 5) * 100)),
-    current: currentStreak,
+    progress: Math.min(100, Math.round((bestStreak / 5) * 100)),
+    current: bestStreak,
     target: 5,
-    passed: currentStreak >= 5,
+    passed: bestStreak >= 5,
     active: true,
     startedAt: null,
-    completedAt: currentStreak >= 5 ? new Date().toISOString() : null,
+    completedAt: bestStreak >= 5 ? new Date().toISOString() : null,
     details: [
       `Current win streak: ${currentStreak}`,
       `Personal best: ${bestStreak}`,

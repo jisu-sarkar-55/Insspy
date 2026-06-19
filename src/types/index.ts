@@ -1,10 +1,3 @@
-export interface Profile {
-  id: string;
-  display_name: string | null;
-  timezone: string;
-  created_at: string;
-}
-
 export interface TradingAccount {
   id: string;
   user_id: string;

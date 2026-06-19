@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { AdBanner } from "@/components/ads/ad-banner";
-import { calculateTraderScorecard, calculateRiskStats } from "@/lib/calculations";
+import { calculateTraderScorecard } from "@/lib/calculations";
 import { ScoreRing } from "@/components/scorecard/score-ring";
 import { ScoreBreakdown } from "@/components/scorecard/score-breakdown";
 import { WeaknessPanel } from "@/components/scorecard/weakness-panel";
@@ -62,8 +62,6 @@ export default function ScorecardPage() {
 
   const closed = useMemo(() => trades.filter((t) => t.net_pnl !== null), [trades]);
   const scorecard = useMemo(() => closed.length >= 10 ? calculateTraderScorecard(closed) : null, [closed]);
-  const riskStats = useMemo(() => closed.length > 0 ? calculateRiskStats(closed) : null, [closed]);
-
   if (loading) {
     return (
         <div className="space-y-6">

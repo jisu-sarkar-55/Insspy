@@ -14,10 +14,9 @@ const sessionColors: Record<string, string> = {
 };
 
 export function SessionPerformance({ sessions }: SessionPerformanceProps) {
-  const worstSession = sessions.reduce(
-    (worst, s) => (s.pnl < worst.pnl ? s : worst),
-    sessions[0]
-  );
+  const worstSession = sessions.length > 0
+    ? sessions.reduce((worst, s) => (s.pnl < worst.pnl ? s : worst))
+    : null;
 
   return (
     <div className="space-y-3">

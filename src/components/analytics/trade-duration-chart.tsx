@@ -53,7 +53,7 @@ export function TradeDurationChart({ data }: Props) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {chartData.map((d, i) => (
           <div key={d.name} className="rounded-lg p-2 text-center" style={{ background: "var(--surface-raised)" }}>
             <div className="text-[10px] font-semibold" style={{ color: colors[i] }}>{d.name.replace("\n", " ")}</div>

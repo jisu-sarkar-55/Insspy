@@ -40,11 +40,22 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  const allowed = ["title", "type", "target_value", "current_value", "unit", "period", "start_date", "end_date", "status"];
+  const updateData: Record<string, unknown> = {};
+  for (const key of allowed) {
+    if (key in body) updateData[key] = body[key];
+  }
 
   try {
     const data = await sql`
-      UPDATE goals SET ${sql(body)}
+      UPDATE goals SET ${sql(updateData)}
       WHERE id = ${id} AND user_id = ${user.id}
       RETURNING *
     `;

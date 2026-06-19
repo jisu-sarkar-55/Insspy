@@ -12,7 +12,7 @@ export function RouteProgress() {
     if (prevPath.current !== pathname) {
       prevPath.current = pathname;
       setLoading(true);
-      const timer = setTimeout(() => setLoading(false), 400);
+      const timer = setTimeout(() => setLoading(false), 600);
       return () => clearTimeout(timer);
     }
   }, [pathname]);

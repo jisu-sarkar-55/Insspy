@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Clock, Target, TrendingUp, Trash2 } from "lucide-react";
 import { ScreenshotGallery } from "@/components/setup-playbook/screenshot-gallery";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
@@ -24,45 +23,54 @@ export default function SetupPlaybookDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     async function fetchPlaybook() {
-      await supabase.auth.getUser();
-      const res = await fetch(`/api/setup-playbooks/${params.id}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`/api/setup-playbooks/${params.id}`);
+        if (!res.ok) throw new Error("Failed to load playbook");
+        const data = await res.json();
 
-      if (!cancelled && data) {
-        setPlaybook(data);
-        await fetchStats(data.id);
+        if (!cancelled && data) {
+          setPlaybook(data);
+          await fetchStats(data.id);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      if (!cancelled) setLoading(false);
     }
 
     async function fetchStats(playbookId: string) {
-      const res = await fetch("/api/trades");
-      const allTrades: Trade[] = await res.json();
-      const trades = allTrades.filter(
-        (t) => t.setup_playbook_id === playbookId && t.net_pnl != null
-      );
+      try {
+        const res = await fetch("/api/trades");
+        if (!res.ok) throw new Error("Failed to load trades");
+        const allTrades: Trade[] = await res.json();
+        const trades = allTrades.filter(
+          (t) => t.setup_playbook_id === playbookId && t.net_pnl != null
+        );
 
-      if (trades.length > 0) {
-        const totalTrades = trades.length;
-        const winTrades = trades.filter((t: Trade) => (t.net_pnl || 0) > 0);
-        const winRate = (winTrades.length / totalTrades) * 100;
-        const netPnl = trades.reduce((sum: number, t: Trade) => sum + (t.net_pnl || 0), 0);
+        if (trades.length > 0) {
+          const totalTrades = trades.length;
+          const winTrades = trades.filter((t: Trade) => (t.net_pnl || 0) > 0);
+          const winRate = (winTrades.length / totalTrades) * 100;
+          const netPnl = trades.reduce((sum: number, t: Trade) => sum + (t.net_pnl || 0), 0);
 
-        const rrTrades = trades.filter((t: Trade) => t.stop_loss && t.net_pnl);
-        const averageRR =
-          rrTrades.length > 0
-            ? rrTrades.reduce((sum: number, t: Trade) => {
-                const risk = Math.abs(t.entry_price - t.stop_loss!);
-                return risk > 0 ? sum + (t.net_pnl || 0) / risk : sum;
-              }, 0) / rrTrades.length
-            : 0;
+          const rrTrades = trades.filter((t: Trade) => t.stop_loss && t.net_pnl);
+          const averageRR =
+            rrTrades.length > 0
+              ? rrTrades.reduce((sum: number, t: Trade) => {
+                  const risk = Math.abs(t.entry_price - t.stop_loss!);
+                  return risk > 0 ? sum + (t.net_pnl || 0) / risk : sum;
+                }, 0) / rrTrades.length
+              : 0;
 
-        setStats({ totalTrades, winRate, netPnl, averageRR });
+          if (!cancelled) setStats({ totalTrades, winRate, netPnl, averageRR });
+        }
+      } catch {
+        // silently fail
       }
     }
 
@@ -70,26 +78,35 @@ export default function SetupPlaybookDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [params.id, supabase]);
+  }, [params.id]);
 
   const handleUpdate = async (formData: SetupPlaybookFormData) => {
     setUpdating(true);
-    const res = await fetch(`/api/setup-playbooks/${params.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setPlaybook(data);
+    try {
+      const res = await fetch(`/api/setup-playbooks/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPlaybook(data);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setUpdating(false);
     }
-    setUpdating(false);
   };
 
   const handleDelete = async () => {
-    const res = await fetch(`/api/setup-playbooks/${params.id}`, { method: "DELETE" });
-    if (res.ok) {
-      router.push("/dashboard/setup-playbook");
+    try {
+      const res = await fetch(`/api/setup-playbooks/${params.id}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/dashboard/setup-playbook");
+      }
+    } catch {
+      // silently fail
     }
   };
 

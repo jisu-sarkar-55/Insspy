@@ -69,7 +69,17 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { keyId } = await request.json();
+  let keyId: string;
+  try {
+    const body = await request.json();
+    keyId = body.keyId;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  if (!keyId || typeof keyId !== "string") {
+    return NextResponse.json({ error: "keyId is required" }, { status: 400 });
+  }
 
   try {
     await sql`

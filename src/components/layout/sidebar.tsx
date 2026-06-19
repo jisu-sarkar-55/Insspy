@@ -97,7 +97,7 @@ export function Sidebar() {
     >
       <div
         className="border-b px-4 py-4"
-        style={{ borderColor: "var(--border-subtle)", padding: 10 }}
+        style={{ borderColor: "var(--border-subtle)" }}
       >
         <Link href="/dashboard" className="block">
           <Image

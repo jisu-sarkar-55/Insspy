@@ -13,7 +13,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const trades = await request.json();
+  let trades: Record<string, unknown>[];
+  try {
+    trades = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
   if (!Array.isArray(trades) || trades.length === 0) {
     return NextResponse.json({ error: "No trades provided" }, { status: 400 });

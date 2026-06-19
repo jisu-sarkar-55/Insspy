@@ -27,20 +27,23 @@ export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchTrades() {
       try {
         const res = await fetch("/api/trades");
+        if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (!cancelled && Array.isArray(data)) {
           setTrades(data.filter((t: Trade) => t.notes != null));
         }
       } catch {
         // ignore
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
 
     fetchTrades();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredTrades = useMemo(() => {
@@ -379,12 +382,15 @@ export default function JournalPage() {
         </div>
 
         {/* AI Reflection Panel (sticky on desktop) */}
-        <div className="hidden lg:block">
-          <div className="sticky top-5 space-y-5">
-            <AiReflectionPanel trades={trades} />
-            <AdBanner slot="journal-sidebar" />
-          </div>
+      <div className="hidden lg:block">
+        <div className="sticky top-5 space-y-5">
+          <AiReflectionPanel trades={trades} />
+          <AdBanner slot="journal-sidebar" />
         </div>
+      </div>
+      <div className="lg:hidden">
+        <AiReflectionPanel trades={trades} />
+      </div>
       </div>
     </div>
   );

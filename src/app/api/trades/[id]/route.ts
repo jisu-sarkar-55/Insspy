@@ -42,14 +42,25 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
-  const netPnl = body.net_pnl ?? ((body.pnl || 0) + (body.commission || 0) + (body.swap || 0));
-  const pnl = body.pnl ?? (netPnl - (body.commission || 0) - (body.swap || 0));
+  const netPnl = body.net_pnl as number ?? ((body.pnl as number || 0) + (body.commission as number || 0) + (body.swap as number || 0));
+  const pnl = body.pnl as number ?? (netPnl - (body.commission as number || 0) - (body.swap as number || 0));
+
+  const allowed = ["symbol", "direction", "entry_price", "exit_price", "stop_loss", "take_profit", "lot_size", "entry_time", "exit_time", "commission", "swap", "strategy", "tags", "notes", "screenshot_url", "confidence_before", "fear_level", "greed_level", "followed_plan", "mistakes", "source", "mt5_ticket", "setup_playbook_id", "account_id"];
+  const updateData: Record<string, unknown> = { pnl, net_pnl: netPnl, updated_at: new Date().toISOString() };
+  for (const key of allowed) {
+    if (key in body) updateData[key] = body[key];
+  }
 
   try {
     const data = await sql`
-      UPDATE trades SET ${sql({ ...body, pnl, net_pnl: netPnl, updated_at: new Date().toISOString() })}
+      UPDATE trades SET ${sql(updateData)}
       WHERE id = ${id} AND user_id = ${user.id}
       RETURNING *
     `;

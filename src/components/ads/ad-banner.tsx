@@ -101,18 +101,20 @@ export function AdBanner({ slot }: AdBannerProps) {
     : bannerHTML(config.key, config.width, config.height);
 
   return (
-    <div
-      className="flex items-center justify-center overflow-hidden mx-auto"
-      style={{ minWidth: config.width, minHeight: config.height, maxWidth: "100%" }}
-    >
-      <iframe
-        srcDoc={adHTML}
-        width={config.width}
-        height={config.height}
-        style={{ border: "none", overflow: "hidden" }}
-        scrolling="no"
-        title={`ad-${slot}`}
-      />
+    <div className="w-full overflow-hidden mx-auto" style={{ maxWidth: config.width }}>
+      <div
+        className="flex items-center justify-center"
+        style={{ minWidth: config.width, minHeight: config.height }}
+      >
+        <iframe
+          srcDoc={adHTML}
+          width={config.width}
+          height={config.height}
+          style={{ border: "none", overflow: "hidden" }}
+          scrolling="no"
+          title={`ad-${slot}`}
+        />
+      </div>
     </div>
   );
 }

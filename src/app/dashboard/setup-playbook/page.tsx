@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { SetupCard } from "@/components/setup-playbook/setup-card";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
 import { Library, Target, TrendingUp, Image, BarChart3 } from "lucide-react";
@@ -12,41 +11,54 @@ export default function SetupPlaybookPage() {
   const [playbooks, setPlaybooks] = useState<SetupPlaybook[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
     async function fetchPlaybooks() {
-      await supabase.auth.getUser();
-      const res = await fetch("/api/setup-playbooks");
-      const data = await res.json();
-      if (!cancelled && data) setPlaybooks(data);
-      if (!cancelled) setLoading(false);
+      try {
+        const res = await fetch("/api/setup-playbooks");
+        if (!res.ok) throw new Error("Failed to load playbooks");
+        const data = await res.json();
+        if (!cancelled && data) setPlaybooks(data);
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
     fetchPlaybooks();
     return () => {
       cancelled = true;
     };
-  }, [supabase]);
+  }, []);
 
   const handleCreate = async (formData: SetupPlaybookFormData) => {
     setCreating(true);
-    const res = await fetch("/api/setup-playbooks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setPlaybooks([data, ...playbooks]);
+    try {
+      const res = await fetch("/api/setup-playbooks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPlaybooks([data, ...playbooks]);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/setup-playbooks/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setPlaybooks(playbooks.filter((p) => p.id !== id));
+    try {
+      const res = await fetch(`/api/setup-playbooks/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setPlaybooks(playbooks.filter((p) => p.id !== id));
+      }
+    } catch {
+      // silently fail
     }
   };
 

@@ -12,9 +12,7 @@ import Link from "next/link";
 import {
   Download,
   Settings,
-  Play,
   CheckCircle,
-  ExternalLink,
   Copy,
 } from "lucide-react";
 import { AdBanner } from "@/components/ads/ad-banner";

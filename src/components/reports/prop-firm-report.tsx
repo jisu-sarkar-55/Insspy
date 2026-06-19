@@ -183,8 +183,13 @@ export function PropFirmReport({ trades }: Props) {
   const maxIndividualLoss = Math.min(...sorted.map((t) => t.net_pnl || 0));
   const maxLotSize = Math.max(...sorted.map((t) => t.lot_size || 0));
 
-  const minEquity = Math.min(...daySummaries.map((d) => d.cumulative), ACCOUNT_SIZE);
-  const maxTotalDrawdown = minEquity < ACCOUNT_SIZE ? ACCOUNT_SIZE - minEquity : 0;
+  let peakEquity = ACCOUNT_SIZE;
+  let maxTotalDrawdown = 0;
+  for (const d of daySummaries) {
+    peakEquity = Math.max(peakEquity, d.cumulative);
+    const dd = peakEquity - d.cumulative;
+    if (dd > maxTotalDrawdown) maxTotalDrawdown = dd;
+  }
 
   const profitTargetProgress = Math.min(100, (totalPnl / PROFIT_TARGET) * 100);
 

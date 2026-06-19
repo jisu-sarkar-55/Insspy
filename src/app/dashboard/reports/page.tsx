@@ -263,7 +263,7 @@ export default function ReportsPage() {
       </div>
 
       <div
-        className="flex items-center gap-4 text-[11px] px-1"
+        className="flex items-center gap-4 text-[11px] px-1 flex-wrap"
         style={{ color: "var(--text-muted)" }}
       >
         <span>{reportTypes.length} reports</span>

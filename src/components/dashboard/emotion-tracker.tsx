@@ -13,7 +13,7 @@ export function EmotionTracker({ emotions, bestHours }: EmotionTrackerProps) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
         {emotions.map((e) => (
           <div
             key={e.label}

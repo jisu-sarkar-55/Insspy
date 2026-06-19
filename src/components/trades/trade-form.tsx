@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,7 +78,6 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
     () => !!initialData?.strategy && !PREDEFINED_STRATEGIES.includes(initialData.strategy)
   );
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     let cancelled = false;
@@ -196,7 +194,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="symbol" style={{ color: "var(--text-secondary)" }}>
                 Symbol *
@@ -231,7 +229,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="entry_price" style={{ color: "var(--text-secondary)" }}>
                 Entry Price *
@@ -268,7 +266,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="stop_loss" style={{ color: "var(--text-secondary)" }}>
                 Stop Loss
@@ -307,7 +305,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="lot_size" style={{ color: "var(--text-secondary)" }}>
                 Lot Size *
@@ -406,7 +404,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
           <CardTitle style={{ color: "var(--text-primary)" }}>Timing & Costs</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="entry_time" style={{ color: "var(--text-secondary)" }}>
                 Entry Time *
@@ -434,7 +432,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="commission" style={{ color: "var(--text-secondary)" }}>
                 Commission
@@ -500,7 +498,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label style={{ color: "var(--text-secondary)" }}>
                 Confidence: {formData.confidence_before}/10
@@ -595,7 +593,7 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <Button
           type="submit"
           style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}

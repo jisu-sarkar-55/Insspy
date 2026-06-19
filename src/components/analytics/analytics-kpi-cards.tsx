@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, Target, TrendingUp, TrendingDown, Zap, Activity } from "lucide-react";
+import { DollarSign, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import type { AnalyticsKPIs } from "@/types";
 
 interface Props {

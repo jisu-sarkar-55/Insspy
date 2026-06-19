@@ -58,6 +58,7 @@ export default function DashboardPage() {
     async function fetchTrades() {
       try {
         const res = await fetch("/api/trades");
+        if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         if (Array.isArray(data)) {
           setTrades(data);

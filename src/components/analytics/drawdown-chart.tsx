@@ -26,7 +26,7 @@ export function DrawdownChart({ data }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="card-surface rounded-lg p-2.5">
           <div className="text-[10px] uppercase tracking-wide font-[var(--font-jetbrains)]" style={{ color: "var(--text-muted)" }}>Max Drawdown</div>
           <div className="text-lg font-bold font-[var(--font-playfair)]" style={{ color: "var(--color-loss)" }}>-{data.maxDrawdownPct.toFixed(1)}%</div>

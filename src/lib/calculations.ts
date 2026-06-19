@@ -417,11 +417,11 @@ export function calculateStreaks(trades: Trade[]): StreakData {
   let currentType: "win" | "loss" | "none" = "none";
   for (let i = outcomes.length - 1; i >= 0; i--) {
     if (outcomes[i] === "W") {
-      if (currentType === "loss" || currentType === "none") break;
+      if (currentType === "loss") break;
       current++;
       currentType = "win";
     } else if (outcomes[i] === "L") {
-      if (currentType === "win" || currentType === "none") break;
+      if (currentType === "win") break;
       current++;
       currentType = "loss";
     } else {

@@ -33,8 +33,9 @@ export function SymbolTable({ data }: Props) {
           <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>${worst.pnl.toFixed(0)}</div>
         </div>
       </div>
-      <table className="w-full border-collapse">
-        <thead>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse" style={{ minWidth: 400 }}>
+          <thead>
           <tr>
             {["Symbol", "Trades", "Win Rate", "P&L", "PF"].map((h) => (
               <th key={h} className="border-b px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ borderColor: "var(--border-subtle)", color: "var(--text-muted)", fontFamily: "var(--font-jetbrains)" }}>
@@ -69,8 +70,9 @@ export function SymbolTable({ data }: Props) {
               </tr>
             );
           })}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

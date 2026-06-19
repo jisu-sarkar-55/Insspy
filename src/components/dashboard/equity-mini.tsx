@@ -37,7 +37,7 @@ export function EquityMini({ data }: EquityMiniProps) {
       <svg
         viewBox={`0 0 ${w} ${h}`}
         className="h-20 w-full"
-        preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
@@ -51,7 +51,6 @@ export function EquityMini({ data }: EquityMiniProps) {
           fill="none"
           stroke="var(--primary)"
           strokeWidth="1.5"
-          style={{ transition: "d 500ms ease-out" }}
         />
       </svg>
       <div className="mt-2 flex gap-3">
