@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, type ComponentType } from "react";
 import { FileText, Calendar, Building2, Download, AlertCircle, AlertTriangle } from "lucide-react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import type { Trade } from "@/types";
 
 interface ReportType {
@@ -272,6 +273,10 @@ export default function ReportsPage() {
         <span>{dateRange}</span>
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="reports-top" />
+      </div>
+
       <div>
         <div
           className="text-xs font-semibold mb-3 flex items-center gap-2"
@@ -373,6 +378,10 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="reports-mid" />
+      </div>
+
       {selectedReportData && PDFViewer && (
         <div>
           <div
@@ -432,6 +441,10 @@ export default function ReportsPage() {
           </div>
         </div>
       )}
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="reports-bottom" />
+      </div>
     </div>
   );
 }

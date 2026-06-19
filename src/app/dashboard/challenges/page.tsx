@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CHALLENGES, computeChallengeProgress } from "@/lib/challenges";
 import { ChallengeCard } from "@/components/challenges/challenge-card";
+import { AdBanner } from "@/components/ads/ad-banner";
 import type { Trade, ChallengeProgress } from "@/types";
 
 type FilterTab = "all" | "active" | "completed";
@@ -184,6 +185,10 @@ export default function ChallengesPage() {
       {/* Filter */}
       <FilterBar active={filter} onChange={setFilter} />
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="challenges-mid" />
+      </div>
+
       {/* Challenge grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredChallenges.map((challenge) => {
@@ -206,6 +211,10 @@ export default function ChallengesPage() {
           </p>
         </div>
       )}
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="challenges-bottom" />
+      </div>
     </div>
   );
 }

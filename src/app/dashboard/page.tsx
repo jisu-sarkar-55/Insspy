@@ -161,13 +161,13 @@ export default function DashboardPage() {
           >
             <AiCoachingPanel insights={aiInsights} />
           </div>
-          <AdBanner slot="dashboard-native" format="native" />
+          <AdBanner slot="dashboard-native" />
         </div>
       </div>
 
       <StatGrid stats={stats} />
 
-      <AdBanner slot="dashboard-banner" format="banner" />
+      <AdBanner slot="dashboard-banner" />
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div
@@ -191,6 +191,10 @@ export default function DashboardPage() {
           <SectionHeader title={`P&L calendar — ${monthLabel}`} />
           <PnlHeatmap days={heatmapDays} />
         </div>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="dashboard-grid-sep" />
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -225,6 +229,10 @@ export default function DashboardPage() {
           <SectionHeader title="Emotion tracking" />
           <EmotionTracker emotions={emotions} bestHours={bestHours} />
         </div>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="dashboard-bottom" />
       </div>
     </div>
   );

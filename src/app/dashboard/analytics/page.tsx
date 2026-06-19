@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { EquityCurveChart } from "@/components/charts/equity-curve";
 import { SessionPerformance } from "@/components/dashboard/session-performance";
 import { SetupPerformance } from "@/components/dashboard/setup-performance";
@@ -193,6 +194,10 @@ export default function AnalyticsPage() {
       <SectionLabel label="Overview" />
       <AnalyticsKPICards data={kpis} />
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="analytics-extra-1" />
+      </div>
+
       {/* ── Equity & Risk ── */}
       <SectionLabel label="Equity & Risk" />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -202,6 +207,10 @@ export default function AnalyticsPage() {
         <Section title="Drawdown analysis">
           <DrawdownChart data={drawdown} />
         </Section>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="analytics-top" />
       </div>
 
       {/* ── Performance Breakdown ── */}
@@ -218,6 +227,10 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="analytics-sep" />
+      </div>
+
       {/* ── Distribution Analysis ── */}
       <SectionLabel label="Distribution Analysis" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -230,6 +243,10 @@ export default function AnalyticsPage() {
         <Section title="Trade duration analysis">
           <TradeDurationChart data={durations} />
         </Section>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="analytics-extra-2" />
       </div>
 
       {/* ── Strategy & Risk ── */}
@@ -252,6 +269,10 @@ export default function AnalyticsPage() {
         <Section title={`Calendar heatmap — ${monthLabel}`}>
           <PnlHeatmap days={heatmapDays} />
         </Section>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="analytics-bottom" />
       </div>
 
       {/* ── Insights ── */}

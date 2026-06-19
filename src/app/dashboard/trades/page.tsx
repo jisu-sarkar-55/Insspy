@@ -328,7 +328,7 @@ export default function TradesPage() {
       />
 
       <div className="pt-4">
-        <AdBanner slot="trades-banner" format="banner" />
+        <AdBanner slot="trades-banner" />
       </div>
     </div>
   );

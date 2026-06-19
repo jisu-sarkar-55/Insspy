@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { SetupCard } from "@/components/setup-playbook/setup-card";
 import { CreateSetupDialog } from "@/components/setup-playbook/create-setup-dialog";
 import { Library, Target, TrendingUp, Image, BarChart3 } from "lucide-react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import type { SetupPlaybook, SetupPlaybookFormData } from "@/types";
 
 export default function SetupPlaybookPage() {
@@ -79,6 +80,10 @@ export default function SetupPlaybookPage() {
         )}
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="setup-playbook-top" />
+      </div>
+
       {playbooks.length === 0 ? (
         <div
           className="rounded-lg border p-12 text-center"
@@ -136,6 +141,10 @@ export default function SetupPlaybookPage() {
           ))}
         </div>
       )}
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="setup-playbook-bottom" />
+      </div>
     </div>
   );
 }

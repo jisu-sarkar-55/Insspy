@@ -60,6 +60,17 @@ export async function POST(request: NextRequest) {
       possibleReasons: localAnalysis.possibleReasons,
     });
 
+    try {
+      const insightsJson = JSON.stringify({ localAnalysis, aiAnalysis });
+      const tradeIds = [trade_id];
+      await sql`
+        INSERT INTO ai_analyses (user_id, trade_ids, analysis_text, insights)
+        VALUES (${user.id}, ${tradeIds}, ${aiAnalysis || ""}, ${insightsJson})
+      `;
+    } catch (saveError) {
+      console.error("Error saving AI analysis:", saveError);
+    }
+
     return NextResponse.json({
       trade,
       localAnalysis,

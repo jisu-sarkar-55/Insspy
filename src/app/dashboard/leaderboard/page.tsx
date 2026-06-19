@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy, Users, BarChart3, Target } from "lucide-react";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 export default function LeaderboardPage() {
   return (
@@ -85,6 +86,10 @@ export default function LeaderboardPage() {
         <p className="text-[10px] mt-6" style={{ color: "var(--text-muted)" }}>
           All comparisons are anonymous. No personal trading data will be shared.
         </p>
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="leaderboard-mid" />
       </div>
     </div>
   );

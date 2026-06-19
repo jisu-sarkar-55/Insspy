@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -379,8 +380,9 @@ export default function JournalPage() {
 
         {/* AI Reflection Panel (sticky on desktop) */}
         <div className="hidden lg:block">
-          <div className="sticky top-5">
+          <div className="sticky top-5 space-y-5">
             <AiReflectionPanel trades={trades} />
+            <AdBanner slot="journal-sidebar" />
           </div>
         </div>
       </div>

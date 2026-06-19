@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Copy,
 } from "lucide-react";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 export default function Mt5SetupPage() {
   return (
@@ -39,6 +40,10 @@ export default function Mt5SetupPage() {
           </p>
         </CardContent>
       </Card>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="mt5-setup-mid" />
+      </div>
 
       <div className="grid gap-6">
         {/* Step 1 */}

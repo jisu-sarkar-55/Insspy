@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
 
 export default function ImportPage() {
@@ -142,6 +143,10 @@ export default function ImportPage() {
         </CardContent>
       </Card>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="import-mid" />
+      </div>
+
       <Card style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader>
           <CardTitle style={{ color: "var(--text-primary)" }}>Upload File</CardTitle>
@@ -273,6 +278,10 @@ export default function ImportPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="import-bottom" />
+      </div>
     </div>
   );
 }

@@ -65,7 +65,7 @@ export default function SettingsPage() {
       <UsageSummary />
 
       <div className="pb-8">
-        <AdBanner slot="settings-banner" format="banner" />
+        <AdBanner slot="settings-banner" />
       </div>
     </div>
   );

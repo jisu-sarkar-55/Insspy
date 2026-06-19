@@ -17,8 +17,13 @@ import {
   X,
   LayoutDashboard,
   Settings,
+  FileText,
+  Target,
+  Library,
+  Upload,
 } from "lucide-react";
 import { useState } from "react";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView();
@@ -61,7 +66,7 @@ export default function HomePage() {
             <div className="hidden md:flex items-center gap-1">
               <Link href="#features" className="px-3 py-2 text-sm rounded-md hover:bg-white/5 transition-colors" style={{ color: "var(--text-secondary)" }}>Features</Link>
               <Link href="#how-it-works" className="px-3 py-2 text-sm rounded-md hover:bg-white/5 transition-colors" style={{ color: "var(--text-secondary)" }}>How It Works</Link>
-              <Link href="#pricing" className="px-3 py-2 text-sm rounded-md hover:bg-white/5 transition-colors" style={{ color: "var(--text-secondary)" }}>Pricing</Link>
+              <Link href="#limits" className="px-3 py-2 text-sm rounded-md hover:bg-white/5 transition-colors" style={{ color: "var(--text-secondary)" }}>Limits</Link>
             </div>
 
             <div className="flex items-center gap-3">
@@ -91,7 +96,7 @@ export default function HomePage() {
             <div className="flex flex-col gap-1">
               <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Features</Link>
               <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>How It Works</Link>
-              <Link href="#pricing" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Pricing</Link>
+              <Link href="#limits" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Limits</Link>
               <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm rounded-md" style={{ color: "var(--text-secondary)" }}>Sign In</Link>
             </div>
           </div>
@@ -316,6 +321,10 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+        <AdBanner slot="landing-features-sep" />
+      </div>
+
       {/* ── Features ── */}
       <section id="features" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-7xl mx-auto">
@@ -360,6 +369,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+        <AdBanner slot="landing-dashboard-sep" />
+      </div>
 
       {/* ── Dashboard Preview ── */}
       <section className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
@@ -540,6 +553,10 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+        <AdBanner slot="landing-how-sep" />
+      </div>
+
       {/* ── Testimonials ── */}
       <section className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
         <div className="max-w-6xl mx-auto">
@@ -575,110 +592,54 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Pricing ── */}
-      <section id="pricing" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
-        <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-14">
+      {/* ── Limits ── */}
+      <section id="limits" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
+        <div className="max-w-3xl mx-auto">
+          <Reveal className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
-              Simple Pricing
+              Free Forever
             </div>
             <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
-              Start Free, Upgrade When Ready
+              Everything You Need, Free
             </h2>
+            <p className="mt-3 max-w-lg mx-auto" style={{ color: "var(--text-secondary)" }}>
+              No credit card required. Start journaling in minutes with generous limits.
+            </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <Reveal>
-              <div
-                className="rounded-xl border p-7"
-                style={{
-                  borderColor: "rgba(160, 135, 90, 0.2)",
-                  background: "var(--surface-card)",
-                }}
-              >
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
-                    Free
-                  </h3>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-                      ₹0
-                    </span>
-                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>forever</span>
+          <Reveal>
+            <div className="rounded-xl border p-7 md:p-10" style={{ borderColor: "rgba(160, 135, 90, 0.2)", background: "var(--surface-card)" }}>
+              <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
+                {[
+                  { icon: TrendingUp, label: "Trades", value: "500 total" },
+                  { icon: Brain, label: "AI Analyses", value: "20 / month" },
+                  { icon: FileText, label: "CSV Imports", value: "10 total" },
+                  { icon: Target, label: "Active Goals", value: "5" },
+                  { icon: Library, label: "Setup Playbooks", value: "10" },
+                  { icon: Upload, label: "PDF Reports", value: "10 / month" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0" style={{ background: "rgba(251, 191, 36, 0.1)" }}>
+                      <item.icon className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{item.label}</div>
+                      <div className="text-xs" style={{ color: "var(--text-muted)" }}>{item.value}</div>
+                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
 
-                <ul className="space-y-3 mb-7">
-                  {[
-                    "Unlimited trade logging",
-                    "Basic performance analytics",
-                    "Trade journal with notes",
-                    "Strategy tagging",
-                    "7-day data history",
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--text-secondary)" }}>
-                      <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/auth/signup" className="block">
-                  <Button
-                    className="w-full text-[11px] uppercase tracking-wider font-semibold"
-                    variant="outline"
-                    size="lg"
-                  >
-                    Get Started Free
+              <div className="mt-8 pt-6 border-t text-center" style={{ borderColor: "rgba(160, 135, 90, 0.15)" }}>
+                <Link href="/auth/signup">
+                  <Button size="lg" className="px-10 text-[11px] uppercase tracking-wider font-semibold h-11">
+                    Start Journaling Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
-            </Reveal>
-
-            <Reveal delay={1}>
-              <div
-                className="rounded-xl border p-7 relative"
-                style={{
-                  borderColor: "rgba(251, 191, 36, 0.3)",
-                  background: "rgba(251, 191, 36, 0.03)",
-                }}
-              >
-                <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                >
-                  Most Popular
-                </div>
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
-                    Premium Monthly
-                  </h3>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold font-[var(--font-playfair)]" style={{ color: "var(--text-primary)" }}>
-                      ₹499
-                    </span>
-                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>/month</span>
-                  </div>
-                  <div className="text-xs mt-1" style={{ color: "var(--color-ai)" }}>
-                    7-day free trial
-                  </div>
-                </div>
-                <ul className="space-y-3 mb-7">
-                  {['AI-powered insights & coaching', 'Advanced analytics & charts', 'Psychology tracking', 'Unlimited data history', 'Priority support', 'MT5 auto-sync', 'Scorecard & Reports', 'Trade Replay', 'Setup Playbooks', 'Leaderboard'].map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--text-secondary)" }}>
-                      <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/auth/signup" className="block">
-                  <Button className="w-full text-[11px] uppercase tracking-wider font-semibold" variant="default" size="lg">
-                    Coming Soon
-                  </Button>
-                </Link>
-              </div>
-            </Reveal>
-          </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -725,7 +686,7 @@ export default function HomePage() {
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Product</h4>
               <div className="flex flex-col gap-2">
                 <Link href="#features" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Features</Link>
-                <Link href="#pricing" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Pricing</Link>
+                <Link href="#limits" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Limits</Link>
                 <Link href="/auth/signup" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Sign Up</Link>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GoalCard } from "@/components/goals/goal-card";
 import { CreateGoalDialog } from "@/components/goals/create-goal-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { AdBanner } from "@/components/ads/ad-banner";
 import type { Goal, GoalFormData } from "@/types";
 
 export default function GoalsPage() {
@@ -120,6 +121,10 @@ export default function GoalsPage() {
         <CreateGoalDialog onSubmit={handleCreate} loading={creating} />
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="goals-top" />
+      </div>
+
       {error && (
         <div
           className="rounded-lg p-3 text-sm"
@@ -178,6 +183,10 @@ export default function GoalsPage() {
         description="Are you sure you want to delete this goal?"
         onConfirm={executeDelete}
       />
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="goals-bottom" />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import {
   calculateExecutiveSummary,
@@ -206,6 +207,10 @@ export default function AiInsightsPage() {
         })()}
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="ai-insights-top" />
+      </div>
+
       {/* ── Losing Trade Explainer ── */}
       {lastLosingTrade && (
         <LosingTradeExplainer
@@ -217,7 +222,7 @@ export default function AiInsightsPage() {
       )}
 
       {/* ── Deep Analysis ── */}
-      <SectionLabel label="Deep Analysis" premium />
+      <SectionLabel label="Deep Analysis" />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {(() => {
           const locked = sectionLocked("pattern-detection");
@@ -237,6 +242,10 @@ export default function AiInsightsPage() {
         })()}
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="ai-insights-extra-1" />
+      </div>
+
       {/* Edge Discovery + Opportunity */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {(() => {
@@ -254,6 +263,10 @@ export default function AiInsightsPage() {
         })()}
       </div>
 
+      <div className="flex justify-center py-4">
+        <AdBanner slot="ai-insights-sep" />
+      </div>
+
       {/* ── Coaching ── */}
       <SectionLabel label="Coaching" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -265,6 +278,10 @@ export default function AiInsightsPage() {
         })()}
 
         {improvements.length > 0 && <ImprovementAreas areas={improvements} />}
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="ai-insights-bottom" />
       </div>
 
       {/* ── Projections ── */}
@@ -283,6 +300,10 @@ export default function AiInsightsPage() {
           if (locked) return <InsufficientData section={locked} />;
           return <TraderScorecard data={scorecard} />;
         })()}
+      </div>
+
+      <div className="flex justify-center py-4">
+        <AdBanner slot="ai-insights-extra-2" />
       </div>
     </div>
   );
