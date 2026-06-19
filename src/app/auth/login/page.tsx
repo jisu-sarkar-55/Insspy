@@ -44,6 +44,7 @@ export default function LoginPage() {
 
       router.push("/dashboard");
       router.refresh();
+      setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error — check your connection");
       setLoading(false);
@@ -99,9 +100,14 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-secondary)" }}>
-                Password
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-secondary)" }}>
+                  Password
+                </Label>
+                <Link href="/auth/reset-password" className="text-xs hover:opacity-80" style={{ color: "var(--primary)" }}>
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

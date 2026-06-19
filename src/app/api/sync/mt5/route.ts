@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     await sql`
       UPDATE api_keys SET last_used = ${new Date().toISOString()} WHERE key = ${apiKey}
-    `.catch(() => {});
+    `.catch((e) => console.error("api_keys update failed:", e));
 
     const trades = await request.json();
 

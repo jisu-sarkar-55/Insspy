@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Loader2, LogOut } from "lucide-react";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -11,6 +11,7 @@ import {
   Brain,
   MoreHorizontal,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const mobileNavItems = [
   { name: "Home", href: "/dashboard", icon: LayoutDashboard },
@@ -22,6 +23,7 @@ const mobileNavItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [navigating, setNavigating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export function MobileNav() {
               key={item.name}
               href={item.href}
               onClick={() => { if (!isActive) setNavigating(item.href); }}
+              aria-current={isActive ? "page" : undefined}
               className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
               style={{
                 color: isActive ? "var(--primary)" : "var(--text-muted)",
@@ -61,6 +64,20 @@ export function MobileNav() {
             </Link>
           );
         })}
+        <button
+          onClick={async () => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            router.push("/auth/login");
+            router.refresh();
+          }}
+          className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
+          style={{ color: "var(--text-muted)" }}
+          aria-label="Sign out"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="text-[9px] font-medium uppercase tracking-wider">Logout</span>
+        </button>
       </nav>
     </div>
   );

@@ -60,8 +60,8 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
     };
   }
 
-  const winningTrades = closedTrades.filter((t) => t.net_pnl! > 0);
-  const losingTrades = closedTrades.filter((t) => t.net_pnl! < 0);
+  const winningTrades = closedTrades.filter((t) => (t.net_pnl ?? 0) > 0);
+  const losingTrades = closedTrades.filter((t) => (t.net_pnl ?? 0) < 0);
 
   const totalPnl = closedTrades.reduce((sum, t) => sum + (t.net_pnl || 0), 0);
   const grossProfit = winningTrades.reduce((sum, t) => sum + (t.net_pnl || 0), 0);
@@ -78,17 +78,21 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
   const bestDayEntry = dailyPnl.find((d) => d.pnl === bestDay) || null;
   const worstDayEntry = dailyPnl.find((d) => d.pnl === worstDay) || null;
 
-  const worstTrade = losingTrades.reduce((worst, t) =>
-    (t.net_pnl ?? 0) < (worst.net_pnl ?? 0) ? t : worst,
-    losingTrades[0]);
-  const biggestLoss = worstTrade?.net_pnl ?? 0;
-  const biggestLossDate = worstTrade?.entry_time?.split("T")[0] ?? null;
+  let biggestLoss = 0;
+  let biggestLossDate: string | null = null;
+  if (losingTrades.length > 0) {
+    const worstTrade = losingTrades.reduce((worst, t) =>
+      (t.net_pnl ?? 0) < (worst.net_pnl ?? 0) ? t : worst,
+      losingTrades[0]);
+    biggestLoss = worstTrade?.net_pnl ?? 0;
+    biggestLossDate = worstTrade?.entry_time?.split("T")[0] ?? null;
+  }
 
   return {
     totalTrades: closedTrades.length,
     winRate: (winningTrades.length / closedTrades.length) * 100,
     netPnl: totalPnl,
-    profitFactor: grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0,
+    profitFactor: grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99.9 : 0,
     averageWin,
     averageLoss,
     bestDay,
@@ -117,7 +121,7 @@ export function calculateStrategyStats(trades: Trade[]): StrategyStats[] {
 
   return Array.from(strategyMap.entries()).map(([strategy, strategyTrades]) => {
     const closedTrades = strategyTrades.filter((t) => t.net_pnl !== null);
-    const winningTrades = closedTrades.filter((t) => t.net_pnl! > 0);
+    const winningTrades = closedTrades.filter((t) => (t.net_pnl ?? 0) > 0);
     const totalPnl = closedTrades.reduce((sum, t) => sum + (t.net_pnl || 0), 0);
 
     return {
@@ -157,32 +161,28 @@ function calculateAverageRR(trades: Trade[]): number {
     count++;
   }
 
-  if (withoutExit.length > 0) {
-    let multiplier = 100000;
-    if (withExit.length > 0) {
-      let totalDerived = 0;
-      for (const trade of withExit) {
-        const priceMove =
-          trade.direction === "buy"
-            ? trade.exit_price! - trade.entry_price
-            : trade.entry_price - trade.exit_price!;
-        const pm = Math.abs(priceMove);
-        if (pm > 0 && trade.lot_size > 0 && trade.net_pnl !== null) {
-          totalDerived += Math.abs(trade.net_pnl) / (pm * trade.lot_size);
-        }
+  if (withoutExit.length > 0 && withExit.length > 0) {
+    let totalDerived = 0;
+    for (const trade of withExit) {
+      const priceMove =
+        trade.direction === "buy"
+          ? trade.exit_price! - trade.entry_price
+          : trade.entry_price - trade.exit_price!;
+      const pm = Math.abs(priceMove);
+      if (pm > 0 && trade.lot_size > 0 && trade.net_pnl !== null) {
+        totalDerived += Math.abs(trade.net_pnl) / (pm * trade.lot_size);
       }
-      if (totalDerived > 0) multiplier = totalDerived / withExit.length;
-    } else if (trades.some((t) => t.entry_price > 100 && t.entry_price < 2000)) {
-      multiplier = 1000;
     }
-
-    for (const trade of withoutExit) {
-      const riskDistance = Math.abs(trade.entry_price - trade.stop_loss!);
-      if (riskDistance === 0 || trade.lot_size <= 0) continue;
-      const riskInDollars = riskDistance * trade.lot_size * multiplier;
-      if (riskInDollars > 0) {
-        totalRR += (trade.net_pnl || 0) / riskInDollars;
-        count++;
+    if (totalDerived > 0) {
+      const multiplier = totalDerived / withExit.length;
+      for (const trade of withoutExit) {
+        const riskDistance = Math.abs(trade.entry_price - trade.stop_loss!);
+        if (riskDistance === 0 || trade.lot_size <= 0) continue;
+        const riskInDollars = riskDistance * trade.lot_size * multiplier;
+        if (riskInDollars > 0) {
+          totalRR += (trade.net_pnl || 0) / riskInDollars;
+          count++;
+        }
       }
     }
   }
@@ -204,7 +204,7 @@ export function calculateDailyPnl(trades: Trade[]): DailyPnl[] {
 
   return Array.from(dailyMap.entries())
     .map(([date, data]) => ({ date, ...data }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0));
 }
 
 export function calculateMonthlyPnl(trades: Trade[]): MonthlyPnl[] {
@@ -221,7 +221,7 @@ export function calculateMonthlyPnl(trades: Trade[]): MonthlyPnl[] {
 
   return Array.from(monthlyMap.entries())
     .map(([month, data]) => ({ month, ...data }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+    .sort((a, b) => (a.month > b.month ? 1 : a.month < b.month ? -1 : 0));
 }
 
 export function calculateEquityCurve(
@@ -239,18 +239,24 @@ export function calculateEquityCurve(
   const sorted = Array.from(dailyMap.entries()).sort((a, b) =>
     a[0].localeCompare(b[0])
   );
-  let equity = startingBalance;
-  return sorted.map(([date, pnl]) => {
-    equity += pnl;
-    return { date, equity };
-  });
+  return sorted.reduce<{ date: string; equity: number }[]>(
+    (acc, [date, pnl]) => {
+      const prevEquity = acc.length > 0 ? acc[acc.length - 1].equity : startingBalance;
+      acc.push({ date, equity: prevEquity + pnl });
+      return acc;
+    },
+    []
+  );
 }
 
 function getHour(dateStr: string): number {
-  return new Date(dateStr).getUTCHours();
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return -1;
+  return d.getHours();
 }
 
 function getSessionLabel(hour: number): string {
+  if (hour < 0) return "Unknown";
   if (hour >= 8 && hour < 13) return "London";
   if (hour >= 13 && hour < 21) return "New York";
   if (hour >= 0 && hour < 8) return "Asia";
@@ -264,15 +270,15 @@ export function calculateSessionStats(trades: Trade[]): SessionStat[] {
   closed.forEach((t) => {
     const hour = getHour(t.entry_time);
     const session = getSessionLabel(hour);
-    if (session === "Off-hours") return;
+    if (session === "Off-hours" || session === "Unknown") return;
     const existing = sessionMap.get(session) || { wins: 0, total: 0, pnl: 0 };
     existing.total++;
-    if (t.net_pnl! > 0) existing.wins++;
+    if ((t.net_pnl ?? 0) > 0) existing.wins++;
     existing.pnl += t.net_pnl || 0;
     sessionMap.set(session, existing);
   });
 
-  const order = ["London", "New York", "Asia", "Overlap"];
+  const order = ["London", "New York", "Asia"];
   return order
     .filter((s) => sessionMap.has(s))
     .map((session) => {
@@ -298,12 +304,13 @@ export function calculateBehaviourFlags(trades: Trade[]): BehaviourFlag[] {
   }
 
   let revengeDetected = false;
-  let lastLossTime = 0;
+  let lastLossTime: number | null = null;
 
   closed.forEach((t) => {
     const time = new Date(t.entry_time).getTime();
-    if (t.net_pnl! < 0) {
-      if (lastLossTime && time - lastLossTime < 30 * 60 * 1000) {
+    if (isNaN(time)) return;
+    if ((t.net_pnl ?? 0) < 0) {
+      if (lastLossTime !== null && time - lastLossTime < 30 * 60 * 1000) {
         revengeDetected = true;
       }
       lastLossTime = time;
@@ -319,8 +326,8 @@ export function calculateBehaviourFlags(trades: Trade[]): BehaviourFlag[] {
         (1000 * 60 * 60 * 24)
     );
 
-  const winners = closed.filter((t) => t.net_pnl! > 0);
-  const losers = closed.filter((t) => t.net_pnl! < 0);
+  const winners = closed.filter((t) => (t.net_pnl ?? 0) > 0);
+  const losers = closed.filter((t) => (t.net_pnl ?? 0) < 0);
 
   const avgRR = calculateAverageRR(closed);
   const plannedRR = 2.0;
@@ -410,7 +417,7 @@ export function calculateStreaks(trades: Trade[]): StreakData {
   }
 
   const outcomes: ("W" | "L" | "B")[] = closed.map((t) =>
-    t.net_pnl! > 0 ? "W" : t.net_pnl! < 0 ? "L" : "B"
+    (t.net_pnl ?? 0) > 0 ? "W" : (t.net_pnl ?? 0) < 0 ? "L" : "B"
   );
 
   let current = 0;
@@ -476,6 +483,15 @@ export function calculateStreaks(trades: Trade[]): StreakData {
         runAmount = pnl;
         runCount = 1;
       }
+    } else {
+      if (runAmount > bestProfitRun.amount) {
+        bestProfitRun = { amount: runAmount, count: runCount };
+      }
+      if (runAmount < worstLossRun.amount) {
+        worstLossRun = { amount: runAmount, count: runCount };
+      }
+      runAmount = 0;
+      runCount = 0;
     }
   });
   if (runAmount > bestProfitRun.amount) {
@@ -512,8 +528,8 @@ export function calculateHeatmapData(
     }
   });
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const firstDay = new Date(Date.UTC(year, month, 1)).getUTCDay();
   const adjustedFirst = firstDay === 0 ? 6 : firstDay - 1;
 
   const days: HeatmapDay[] = [];
@@ -572,7 +588,7 @@ export function calculateEmotionStats(trades: Trade[]): EmotionStat[] {
       }
       if (match) {
         count++;
-        if (t.net_pnl! > 0) wins++;
+        if ((t.net_pnl ?? 0) > 0) wins++;
       }
     });
 
@@ -591,9 +607,10 @@ export function calculateBestHours(trades: Trade[]): HourStat[] {
 
   closed.forEach((t) => {
     const hour = getHour(t.entry_time);
+    if (hour < 0) return;
     const existing = hourMap.get(hour) || { wins: 0, total: 0 };
     existing.total++;
-    if (t.net_pnl! > 0) existing.wins++;
+    if ((t.net_pnl ?? 0) > 0) existing.wins++;
     hourMap.set(hour, existing);
   });
 
@@ -632,9 +649,9 @@ export function calculateTraderIQ(trades: Trade[]): TraderIQ {
   const avgRR = calculateAverageRR(closed);
   const execution = Math.round(Math.min(100, avgRR * 35 + 20));
 
-  const wins = closed.filter((t) => t.net_pnl! > 0).length;
+  const wins = closed.filter((t) => (t.net_pnl ?? 0) > 0).length;
   const winRate = (wins / closed.length) * 100;
-  const consistency = Math.round(Math.min(100, winRate * 0.8 + closed.length * 0.5));
+  const consistency = Math.round(Math.min(100, winRate * 0.8 + Math.min(closed.length, 100) * 0.3));
 
   const planAdherence =
     closed.filter((t) => t.followed_plan).length / closed.length;
@@ -679,7 +696,7 @@ export function calculateAiCoaching(trades: Trade[]): AiCoachingInsight[] {
     });
   }
 
-  const winRate = (closed.filter((t) => t.net_pnl! > 0).length / closed.length) * 100;
+  const winRate = (closed.filter((t) => (t.net_pnl ?? 0) > 0).length / closed.length) * 100;
   if (winRate > 60) {
     insights.push({
       severity: "positive",
@@ -689,14 +706,12 @@ export function calculateAiCoaching(trades: Trade[]): AiCoachingInsight[] {
   }
 
   const sessionStats = calculateSessionStats(closed);
-  const bestSession = sessionStats.reduce(
-    (best, s) => (s.pnl > best.pnl ? s : best),
-    sessionStats[0]
-  );
-  const worstSession = sessionStats.reduce(
-    (worst, s) => (s.pnl < worst.pnl ? s : worst),
-    sessionStats[0]
-  );
+  const bestSession = sessionStats.length > 0
+    ? sessionStats.reduce((best, s) => (s.pnl > best.pnl ? s : best), sessionStats[0])
+    : null;
+  const worstSession = sessionStats.length > 0
+    ? sessionStats.reduce((worst, s) => (s.pnl < worst.pnl ? s : worst), sessionStats[0])
+    : null;
 
   if (bestSession && worstSession && bestSession.session !== worstSession.session) {
     insights.push({
@@ -711,21 +726,21 @@ export function calculateAiCoaching(trades: Trade[]): AiCoachingInsight[] {
 
 // ─── ANALYTICS FUNCTIONS ───────────────────────────────────────
 
-export function calculateAnalyticsKPIs(trades: Trade[]): AnalyticsKPIs {
+export function calculateAnalyticsKPIs(trades: Trade[], startingBalance = 10000): AnalyticsKPIs {
   const closed = trades.filter((t) => t.net_pnl !== null);
   if (closed.length === 0) {
     return { netProfit: 0, profitFactor: 0, winRate: 0, avgRR: 0, maxDrawdown: 0, expectancy: 0, totalTrades: 0, avgWin: 0, avgLoss: 0 };
   }
 
-  const winners = closed.filter((t) => t.net_pnl! > 0);
-  const losers = closed.filter((t) => t.net_pnl! < 0);
+  const winners = closed.filter((t) => (t.net_pnl ?? 0) > 0);
+  const losers = closed.filter((t) => (t.net_pnl ?? 0) < 0);
   const netProfit = closed.reduce((s, t) => s + (t.net_pnl || 0), 0);
   const grossProfit = winners.reduce((s, t) => s + (t.net_pnl || 0), 0);
   const grossLoss = Math.abs(losers.reduce((s, t) => s + (t.net_pnl || 0), 0));
-  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99.9 : 0;
   const winRate = (winners.length / closed.length) * 100;
   const avgRR = calculateAverageRR(closed);
-  const dd = calculateDrawdownAnalysis(closed, 10000);
+  const dd = calculateDrawdownAnalysis(closed, startingBalance);
   const expectancy = closed.reduce((s, t) => s + (t.net_pnl || 0), 0) / closed.length;
   const avgWin = winners.length > 0 ? grossProfit / winners.length : 0;
   const avgLoss = losers.length > 0 ? grossLoss / losers.length : 0;
@@ -744,7 +759,6 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
 
   let equity = startBalance;
   let peak = startBalance;
-  let peakDate = sorted[0].entry_time.split("T")[0];
   let maxDD = 0;
   let maxDDPct = 0;
   let maxDDDuration = 0;
@@ -755,9 +769,9 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
   let currentDDDays = 0;
 
   function daysBetween(a: string, b: string): number {
-    return Math.round(
+    return Math.max(1, Math.round(
       (new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24)
-    );
+    ));
   }
 
   const curve: Array<{ date: string; equity: number; drawdown: number; drawdownPct: number }> = sorted.map((t) => {
@@ -770,7 +784,6 @@ export function calculateDrawdownAnalysis(trades: Trade[], startBalance: number)
         if (d > maxDDDuration) maxDDDuration = d;
       }
       peak = equity;
-      peakDate = date;
       inDrawdown = false;
       drawdownStartDate = null;
       currentDDDays = 0;
@@ -837,8 +850,8 @@ export function calculatePnlHistogram(trades: Trade[]): PnlHistogramBucket[] {
     return {
       range: label,
       count: bucket.length,
-      wins: bucket.filter((t) => t.net_pnl! > 0).length,
-      losses: bucket.filter((t) => t.net_pnl! < 0).length,
+      wins: bucket.filter((t) => (t.net_pnl ?? 0) > 0).length,
+      losses: bucket.filter((t) => (t.net_pnl ?? 0) < 0).length,
     };
   });
 }
@@ -853,8 +866,8 @@ export function calculateSymbolStats(trades: Trade[]): SymbolStats[] {
 
   return Array.from(symbolMap.entries())
     .map(([symbol, arr]) => {
-      const winners = arr.filter((t) => t.net_pnl! > 0);
-      const losers = arr.filter((t) => t.net_pnl! < 0);
+      const winners = arr.filter((t) => (t.net_pnl ?? 0) > 0);
+      const losers = arr.filter((t) => (t.net_pnl ?? 0) < 0);
       const pnl = arr.reduce((s, t) => s + (t.net_pnl || 0), 0);
       const gp = winners.reduce((s, t) => s + (t.net_pnl || 0), 0);
       const gl = Math.abs(losers.reduce((s, t) => s + (t.net_pnl || 0), 0));
@@ -864,9 +877,9 @@ export function calculateSymbolStats(trades: Trade[]): SymbolStats[] {
         winRate: (winners.length / arr.length) * 100,
         pnl,
         avgRR: calculateAverageRR(arr),
-        profitFactor: gl > 0 ? gp / gl : gp > 0 ? Infinity : 0,
-        bestTrade: Math.max(...arr.map((t) => t.net_pnl || 0)),
-        worstTrade: Math.min(...arr.map((t) => t.net_pnl || 0)),
+        profitFactor: gl > 0 ? gp / gl : gp > 0 ? 99.9 : 0,
+        bestTrade: arr.reduce((max, t) => Math.max(max, t.net_pnl || 0), -Infinity),
+        worstTrade: arr.reduce((min, t) => Math.min(min, t.net_pnl || 0), Infinity),
       };
     })
     .sort((a, b) => b.pnl - a.pnl);
@@ -881,7 +894,7 @@ export function calculateDayOfWeekStats(trades: Trade[]): DayOfWeekStats[] {
     const idx = d === 0 ? 6 : d - 1;
     const existing = dayMap.get(idx) || { wins: 0, total: 0, pnl: 0 };
     existing.total++;
-    if (t.net_pnl! > 0) existing.wins++;
+    if ((t.net_pnl ?? 0) > 0) existing.wins++;
     existing.pnl += t.net_pnl || 0;
     dayMap.set(idx, existing);
   });
@@ -963,25 +976,25 @@ export function calculateTradeDurations(trades: Trade[]): TradeDurationStats {
     return formatDuration(total / arr.length);
   };
 
-  const winners = closed.filter((t) => t.net_pnl! > 0);
-  const losers = closed.filter((t) => t.net_pnl! < 0);
+  const winners = closed.filter((t) => (t.net_pnl ?? 0) > 0);
+  const losers = closed.filter((t) => (t.net_pnl ?? 0) < 0);
 
   return {
     scalps: {
       count: scalps.length,
-      winRate: scalps.length > 0 ? (scalps.filter((t) => t.net_pnl! > 0).length / scalps.length) * 100 : 0,
+      winRate: scalps.length > 0 ? (scalps.filter((t) => (t.net_pnl ?? 0) > 0).length / scalps.length) * 100 : 0,
       pnl: scalps.reduce((s, t) => s + (t.net_pnl || 0), 0),
       avgDuration: avgDuration(scalps),
     },
     intraday: {
       count: intraday.length,
-      winRate: intraday.length > 0 ? (intraday.filter((t) => t.net_pnl! > 0).length / intraday.length) * 100 : 0,
+      winRate: intraday.length > 0 ? (intraday.filter((t) => (t.net_pnl ?? 0) > 0).length / intraday.length) * 100 : 0,
       pnl: intraday.reduce((s, t) => s + (t.net_pnl || 0), 0),
       avgDuration: avgDuration(intraday),
     },
     swing: {
       count: swing.length,
-      winRate: swing.length > 0 ? (swing.filter((t) => t.net_pnl! > 0).length / swing.length) * 100 : 0,
+      winRate: swing.length > 0 ? (swing.filter((t) => (t.net_pnl ?? 0) > 0).length / swing.length) * 100 : 0,
       pnl: swing.reduce((s, t) => s + (t.net_pnl || 0), 0),
       avgDuration: avgDuration(swing),
     },
@@ -1048,7 +1061,7 @@ export function calculateExecutiveSummary(trades: Trade[]): ExecutiveSummary | n
     return Math.abs(dailyPnl.reduce((s, d) => s + d.pnl, 0) / dailyPnl.length);
   })();
 
-  const estimatedImprovement = Math.round(avgLossPerDay * 20);
+  const estimatedImprovement = Math.round(avgLossPerDay * 11);
 
   return {
     monthLabel,
@@ -1087,7 +1100,7 @@ export function calculateTopInsightCards(trades: Trade[]): {
   const totalPnl = closed.reduce((s, t) => s + (t.net_pnl || 0), 0);
 
   const bestSymbol = symbolStats[0];
-  const worstSymbol = symbolStats[symbolStats.length - 1];
+  const worstSymbol = symbolStats.length > 0 ? symbolStats[symbolStats.length - 1] : null;
 
   const bestSessionStat = sessionStats.length > 0
     ? sessionStats.reduce((best, s) => (s.pnl > best.pnl ? s : best), sessionStats[0])
@@ -1100,7 +1113,7 @@ export function calculateTopInsightCards(trades: Trade[]): {
     label: "Best Instrument",
     value: bestSymbol.symbol,
     winRate: bestSymbol.winRate,
-    profitFactor: bestSymbol.profitFactor === Infinity ? 99.9 : bestSymbol.profitFactor,
+    profitFactor: bestSymbol.profitFactor === 99.9 ? 99.9 : bestSymbol.profitFactor,
     detail: totalPnl > 0
       ? `You earn ${Math.round((bestSymbol.pnl / totalPnl) * 100)}% of profits from ${bestSymbol.symbol}.`
       : `${bestSymbol.symbol}: ${bestSymbol.winRate.toFixed(0)}% WR, $${bestSymbol.pnl.toFixed(0)} P&L.`,
@@ -1111,7 +1124,7 @@ export function calculateTopInsightCards(trades: Trade[]): {
     label: "Weakest Instrument",
     value: worstSymbol.symbol,
     winRate: worstSymbol.winRate,
-    profitFactor: worstSymbol.profitFactor === Infinity ? 99.9 : worstSymbol.profitFactor,
+    profitFactor: worstSymbol.profitFactor === 99.9 ? 99.9 : worstSymbol.profitFactor,
     detail: worstSymbol.pnl < 0
       ? `Consider reducing exposure. -$${Math.abs(worstSymbol.pnl).toFixed(0)} total loss.`
       : "Performing adequately.",
@@ -1139,7 +1152,7 @@ export function calculateTopInsightCards(trades: Trade[]): {
       return getSessionLabel(hour) === worstSessionStat.session;
     })),
     detail: worstSessionStat.pnl < 0
-      ? `Losses increase by ${Math.round(Math.abs(worstSessionStat.pnl) / Math.max(1, Math.abs(totalPnl)) * 100)}% here.`
+      ? `-$${Math.abs(worstSessionStat.pnl).toFixed(0)} P&L in ${worstSessionStat.session} session.`
       : "Performing adequately.",
     isPositive: worstSessionStat.pnl >= 0,
   } : null;
@@ -1162,16 +1175,16 @@ export function calculatePatternDetections(trades: Trade[]): {
 
   const patterns: DetectedPattern[] = [];
 
-  const normalWinRate = (closed.filter((t) => t.net_pnl! > 0).length / closed.length) * 100;
+  const normalWinRate = (closed.filter((t) => (t.net_pnl ?? 0) > 0).length / closed.length) * 100;
 
   const postLossTrades: Trade[] = [];
   for (let i = 1; i < closed.length; i++) {
-    if (closed[i - 1].net_pnl! < 0) {
+    if ((closed[i - 1].net_pnl ?? 0) < 0) {
       postLossTrades.push(closed[i]);
     }
   }
   if (postLossTrades.length >= 5) {
-    const postLossWinRate = (postLossTrades.filter((t) => t.net_pnl! > 0).length / postLossTrades.length) * 100;
+    const postLossWinRate = (postLossTrades.filter((t) => (t.net_pnl ?? 0) > 0).length / postLossTrades.length) * 100;
     if (postLossWinRate < normalWinRate * 0.7) {
       patterns.push({
         title: "After consecutive losses",
@@ -1198,128 +1211,74 @@ export function calculatePatternDetections(trades: Trade[]): {
 
   let overtrading: OvertradingPattern | null = null;
   if (highDays.length > 0 && lowDays.length > 0) {
-    const highDayPnl = closed
-      .filter((t) => highDays.includes(t.entry_time.split("T")[0]))
-      .reduce((s, t) => s + (t.net_pnl || 0), 0) / highDays.length;
-    const lowDayPnl = closed
-      .filter((t) => lowDays.includes(t.entry_time.split("T")[0]))
-      .reduce((s, t) => s + (t.net_pnl || 0), 0) / lowDays.length;
-
+    const highPnl = highDays.reduce((s, d) => {
+      const dayTrades = closed.filter((t) => t.entry_time.startsWith(d));
+      return s + dayTrades.reduce((ps, t) => ps + (t.net_pnl || 0), 0);
+    }, 0);
+    const lowPnl = lowDays.reduce((s, d) => {
+      const dayTrades = closed.filter((t) => t.entry_time.startsWith(d));
+      return s + dayTrades.reduce((ps, t) => ps + (t.net_pnl || 0), 0);
+    }, 0);
     overtrading = {
-      highTradeDays: { count: highDays.length, avgPnl: Math.round(highDayPnl * 100) / 100, label: "8+ trades/day" },
-      lowTradeDays: { count: lowDays.length, avgPnl: Math.round(lowDayPnl * 100) / 100, label: "≤4 trades/day" },
+      highTradeDays: { count: highDays.length, avgPnl: highDays.length > 0 ? highPnl / highDays.length : 0, label: "High frequency (≥8 trades)" },
+      lowTradeDays: { count: lowDays.length, avgPnl: lowDays.length > 0 ? lowPnl / lowDays.length : 0, label: "Normal frequency (≤4 trades)" },
     };
-
-    if (highDayPnl < lowDayPnl) {
-      patterns.push({
-        title: "Overtrading reduces profits",
-        normalWinRate: normalWinRate,
-        affectedWinRate: (closed.filter((t) => highDays.includes(t.entry_time.split("T")[0]) && t.net_pnl! > 0).length /
-          closed.filter((t) => highDays.includes(t.entry_time.split("T")[0])).length) * 100,
-        recommendation: `Days with 8+ trades: $${highDayPnl.toFixed(0)} avg. Days with ≤4 trades: $${lowDayPnl.toFixed(0)} avg.`,
-        severity: "warning",
-      });
-    }
-  }
-
-  let revengeCount = 0;
-  let totalLosses = 0;
-  for (let i = 0; i < closed.length; i++) {
-    if (closed[i].net_pnl! < 0) {
-      totalLosses++;
-      if (i > 0 && closed[i - 1].net_pnl! < 0) {
-        const timeDiff = new Date(closed[i].entry_time).getTime() - new Date(closed[i - 1].entry_time).getTime();
-        if (timeDiff < 20 * 60 * 1000) {
-          revengeCount++;
-        }
-      }
-    }
   }
 
   let revenge: RevengePattern | null = null;
-  if (totalLosses >= 3) {
-    const revengePct = (revengeCount / totalLosses) * 100;
-    revenge = { percentage: Math.round(revengePct), threshold: 20 };
-    if (revengePct > 20) {
-      patterns.push({
-        title: "Revenge trading detected",
-        normalWinRate,
-        affectedWinRate: 0,
-        recommendation: `${revengePct.toFixed(0)}% of losses occur within 20 minutes after another losing trade. Consider a cooldown period.`,
-        severity: "critical",
-      });
+  const revengeThreshold = 20;
+  if (postLossTrades.length >= 5) {
+    const postLossWinRate = (postLossTrades.filter((t) => (t.net_pnl ?? 0) > 0).length / postLossTrades.length) * 100;
+    if (postLossWinRate < normalWinRate * 0.75) {
+      revenge = {
+        percentage: Math.round((1 - postLossWinRate / normalWinRate) * 100),
+        threshold: revengeThreshold,
+      };
     }
   }
 
   return { patterns, overtrading, revenge };
 }
 
-export function calculateOpportunityAnalysis(trades: Trade[]): OpportunityFound | null {
+export function calculateOpportunityFinder(trades: Trade[]): OpportunityFound[] {
   const closed = trades.filter((t) => t.net_pnl !== null);
-  if (closed.length < 15) return null;
+  if (closed.length < 15) return [];
 
   const strategyStats = calculateStrategyStats(closed);
-  const totalTrades = closed.length;
+  const total = closed.length;
 
-  const underused = strategyStats
-    .filter((s) => s.winRate > 60 && (s.totalTrades / totalTrades) < 0.2)
-    .sort((a, b) => b.winRate - a.winRate);
-
-  if (underused.length === 0) return null;
-
-  const best = underused[0];
-  return {
-    strategy: best.strategy,
-    winRate: best.winRate,
-    usagePercent: Math.round((best.totalTrades / totalTrades) * 100),
-    totalTrades: best.totalTrades,
-    recommendation: `Your ${best.strategy} setup has a ${best.winRate.toFixed(0)}% win rate but only ${Math.round((best.totalTrades / totalTrades) * 100)}% of trades use it. Increasing usage may improve performance.`,
-  };
+  return strategyStats
+    .filter((s) => s.totalTrades >= 3)
+    .map((s) => ({
+      strategy: s.strategy,
+      winRate: s.winRate,
+      usagePercent: (s.totalTrades / total) * 100,
+      totalTrades: s.totalTrades,
+      recommendation: s.averageRR > 1.5
+        ? `Scale up ${s.strategy} — strong R:R`
+        : `Review ${s.strategy} entries — R:R can improve`,
+    }))
+    .sort((a, b) => b.winRate - a.winRate)
+    .slice(0, 5);
 }
 
 export function calculateStrengths(trades: Trade[]): StrengthItem[] {
   const closed = trades.filter((t) => t.net_pnl !== null);
   if (closed.length < 5) return [];
 
-  const flags = calculateBehaviourFlags(closed);
-  const riskStats = calculateRiskStats(closed);
-  const symbolStats = calculateSymbolStats(closed);
-
   const items: StrengthItem[] = [];
+  const winRate = (closed.filter((t) => (t.net_pnl ?? 0) > 0).length / closed.length) * 100;
 
-  items.push({
-    label: "Excellent risk control",
-    passed: riskStats.stopLossPct > 80,
-  });
+  items.push({ label: `Win Rate: ${winRate.toFixed(0)}%`, passed: winRate > 55 });
 
-  items.push({
-    label: "Consistent position sizing",
-    passed: riskStats.riskConsistency > 70,
-  });
+  const avgRR = calculateAverageRR(closed);
+  items.push({ label: `Risk-Reward: ${avgRR.toFixed(1)}R`, passed: avgRR > 1.5 });
 
-  const bestSymbol = symbolStats.length > 0 ? symbolStats[0] : null;
-  items.push({
-    label: `Strong ${bestSymbol?.symbol || "—"} execution`,
-    passed: bestSymbol ? bestSymbol.winRate > 55 : false,
-  });
+  const planAdherence = closed.filter((t) => t.followed_plan).length / closed.length;
+  items.push({ label: `Plan: ${(planAdherence * 100).toFixed(0)}%`, passed: planAdherence > 0.8 });
 
-  const planFlag = flags.find((f) => f.id === "plan");
-  items.push({
-    label: "Strong plan discipline",
-    passed: planFlag?.status === "ok",
-  });
-
-  const cuttingFlag = flags.find((f) => f.id === "cutting");
-  items.push({
-    label: "Cutting losers fast",
-    passed: cuttingFlag?.status === "ok",
-  });
-
-  const holdingFlag = flags.find((f) => f.id === "holding");
-  items.push({
-    label: "Holding winners",
-    passed: holdingFlag?.status === "ok",
-  });
+  const slUsage = closed.filter((t) => t.stop_loss !== null).length / closed.length;
+  items.push({ label: `Stop Loss: ${(slUsage * 100).toFixed(0)}%`, passed: slUsage > 0.9 });
 
   return items;
 }
@@ -1344,7 +1303,7 @@ export function calculateImprovementAreas(trades: Trade[]): string[] {
 
   const holdingFlag = flags.find((f) => f.id === "holding");
   if (holdingFlag?.status === "warn") {
-    areas.push("Holding losing trades too long");
+    areas.push("Exiting winners too early");
   }
 
   const planFlag = flags.find((f) => f.id === "plan");
@@ -1435,11 +1394,11 @@ export function calculateEdgeDiscovery(trades: Trade[]): EdgeCondition | null {
 
   combos.forEach((tradesArr, key) => {
     if (tradesArr.length < 3) return;
-    const wr = (tradesArr.filter((t) => t.net_pnl! > 0).length / tradesArr.length) * 100;
-    const gp = tradesArr.filter((t) => t.net_pnl! > 0).reduce((s, t) => s + (t.net_pnl || 0), 0);
-    const gl = Math.abs(tradesArr.filter((t) => t.net_pnl! < 0).reduce((s, t) => s + (t.net_pnl || 0), 0));
-    const pf = gl > 0 ? gp / gl : gp > 0 ? 99 : 0;
-    const score = wr * 0.5 + pf * 10 + tradesArr.length * 0.5;
+    const wr = (tradesArr.filter((t) => (t.net_pnl ?? 0) > 0).length / tradesArr.length) * 100;
+    const gp = tradesArr.filter((t) => (t.net_pnl ?? 0) > 0).reduce((s, t) => s + (t.net_pnl || 0), 0);
+    const gl = Math.abs(tradesArr.filter((t) => (t.net_pnl ?? 0) < 0).reduce((s, t) => s + (t.net_pnl || 0), 0));
+    const pf = gl > 0 ? gp / gl : gp > 0 ? 10 : 0;
+    const score = wr * 0.5 + pf * 2 + tradesArr.length;
 
     if (score > bestScore) {
       bestScore = score;
@@ -1456,9 +1415,9 @@ export function calculateEdgeDiscovery(trades: Trade[]): EdgeCondition | null {
   const day = parts[2];
   const setup = parts[3];
   const t = bestTradesArr;
-  const wr = (t.filter((x) => x.net_pnl! > 0).length / t.length) * 100;
-  const gp = t.filter((x) => x.net_pnl! > 0).reduce((s, x) => s + (x.net_pnl || 0), 0);
-  const gl = Math.abs(t.filter((x) => x.net_pnl! < 0).reduce((s, x) => s + (x.net_pnl || 0), 0));
+  const wr = (t.filter((x) => (x.net_pnl ?? 0) > 0).length / t.length) * 100;
+  const gp = t.filter((x) => (x.net_pnl ?? 0) > 0).reduce((s, x) => s + (x.net_pnl || 0), 0);
+  const gl = Math.abs(t.filter((x) => (x.net_pnl ?? 0) < 0).reduce((s, x) => s + (x.net_pnl || 0), 0));
 
   return {
     instrument,
@@ -1494,7 +1453,7 @@ export function calculateWeeklyReview(trades: Trade[]): WeeklyReview | null {
   }
 
   const profit = weekTrades.reduce((s, t) => s + (t.net_pnl || 0), 0);
-  const wins = weekTrades.filter((t) => t.net_pnl! > 0).length;
+  const wins = weekTrades.filter((t) => (t.net_pnl ?? 0) > 0).length;
   const winRate = (wins / weekTrades.length) * 100;
 
   const strategyStats = calculateStrategyStats(weekTrades);
@@ -1527,16 +1486,15 @@ export function calculateProjectedPerformance(trades: Trade[]): ProjectedPerform
 
   const last30 = closed.slice(-Math.min(30, closed.length));
   const monthlyPnl = last30.reduce((s, t) => s + (t.net_pnl || 0), 0);
-  const avgDailyPnl = monthlyPnl / Math.max(1, last30.length / 5);
-
+  const tradingDays = new Set(last30.map((t) => t.entry_time.split("T")[0])).size;
+  const avgDailyPnl = monthlyPnl / Math.max(1, tradingDays);
   const expectedMonthlyProfit = Math.round(avgDailyPnl * 22 * 100) / 100;
 
   const dailyPnl = calculateDailyPnl(last30);
-  const avgDailyAbs = dailyPnl.reduce((s, d) => s + Math.abs(d.pnl), 0) / Math.max(1, dailyPnl.length);
-  const denom = Math.max(1, Math.abs(expectedMonthlyProfit));
-  const expectedDrawdown = Math.min(30, Math.round((avgDailyAbs * 5 / denom) * 100 * 10) / 10);
+  const drawdownStats = calculateDrawdownAnalysis(last30, Math.abs(last30.reduce((s, t) => s + (t.net_pnl || 0), 0)) || 1000);
+  const expectedDrawdown = Math.min(30, Math.round(drawdownStats.maxDrawdownPct * 10) / 10);
 
-  const winRate = (last30.filter((t) => t.net_pnl! > 0).length / last30.length) * 100;
+  const winRate = (last30.filter((t) => (t.net_pnl ?? 0) > 0).length / last30.length) * 100;
   const confidence = Math.min(95, Math.round(50 + closed.length * 0.3 + winRate * 0.3));
 
   return {
@@ -1569,8 +1527,8 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   const flags = calculateBehaviourFlags(closed);
   const avgRR = calculateAverageRR(closed);
 
-  const winningTrades = closed.filter((t) => t.net_pnl! > 0);
-  const losingTrades = closed.filter((t) => t.net_pnl! < 0);
+  const winningTrades = closed.filter((t) => (t.net_pnl ?? 0) > 0);
+  const losingTrades = closed.filter((t) => (t.net_pnl ?? 0) < 0);
   const winRate = (winningTrades.length / closed.length) * 100;
   const planAdherence = closed.filter((t) => t.followed_plan === true).length / closed.length;
 
@@ -1583,9 +1541,9 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   const revengeFlag = flags.find((f) => f.id === "revenge");
   const overtradingFlag = flags.find((f) => f.id === "overtrading");
 
-  // ── Risk Management ──
-  const slUsageScore = riskStats.stopLossPct; // 0-100
-  const riskConsistencyScore = riskStats.riskConsistency; // 0-100
+  // Risk Management
+  const slUsageScore = riskStats.stopLossPct;
+  const riskConsistencyScore = riskStats.riskConsistency;
   const riskStdDev = riskStats.largestRiskPct > 0
     ? Math.sqrt(Math.pow(riskStats.largestRiskPct - riskStats.avgRiskPct, 2))
     : 0;
@@ -1597,13 +1555,13 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
     slUsageScore * 0.25 + riskConsistencyScore * 0.25 + riskVarianceScore * 0.25 + appropriateRiskScore * 0.25
   );
 
-  // ── Execution ──
+  // Execution
   const rrScore = Math.min(avgRR / 2.0, 1) * 50;
   const wrScore = (winRate / 100) * 30;
   const planScore = planAdherence * 20;
   const execution = Math.round(Math.min(100, rrScore + wrScore + planScore));
 
-  // ── Consistency ──
+  // Consistency
   const planFlagScore = planFlag?.status === "ok" ? 40 : planFlag?.status === "warn" ? 20 : 10;
   const lotConScore = riskStats.riskConsistency * 0.3;
   const dailyTradeVariance = (() => {
@@ -1621,7 +1579,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   })();
   const consistency = Math.round(Math.min(100, planFlagScore + lotConScore + dailyTradeVariance));
 
-  // ── Patience ──
+  // Patience
   const tpdScore = (() => {
     if (avgTradesPerDay <= 2) return 95;
     if (avgTradesPerDay <= 4) return 85;
@@ -1631,7 +1589,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   })();
   const sessionFocusPct = (() => {
     const focused = closed.filter((t) => {
-      const h = new Date(t.entry_time).getUTCHours();
+      const h = new Date(t.entry_time).getHours();
       const session = h >= 8 && h < 13 ? "London" : h >= 13 && h < 21 ? "NY" : "";
       return session !== "";
     }).length;
@@ -1640,7 +1598,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   const sessionScore = (sessionFocusPct / 100) * 20;
   const patience = Math.round(Math.min(100, tpdScore + sessionScore));
 
-  // ── Psychology ──
+  // Psychology
   const tradesWithEmotions = closed.filter((t) =>
     t.fear_level !== null || t.greed_level !== null || t.confidence_before !== null
   );
@@ -1654,10 +1612,10 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
     (t.fear_level ?? 5) >= 6 || (t.greed_level ?? 5) >= 7
   );
   const calmWR = calmTrades.length > 0
-    ? calmTrades.filter((t) => t.net_pnl! > 0).length / calmTrades.length
+    ? calmTrades.filter((t) => (t.net_pnl ?? 0) > 0).length / calmTrades.length
     : 0.5;
   const emotionalWR = emotionalTrades.length > 0
-    ? emotionalTrades.filter((t) => t.net_pnl! > 0).length / emotionalTrades.length
+    ? emotionalTrades.filter((t) => (t.net_pnl ?? 0) > 0).length / emotionalTrades.length
     : 0.5;
 
   let calmScore = 20;
@@ -1671,7 +1629,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   const revengeScore = revengeFlag?.status === "ok" ? 30 : revengeFlag?.status === "bad" ? 0 : 15;
   const psychology = Math.round(Math.min(100, taggingScore + calmScore + revengeScore));
 
-  // ── Discipline ──
+  // Discipline
   const discPlanScore = planAdherence * 40;
   const mistakesPerTrade = (() => {
     const withMistakes = closed.filter((t) => t.mistakes && t.mistakes.length > 0);
@@ -1689,12 +1647,12 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
   const discOvertradingScore = overtradingFlag?.status === "ok" ? 10 : overtradingFlag?.status === "warn" ? 5 : 0;
   const discipline = Math.round(Math.min(100, discPlanScore + discMistakeScore + discOvertradingScore));
 
-  // ── Overall ──
+  // Overall
   const overall = Math.round(
     riskManagement * 0.25 + execution * 0.20 + consistency * 0.15 + patience * 0.15 + psychology * 0.15 + discipline * 0.10
   );
 
-  // ── Weaknesses ──
+  // Weaknesses
   const pillars: { key: keyof TraderScorecard; label: string; score: number }[] = [
     { key: "riskManagement", label: "Risk Management", score: riskManagement },
     { key: "execution", label: "Execution", score: execution },
@@ -1721,7 +1679,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
     };
   });
 
-  // ── Trends ──
+  // Trends
   const mid = Math.floor(closed.length / 2);
   const early = closed.slice(0, mid);
   const late = closed.slice(mid);
@@ -1731,7 +1689,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
     const r = calculateRiskStats(batch);
     const f = calculateBehaviourFlags(batch);
     const rr = calculateAverageRR(batch);
-    const wins = batch.filter((t) => t.net_pnl! > 0).length;
+    const wins = batch.filter((t) => (t.net_pnl ?? 0) > 0).length;
     const wr = (wins / batch.length) * 100;
     const plan = batch.filter((t) => t.followed_plan === true).length / batch.length;
     const tpd = batch.length / Math.max(1,
@@ -1766,7 +1724,7 @@ export function calculateTraderScorecard(trades: Trade[]): TraderScorecard | nul
     discipline: trendDir(roughPillar("discipline", late), roughPillar("discipline", early)),
   };
 
-  // ── Pillar Details ──
+  // Pillar Details
   const pillarDetails = {
     riskManagement: `Stop loss used on ${riskStats.stopLossPct.toFixed(0)}% of trades. Sizing consistency: ${riskStats.riskConsistency.toFixed(0)}%. Average risk: ${riskStats.avgRiskPct.toFixed(2)}% per trade.`,
     patience: `Average ${avgTradesPerDay.toFixed(1)} trades per day. ${avgTradesPerDay <= 4 ? "Healthy trade frequency." : avgTradesPerDay <= 6 ? "Moderate frequency — consider fewer, higher-quality setups." : "High frequency — overtrading may reduce edge."} ${sessionFocusPct >= 70 ? "Strong session focus." : "Consider focusing on London/NY sessions."}`,
@@ -1828,7 +1786,7 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
   minutesBeforeExit: number;
   wasAfterConsecutiveLoss: boolean;
   consecutiveLossCount: number;
-  similarEntryWinRate: number;
+  similarEntryWinRate: number | null;
   possibleReasons: string[];
   suggestedImprovement: string;
 } {
@@ -1850,7 +1808,7 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
   const tradeIdx = sorted.findIndex((t) => t.id === trade.id);
   if (tradeIdx >= 0) {
     for (let i = tradeIdx - 1; i >= 0; i--) {
-      if (sorted[i].net_pnl! < 0) consecutiveLossCount++;
+      if ((sorted[i].net_pnl ?? 0) < 0) consecutiveLossCount++;
       else break;
     }
   }
@@ -1861,8 +1819,8 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
     t.direction === trade.direction
   );
   const similarEntryWinRate = similarTrades.length > 0
-    ? (similarTrades.filter((t) => t.net_pnl! > 0).length / similarTrades.length) * 100
-    : 0;
+    ? (similarTrades.filter((t) => (t.net_pnl ?? 0) > 0).length / similarTrades.length) * 100
+    : null;
 
   const possibleReasons: string[] = [];
 
@@ -1894,7 +1852,7 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
     possibleReasons.push("No stop loss set");
   }
 
-  if (similarEntryWinRate < 40 && similarTrades.length >= 3) {
+  if (similarEntryWinRate !== null && similarEntryWinRate < 40 && similarTrades.length >= 3) {
     possibleReasons.push(`Similar ${trade.symbol} ${trade.direction} entries only win ${similarEntryWinRate.toFixed(0)}% of the time`);
   }
 
@@ -1913,7 +1871,7 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
     suggestedImprovement = "Stick to your trading plan — deviating reduces your edge.";
   } else if (trade.stop_loss === null) {
     suggestedImprovement = "Always set a stop loss to protect your capital.";
-  } else if (similarEntryWinRate < 40 && similarTrades.length >= 3) {
+  } else if (similarEntryWinRate !== null && similarEntryWinRate < 40 && similarTrades.length >= 3) {
     suggestedImprovement = `Avoid ${trade.symbol} ${trade.direction} setups — your win rate here is only ${similarEntryWinRate.toFixed(0)}%.`;
   }
 
@@ -1922,7 +1880,7 @@ export function analyzeLosingTrade(trade: Trade, recentTrades: Trade[]): {
     minutesBeforeExit,
     wasAfterConsecutiveLoss: consecutiveLossCount > 0,
     consecutiveLossCount,
-    similarEntryWinRate: Math.round(similarEntryWinRate * 10) / 10,
+    similarEntryWinRate: similarEntryWinRate !== null ? Math.round(similarEntryWinRate * 10) / 10 : null,
     possibleReasons,
     suggestedImprovement,
   };

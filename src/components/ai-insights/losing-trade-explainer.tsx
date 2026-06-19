@@ -111,9 +111,9 @@ export function LosingTradeExplainer({
               <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>Similar Entry WR</div>
               <div
                 className="text-[12px] font-semibold font-[var(--font-playfair)]"
-                style={{ color: analysis.localAnalysis.similarEntryWinRate > 50 ? "var(--color-profit)" : "var(--color-loss)" }}
+                style={{ color: analysis.localAnalysis.similarEntryWinRate !== null && analysis.localAnalysis.similarEntryWinRate > 50 ? "var(--color-profit)" : "var(--color-loss)" }}
               >
-                {analysis.localAnalysis.similarEntryWinRate}%
+                {analysis.localAnalysis.similarEntryWinRate !== null ? `${analysis.localAnalysis.similarEntryWinRate}%` : "—"}
               </div>
             </div>
           </div>

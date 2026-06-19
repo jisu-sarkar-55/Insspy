@@ -107,6 +107,8 @@ Focus on:
 - Specific areas for improvement`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -121,7 +123,9 @@ Focus on:
         temperature: 0.7,
         max_tokens: 2000,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
@@ -169,6 +173,8 @@ New trade: ${JSON.stringify(trade)}
 Provide brief advice on whether this trade aligns with the trader's patterns and any considerations.`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -183,7 +189,9 @@ Provide brief advice on whether this trade aligns with the trader's patterns and
         temperature: 0.7,
         max_tokens: 500,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content || "No advice available.";
@@ -249,6 +257,8 @@ Provide a brief, coach-like analysis (3-5 sentences max). Focus on:
 Be direct and conversational, like a coach talking to a student. No bullet points, just natural language.`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -263,7 +273,9 @@ Be direct and conversational, like a coach talking to a student. No bullet point
         temperature: 0.7,
         max_tokens: 500,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content || "Unable to analyze this trade at this time.";

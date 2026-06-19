@@ -173,6 +173,9 @@ export default function ImportPage() {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") document.getElementById("file-input")?.click(); }}
             className={`border-2 border-dashed rounded-lg p-6 sm:p-12 text-center transition-colors cursor-pointer`}
             style={{
               borderColor: file ? "var(--color-profit)" : "var(--border-subtle)",

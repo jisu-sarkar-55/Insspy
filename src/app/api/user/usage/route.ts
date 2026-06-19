@@ -7,7 +7,8 @@ async function safeCount(query: ReturnType<typeof sql>): Promise<number> {
   try {
     const [row] = await query;
     return Number((row as { cnt?: number })?.cnt ?? 0);
-  } catch {
+  } catch (e) {
+    console.error("safeCount error:", e);
     return 0;
   }
 }

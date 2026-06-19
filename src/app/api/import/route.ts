@@ -248,6 +248,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
+    }
+
     const text = await file.text();
 
     const firstLine = text.trim().split("\n")[0].toLowerCase();
@@ -287,7 +292,7 @@ export async function POST(request: NextRequest) {
 
       await sql`
         INSERT INTO import_log (user_id, source, trades_count) VALUES (${user.id}, 'csv', ${data.length})
-      `.catch(() => {});
+      `.catch((e) => console.error("import_log insert failed:", e));
 
       return NextResponse.json({
         success: true,
@@ -301,7 +306,7 @@ export async function POST(request: NextRequest) {
     console.error("Import error:", err);
     return NextResponse.json(
       { error: "Failed to parse file. Make sure it's a valid MT5 export." },
-      { status: 500 }
+      { status: 400 }
     );
   }
 }

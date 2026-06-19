@@ -7,7 +7,7 @@ import {
   calculateExecutiveSummary,
   calculateTopInsightCards,
   calculatePatternDetections,
-  calculateOpportunityAnalysis,
+  calculateOpportunityFinder,
   calculateStrengths,
   calculateImprovementAreas,
   calculateMoneyLeaks,
@@ -121,7 +121,7 @@ export default function AiInsightsPage() {
   const executiveSummary = useMemo(() => calculateExecutiveSummary(closed), [closed]);
   const topInsights = useMemo(() => calculateTopInsightCards(closed), [closed]);
   const patterns = useMemo(() => calculatePatternDetections(closed), [closed]);
-  const opportunity = useMemo(() => calculateOpportunityAnalysis(closed), [closed]);
+  const opportunity = useMemo(() => calculateOpportunityFinder(closed), [closed]);
   const strengths = useMemo(() => calculateStrengths(closed), [closed]);
   const improvements = useMemo(() => calculateImprovementAreas(closed), [closed]);
   const moneyLeaks = useMemo(() => calculateMoneyLeaks(closed), [closed]);
@@ -258,7 +258,7 @@ export default function AiInsightsPage() {
         {(() => {
           const locked = sectionLocked("opportunity-analysis");
           if (locked) return <InsufficientData section={locked} />;
-          if (opportunity) return <OpportunityAnalysis data={opportunity} />;
+          if (opportunity && opportunity.length > 0) return <OpportunityAnalysis data={opportunity[0]} />;
           return null;
         })()}
       </div>

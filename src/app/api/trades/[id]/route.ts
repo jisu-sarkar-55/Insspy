@@ -9,6 +9,11 @@ export async function GET(
   const supabase = await createClient();
   const { id } = await params;
 
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (id && !UUID_REGEX.test(id)) {
+    return NextResponse.json({ error: "Invalid trade ID" }, { status: 400 });
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,6 +38,11 @@ export async function PUT(
 ) {
   const supabase = await createClient();
   const { id } = await params;
+
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (id && !UUID_REGEX.test(id)) {
+    return NextResponse.json({ error: "Invalid trade ID" }, { status: 400 });
+  }
 
   const {
     data: { user },
@@ -76,6 +86,11 @@ export async function DELETE(
 ) {
   const supabase = await createClient();
   const { id } = await params;
+
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (id && !UUID_REGEX.test(id)) {
+    return NextResponse.json({ error: "Invalid trade ID" }, { status: 400 });
+  }
 
   const {
     data: { user },

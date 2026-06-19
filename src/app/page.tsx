@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useInView } from "@/hooks/use-in-view";
 import {
@@ -10,17 +11,16 @@ import {
   BookOpen,
   Shield,
   Zap,
-  Check,
   Star,
   ArrowRight,
   Menu,
   X,
   LayoutDashboard,
-  Settings,
   FileText,
   Target,
   Library,
   Upload,
+  Settings,
   ExternalLink,
   Mail,
 } from "lucide-react";
@@ -56,7 +56,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/">
-              <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+              <Image src="/logo1.png" alt="Insspy" width={160} height={24} priority className="h-8 w-auto" />
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
@@ -78,6 +78,7 @@ export default function HomePage() {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle menu"
                 className="md:hidden p-3 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
                 style={{ color: "var(--text-secondary)" }}
               >

@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
 
   let trade_id: string | undefined;
 
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   try {
     const limitCheck = await checkAiLimit(user.id);
     if (!limitCheck.allowed) {
@@ -28,9 +35,8 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    const body = await request.json();
-    trade_id = body.trade_id;
-  } catch {
+    trade_id = body.trade_id as string | undefined;
+  } catch (err) {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }
 
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
     const aiAnalysis = await explainLosingTrade(trade as unknown as Trade, allTrades as unknown as Trade[], {
       session: localAnalysis.session,
       consecutiveLossCount: localAnalysis.consecutiveLossCount,
-      similarEntryWinRate: localAnalysis.similarEntryWinRate,
+      similarEntryWinRate: localAnalysis.similarEntryWinRate ?? 0,
       possibleReasons: localAnalysis.possibleReasons,
     });
 

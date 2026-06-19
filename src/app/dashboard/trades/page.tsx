@@ -249,18 +249,19 @@ export default function TradesPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/dashboard/trades/${trade.id}`}>
-                        <Button variant="ghost" size="icon" style={{ color: "var(--text-muted)" }}>
+                        <Button variant="ghost" size="icon" aria-label="View trade" style={{ color: "var(--text-muted)" }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
                       <Link href={`/dashboard/trades/${trade.id}/edit`}>
-                        <Button variant="ghost" size="icon" style={{ color: "var(--text-muted)" }}>
+                        <Button variant="ghost" size="icon" aria-label="Edit trade" style={{ color: "var(--text-muted)" }}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </Link>
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Delete trade"
                         style={{ color: "var(--color-loss)" }}
                         onClick={() => setDeleteTarget(trade.id)}
                       >

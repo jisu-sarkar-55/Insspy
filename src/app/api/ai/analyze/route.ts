@@ -20,6 +20,13 @@ export async function POST(request: NextRequest) {
   let strategy: string | undefined;
   let queryLimit = 100;
 
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   try {
     const limitCheck = await checkAiLimit(user.id);
     if (!limitCheck.allowed) {
@@ -29,11 +36,10 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    const body = await request.json();
-    account_id = body.account_id;
-    strategy = body.strategy;
-    queryLimit = body.limit ?? 100;
-  } catch {
+    account_id = body.account_id as string | undefined;
+    strategy = body.strategy as string | undefined;
+    queryLimit = (body.limit as number) ?? 100;
+  } catch (err) {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }
 

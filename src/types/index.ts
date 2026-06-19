@@ -389,7 +389,7 @@ export interface LosingTradeAnalysis {
     minutesBeforeExit: number;
     wasAfterConsecutiveLoss: boolean;
     consecutiveLossCount: number;
-    similarEntryWinRate: number;
+    similarEntryWinRate: number | null;
     possibleReasons: string[];
     suggestedImprovement: string;
   };
