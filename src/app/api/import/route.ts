@@ -20,11 +20,25 @@ function parseNumber(value: string): number {
   return parseFloat(value.replace(/\s/g, "")) || 0;
 }
 
+function detectDelimiter(line: string): string {
+  return line.includes("\t") ? "\t" : ",";
+}
+
+function splitLine(line: string, delimiter: string): string[] {
+  return line.split(delimiter).map((v) => v.trim());
+}
+
+function parseCsvLines(text: string): string[] {
+  return text.trim().replace(/\r\n/g, "\n").split("\n");
+}
+
 function parseDealLevelCsv(csvText: string): Mt5Trade[] {
-  const lines = csvText.trim().split("\n");
+  const lines = parseCsvLines(csvText);
+  if (lines.length < 2) return [];
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const delimiter = detectDelimiter(lines[0]);
+  const headers = splitLine(lines[0], delimiter).map((h) => h.toLowerCase());
 
   const timeIdx = headers.indexOf("time");
   const dealIdx = headers.indexOf("deal");
@@ -55,7 +69,7 @@ function parseDealLevelCsv(csvText: string): Mt5Trade[] {
   const deals: Deal[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim());
+    const values = splitLine(lines[i], delimiter);
     if (values.length < 10) continue;
 
     const type = (typeIdx >= 0 ? values[typeIdx] : "").toLowerCase();
@@ -114,10 +128,11 @@ function parseDealLevelCsv(csvText: string): Mt5Trade[] {
 }
 
 function parseMt5Csv(csvText: string): Mt5Trade[] {
-  const lines = csvText.trim().split("\n");
+  const lines = parseCsvLines(csvText);
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const delimiter = detectDelimiter(lines[0]);
+  const headers = splitLine(lines[0], delimiter).map((h) => h.toLowerCase());
 
   const ticketIdx = headers.findIndex((h) => h.includes("ticket") || h === "#");
   const symbolIdx = headers.findIndex((h) => h.includes("symbol") || h.includes("item"));
@@ -134,7 +149,7 @@ function parseMt5Csv(csvText: string): Mt5Trade[] {
   const trades: Mt5Trade[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim());
+    const values = splitLine(lines[i], delimiter);
 
     if (values.length < headers.length - 1) continue;
 
