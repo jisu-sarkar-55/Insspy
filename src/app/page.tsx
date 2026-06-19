@@ -21,9 +21,10 @@ import {
   Target,
   Library,
   Upload,
+  ExternalLink,
+  Mail,
 } from "lucide-react";
 import { useState } from "react";
-import { AdBanner } from "@/components/ads/ad-banner";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView();
@@ -54,13 +55,8 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass-nav border-b" style={{ borderColor: "rgba(160, 135, 90, 0.15)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-                <TrendingUp className="h-4 w-4" style={{ color: "var(--primary)" }} />
-              </div>
-              <span className="font-[var(--font-playfair)] text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                Insspy
-              </span>
+            <Link href="/">
+              <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
@@ -321,9 +317,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
-        <AdBanner slot="landing-features-sep" />
-      </div>
+
 
       {/* ── Features ── */}
       <section id="features" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
@@ -370,9 +364,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
-        <AdBanner slot="landing-dashboard-sep" />
-      </div>
+
 
       {/* ── Dashboard Preview ── */}
       <section className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
@@ -553,44 +545,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="flex justify-center py-6 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
-        <AdBanner slot="landing-how-sep" />
-      </div>
 
-      {/* ── Testimonials ── */}
-      <section className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
-        <div className="max-w-6xl mx-auto">
-          <Reveal className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border mb-4" style={{ borderColor: "rgba(251, 191, 36, 0.2)", background: "rgba(251, 191, 36, 0.06)", color: "var(--primary)" }}>
-              Testimonials
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
-              What Traders Say
-            </h2>
-          </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-5">
-            {[
-              { quote: "This journal completely changed how I approach trading. The AI insights helped me realize I was overtrading after 3 consecutive losses — a pattern I never noticed.", name: "James Mitchell", role: "Forex Trader, 6 years" },
-              { quote: "I've tried dozens of trading journals. Insspy is the first one that actually made me want to log every trade. The analytics are beautiful and the insights are genuinely useful.", name: "Sarah Chen", role: "Swing Trader, 4 years" },
-              { quote: "My win rate went from 52% to 68% in three months after following the AI recommendations. The psychology tracking feature alone was worth the switch.", name: "Marcus Rivera", role: "Day Trader, 8 years" },
-            ].map((testimonial, i) => (
-              <Reveal key={testimonial.name} delay={Math.min(i, 3)}>
-                <div className="gradient-border-card p-6 glow-card h-full flex flex-col">
-                  <Stars />
-                  <blockquote className="mt-4 text-sm leading-relaxed flex-1" style={{ color: "var(--text-secondary)" }}>
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </blockquote>
-                  <div className="mt-5 pt-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.15)" }}>
-                    <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{testimonial.name}</div>
-                    <div className="text-xs" style={{ color: "var(--text-muted)" }}>{testimonial.role}</div>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ── Limits ── */}
       <section id="limits" className="py-20 md:py-28 px-4 border-t" style={{ borderColor: "rgba(160, 135, 90, 0.1)" }}>
@@ -670,13 +627,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <Link href="/" className="flex items-center gap-2.5 mb-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-                  <TrendingUp className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
-                </div>
-                <span className="font-[var(--font-playfair)] text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                  Insspy
-                </span>
+              <Link href="/" className="block mb-3">
+                <img src="/Ilogo.png" alt="Insspy" className="h-9 w-auto" />
               </Link>
               <p className="text-sm max-w-xs" style={{ color: "var(--text-muted)" }}>
                 The premium AI-powered trading journal for serious traders who want to track, analyze, and improve their performance.
@@ -691,10 +643,30 @@ export default function HomePage() {
               </div>
             </div>
             <div>
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Connect</h4>
+              <div className="flex flex-col gap-2">
+                <a href="https://www.instagram.com/insspy_official?=d3JvdGI2ZXFpZjc1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                  Instagram <ExternalLink className="h-3 w-3" />
+                </a>
+                <a href="https://x.com/Insspy_official" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                  X (Twitter) <ExternalLink className="h-3 w-3" />
+                </a>
+                <a href="https://t.me/insspy" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                  Telegram <ExternalLink className="h-3 w-3" />
+                </a>
+                <a href="https://youtube.com/@insspy_official?si=-Q3NqABzJ_px1opW" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>
+                  YouTube <ExternalLink className="h-3 w-3" />
+                </a>
+                <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <Mail className="h-3 w-3" /> support@insspy.com
+                </span>
+              </div>
+            </div>
+            <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>Legal</h4>
               <div className="flex flex-col gap-2">
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}>Privacy Policy</span>
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}>Terms of Service</span>
+                <Link href="/privacy" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Privacy Policy</Link>
+                <Link href="/terms" className="text-sm hover:opacity-80 transition-opacity" style={{ color: "var(--text-secondary)" }}>Terms of Service</Link>
               </div>
             </div>
           </div>

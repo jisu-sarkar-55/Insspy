@@ -15,12 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { CandlestickChart } from "lucide-react";
+
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -70,16 +71,14 @@ export default function SignupPage() {
       >
         <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-                <CandlestickChart className="h-5 w-5" style={{ color: "var(--primary)" }} />
-              </div>
-            </div>
+          <div className="flex justify-center mb-3">
+            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+          </div>
             <CardTitle
               className="text-2xl font-bold"
-              style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
+              style={{ color: "var(--text-primary)" }}
             >
-              Check Your Email
+              Success! Check your email
             </CardTitle>
             <CardDescription style={{ color: "var(--text-secondary)" }}>
               We&apos;ve sent a confirmation link to {email}
@@ -111,19 +110,17 @@ export default function SignupPage() {
       <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-              <CandlestickChart className="h-5 w-5" style={{ color: "var(--primary)" }} />
-            </div>
+            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
           </div>
-          <CardTitle
-            className="text-2xl font-bold"
-            style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
-          >
-            Create Account
-          </CardTitle>
-          <CardDescription style={{ color: "var(--text-secondary)" }}>
-            Start tracking and improving your trading
-          </CardDescription>
+            <CardTitle
+              className="text-2xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Create your account
+            </CardTitle>
+            <CardDescription style={{ color: "var(--text-muted)" }}>
+              Enter your details to get started
+            </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>
           <CardContent className="space-y-4">
@@ -181,12 +178,33 @@ export default function SignupPage() {
                 required
               />
             </div>
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border shrink-0"
+                style={{ accentColor: "var(--primary)" }}
+                required
+              />
+              <label htmlFor="terms" className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" className="hover:underline font-medium" style={{ color: "var(--primary)" }}>
+                  Terms &amp; Conditions
+                </Link>
+                {" "}and{" "}
+                <Link href="/privacy" target="_blank" className="hover:underline font-medium" style={{ color: "var(--primary)" }}>
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
               className="w-full text-[11px] uppercase tracking-wider font-semibold"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
             >
               {loading ? "Creating account..." : "Create Account"}
             </Button>

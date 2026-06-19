@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { CandlestickChart } from "lucide-react";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -58,9 +58,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "rgba(251, 191, 36, 0.12)" }}>
-              <CandlestickChart className="h-5 w-5" style={{ color: "var(--primary)" }} />
-            </div>
+            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
           </div>
           <CardTitle
             className="text-2xl font-bold"
