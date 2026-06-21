@@ -6,6 +6,12 @@ export interface LimitResult {
   limit: number;
 }
 
+const ADMIN_EMAIL = "sarkar55jisu@gmail.com";
+
+function isAdmin(email: string | undefined | null): boolean {
+  return email === ADMIN_EMAIL;
+}
+
 export const FREE_LIMITS = {
   maxTrades: 500,
   maxAiAnalysesPerMonth: 20,
@@ -15,7 +21,8 @@ export const FREE_LIMITS = {
   maxReportDownloadsPerMonth: 10,
 } as const;
 
-export async function checkTradeLimit(userId: string): Promise<LimitResult> {
+export async function checkTradeLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`SELECT count(*)::int as cnt FROM trades WHERE user_id = ${userId}::uuid`;
     const current = Number(row?.cnt ?? 0);
@@ -25,7 +32,8 @@ export async function checkTradeLimit(userId: string): Promise<LimitResult> {
   }
 }
 
-export async function checkAiLimit(userId: string): Promise<LimitResult> {
+export async function checkAiLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`
       SELECT count(*)::int as cnt FROM ai_analyses
@@ -38,7 +46,8 @@ export async function checkAiLimit(userId: string): Promise<LimitResult> {
   }
 }
 
-export async function checkCsvImportLimit(userId: string): Promise<LimitResult> {
+export async function checkCsvImportLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`
       SELECT count(*)::int as cnt FROM import_log
@@ -51,7 +60,8 @@ export async function checkCsvImportLimit(userId: string): Promise<LimitResult> 
   }
 }
 
-export async function checkGoalsLimit(userId: string): Promise<LimitResult> {
+export async function checkGoalsLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`
       SELECT count(*)::int as cnt FROM goals
@@ -64,7 +74,8 @@ export async function checkGoalsLimit(userId: string): Promise<LimitResult> {
   }
 }
 
-export async function checkPlaybooksLimit(userId: string): Promise<LimitResult> {
+export async function checkPlaybooksLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`
       SELECT count(*)::int as cnt FROM setup_playbooks
@@ -77,7 +88,8 @@ export async function checkPlaybooksLimit(userId: string): Promise<LimitResult> 
   }
 }
 
-export async function checkReportDownloadLimit(userId: string): Promise<LimitResult> {
+export async function checkReportDownloadLimit(userId: string, userEmail?: string | null): Promise<LimitResult> {
+  if (isAdmin(userEmail)) return { allowed: true, current: 0, limit: Infinity };
   try {
     const [row] = await sql`
       SELECT count(*)::int as cnt FROM report_downloads
@@ -90,7 +102,8 @@ export async function checkReportDownloadLimit(userId: string): Promise<LimitRes
   }
 }
 
-export async function incrementReportDownload(userId: string): Promise<void> {
+export async function incrementReportDownload(userId: string, userEmail?: string | null): Promise<void> {
+  if (isAdmin(userEmail)) return;
   try {
     await sql`
       INSERT INTO report_downloads (user_id) VALUES (${userId})

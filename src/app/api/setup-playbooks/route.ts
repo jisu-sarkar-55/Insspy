@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkPlaybooksLimit(user.id);
+    const limitCheck = await checkPlaybooksLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `Setup playbook limit reached (${limitCheck.current}/${limitCheck.limit}). Delete existing playbooks to create more.`,

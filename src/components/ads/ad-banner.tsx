@@ -1,5 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+const ADMIN_EMAIL = "sarkar55jisu@gmail.com";
+
 type AdFormat = "banner" | "native";
 
 interface AdConfig {
@@ -94,7 +99,20 @@ function nativeHTML(key: string): string {
 
 export function AdBanner({ slot }: AdBannerProps) {
   const config = AD_CONFIGS[slot];
+  const [showAd, setShowAd] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    createClient().auth.getUser().then(({ data }) => {
+      if (!cancelled && data.user?.email !== ADMIN_EMAIL) {
+        setShowAd(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   if (!config) return null;
+  if (!showAd) return null;
 
   const adHTML = config.format === "native"
     ? nativeHTML(config.key)

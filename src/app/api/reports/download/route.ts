@@ -13,7 +13,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limitCheck = await checkReportDownloadLimit(user.id);
+  const limitCheck = await checkReportDownloadLimit(user.id, user.email);
 
   if (!limitCheck.allowed) {
     return NextResponse.json({
@@ -22,7 +22,7 @@ export async function POST() {
     }, { status: 429 });
   }
 
-  await incrementReportDownload(user.id);
+  await incrementReportDownload(user.id, user.email);
 
   return NextResponse.json({
     allowed: true,

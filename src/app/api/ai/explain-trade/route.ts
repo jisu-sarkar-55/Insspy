@@ -27,15 +27,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkAiLimit(user.id);
+    trade_id = body.trade_id as string | undefined;
+
+    const limitCheck = await checkAiLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `AI analysis limit reached (${limitCheck.current}/${limitCheck.limit} this month).`,
         usage: limitCheck,
       }, { status: 429 });
     }
-
-    trade_id = body.trade_id as string | undefined;
   } catch (err) {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }

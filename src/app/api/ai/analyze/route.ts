@@ -28,17 +28,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkAiLimit(user.id);
+    account_id = body.account_id as string | undefined;
+    strategy = body.strategy as string | undefined;
+    queryLimit = (body.limit as number) ?? 100;
+
+    const limitCheck = await checkAiLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `AI analysis limit reached (${limitCheck.current}/${limitCheck.limit} this month).`,
         usage: limitCheck,
       }, { status: 429 });
     }
-
-    account_id = body.account_id as string | undefined;
-    strategy = body.strategy as string | undefined;
-    queryLimit = (body.limit as number) ?? 100;
   } catch (err) {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }

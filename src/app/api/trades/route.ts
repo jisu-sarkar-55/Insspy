@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkTradeLimit(user.id);
+    const limitCheck = await checkTradeLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `Trade limit reached (${limitCheck.current}/${limitCheck.limit}). Delete existing trades to add more.`,

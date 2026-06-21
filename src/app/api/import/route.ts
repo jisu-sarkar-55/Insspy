@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkCsvImportLimit(user.id);
+    const limitCheck = await checkCsvImportLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `CSV import limit reached (${limitCheck.current}/${limitCheck.limit}).`,

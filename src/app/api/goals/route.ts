@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkGoalsLimit(user.id);
+    const limitCheck = await checkGoalsLimit(user.id, user.email);
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: `Active goal limit reached (${limitCheck.current}/${limitCheck.limit}). Complete or delete existing goals to create more.`,
