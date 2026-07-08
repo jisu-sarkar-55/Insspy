@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { TradeReplay } from "@/components/analytics/trade-replay";
 import { AlertCircle, Play } from "lucide-react";
-import { AdBanner } from "@/components/ads/ad-banner";
 import type { Trade } from "@/types";
 
 function SkeletonCard() {
@@ -162,7 +161,6 @@ export default function TradeReplayPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="trade-replay-mid" />
       </div>
 
       <div>
@@ -183,7 +181,6 @@ export default function TradeReplayPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="trade-replay-bottom" />
       </div>
     </div>
   );

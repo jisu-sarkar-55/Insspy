@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { AdBanner } from "@/components/ads";
 
 interface NavItem {
   name: string;
@@ -136,7 +135,6 @@ export function Sidebar() {
       </div>
 
       <div className="border-t px-2 py-2" style={{ borderColor: "var(--border-subtle)" }}>
-        <AdBanner slot="sidebar" />
       </div>
 
       <div

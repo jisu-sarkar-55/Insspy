@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { TradeForm } from "@/components/trades/trade-form";
-import { AdBanner } from "@/components/ads/ad-banner";
 
 export default function NewTradePage() {
   const router = useRouter();
@@ -30,7 +29,6 @@ export default function NewTradePage() {
       <TradeForm />
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="trade-new-bottom" />
       </div>
     </div>
   );

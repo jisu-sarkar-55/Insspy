@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo, type ComponentType } from "react";
 import { FileText, Calendar, Building2, Download, AlertCircle, AlertTriangle } from "lucide-react";
-import { AdBanner } from "@/components/ads/ad-banner";
 import type { Trade } from "@/types";
 
 interface ReportType {
@@ -274,7 +273,6 @@ export default function ReportsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="reports-top" />
       </div>
 
       <div>
@@ -379,7 +377,6 @@ export default function ReportsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="reports-mid" />
       </div>
 
       {selectedReportData && PDFViewer && (
@@ -443,7 +440,6 @@ export default function ReportsPage() {
       )}
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="reports-bottom" />
       </div>
     </div>
   );

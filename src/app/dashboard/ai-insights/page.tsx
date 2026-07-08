@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import {
   calculateExecutiveSummary,
@@ -208,7 +207,6 @@ export default function AiInsightsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="ai-insights-top" />
       </div>
 
       {/* ── Losing Trade Explainer ── */}
@@ -243,7 +241,6 @@ export default function AiInsightsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="ai-insights-extra-1" />
       </div>
 
       {/* Edge Discovery + Opportunity */}
@@ -264,7 +261,6 @@ export default function AiInsightsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="ai-insights-sep" />
       </div>
 
       {/* ── Coaching ── */}
@@ -281,7 +277,6 @@ export default function AiInsightsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="ai-insights-bottom" />
       </div>
 
       {/* ── Projections ── */}
@@ -303,7 +298,6 @@ export default function AiInsightsPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="ai-insights-extra-2" />
       </div>
     </div>
   );

@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { CHALLENGES, computeChallengeProgress } from "@/lib/challenges";
 import { ChallengeCard } from "@/components/challenges/challenge-card";
-import { AdBanner } from "@/components/ads/ad-banner";
 import type { Trade, ChallengeProgress } from "@/types";
 
 type FilterTab = "all" | "active" | "completed";
@@ -183,7 +182,6 @@ export default function ChallengesPage() {
       <FilterBar active={filter} onChange={setFilter} />
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="challenges-mid" />
       </div>
 
       {/* Challenge grid */}
@@ -210,7 +208,6 @@ export default function ChallengesPage() {
       )}
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="challenges-bottom" />
       </div>
     </div>
   );

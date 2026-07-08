@@ -15,7 +15,6 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { Trade } from "@/types";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AdBanner } from "@/components/ads/ad-banner";
 
 export default function TradeDetailPage() {
   const params = useParams();
@@ -290,7 +289,6 @@ export default function TradeDetailPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="trade-detail-bottom" />
       </div>
     </div>
   );

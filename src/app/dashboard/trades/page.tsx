@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Eye, Pencil, Trash2, Trash } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AdBanner } from "@/components/ads";
 import type { Trade } from "@/types";
 
 export default function TradesPage() {
@@ -329,7 +328,6 @@ export default function TradesPage() {
       />
 
       <div className="pt-4">
-        <AdBanner slot="trades-banner" />
       </div>
     </div>
   );

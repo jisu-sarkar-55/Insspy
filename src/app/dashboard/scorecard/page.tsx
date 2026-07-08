@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { AdBanner } from "@/components/ads/ad-banner";
 import { calculateTraderScorecard } from "@/lib/calculations";
 import { ScoreRing } from "@/components/scorecard/score-ring";
 import { ScoreBreakdown } from "@/components/scorecard/score-breakdown";
@@ -250,7 +249,6 @@ export default function ScorecardPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="scorecard-top" />
       </div>
 
       {/* Weaknesses + Strengths */}
@@ -264,7 +262,6 @@ export default function ScorecardPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="scorecard-mid" />
       </div>
 
       {/* Detailed analysis */}
@@ -357,7 +354,6 @@ export default function ScorecardPage() {
       </div>
 
       <div className="flex justify-center py-4">
-        <AdBanner slot="scorecard-bottom" />
       </div>
     </div>
   );
