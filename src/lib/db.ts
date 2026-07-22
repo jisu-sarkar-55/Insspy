@@ -4,7 +4,7 @@ const globalForSql = globalThis as unknown as { sql: ReturnType<typeof postgres>
 
 const sql =
   globalForSql.sql ??
-  postgres(process.env.DATABASE_URL!, {
+  postgres(process.env.SUPABASE_DATABASE_URL!, {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 10,
