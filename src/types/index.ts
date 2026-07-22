@@ -58,6 +58,7 @@ export interface DashboardStats {
   profitFactor: number;
   averageWin: number;
   averageLoss: number;
+  averageRR: number;
   bestDay: number;
   bestDayDate: string | null;
   bestDayTrades: number;

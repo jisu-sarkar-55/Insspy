@@ -465,27 +465,68 @@ export function TradeForm({ initialData, isEditing = false }: TradeFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="net_pnl" style={{ color: "var(--text-secondary)" }}>
-              Net P&L ($) *
-            </Label>
-            <Input
-              id="net_pnl"
-              type="number"
-              step="0.01"
-              placeholder="Enter the exact P&L from your broker"
-              value={formData.net_pnl ?? ""}
-              onChange={(e) =>
-                updateField(
-                  "net_pnl",
-                  e.target.value ? parseFloat(e.target.value) : undefined
-                )
-              }
-              style={inputStyle}
-            />
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Copy the profit/loss value from MT5. Positive = profit, negative = loss.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="net_pnl" style={{ color: "var(--text-secondary)" }}>
+                Net P&L ($) *
+              </Label>
+              <Input
+                id="net_pnl"
+                type="number"
+                step="0.01"
+                placeholder="Enter the exact P&L from your broker"
+                value={formData.net_pnl ?? ""}
+                onChange={(e) =>
+                  updateField(
+                    "net_pnl",
+                    e.target.value ? parseFloat(e.target.value) : undefined
+                  )
+                }
+                style={inputStyle}
+              />
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Copy the profit/loss value from MT5. Positive = profit, negative = loss.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label style={{ color: "var(--text-secondary)" }}>
+                Risk:Reward (R:R)
+              </Label>
+              <div
+                className="flex h-10 items-center rounded-md border px-3 text-sm font-medium"
+                style={{
+                  background: "var(--surface-raised)",
+                  borderColor: "var(--border-subtle)",
+                  color:
+                    (() => {
+                      const ep = formData.entry_price;
+                      const sl = formData.stop_loss;
+                      const tp = formData.take_profit;
+                      if (!ep || !sl || !tp) return "var(--text-muted)";
+                      const risk = Math.abs(ep - sl);
+                      const reward = Math.abs(tp - ep);
+                      if (risk === 0) return "var(--text-muted)";
+                      const rr = reward / risk;
+                      return rr >= 2 ? "var(--color-profit)" : rr >= 1 ? "var(--color-warning)" : "var(--color-loss)";
+                    })()
+                  }}
+                >
+                  {(() => {
+                    const ep = formData.entry_price;
+                    const sl = formData.stop_loss;
+                    const tp = formData.take_profit;
+                    if (!ep || !sl || !tp) return <span style={{ color: "var(--text-muted)" }}>Set SL & TP to calculate</span>;
+                    const risk = Math.abs(ep - sl);
+                    if (risk === 0) return <span style={{ color: "var(--text-muted)" }}>Set SL & TP to calculate</span>;
+                    const reward = Math.abs(tp - ep);
+                    const rr = reward / risk;
+                    return `${rr.toFixed(2)}R`;
+                  })()}
+                </div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Auto-calculated from entry, SL & TP.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

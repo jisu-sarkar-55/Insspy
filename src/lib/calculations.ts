@@ -47,6 +47,7 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
       profitFactor: 0,
       averageWin: 0,
       averageLoss: 0,
+      averageRR: 0,
       bestDay: 0,
       bestDayDate: null,
       bestDayTrades: 0,
@@ -89,12 +90,13 @@ export function calculateDashboardStats(trades: Trade[]): DashboardStats {
   }
 
   return {
-    totalTrades: closedTrades.length,
+      totalTrades: closedTrades.length,
     winRate: (winningTrades.length / closedTrades.length) * 100,
     netPnl: totalPnl,
     profitFactor: grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99.9 : 0,
     averageWin,
     averageLoss,
+    averageRR: calculateAverageRR(closedTrades),
     bestDay,
     bestDayDate: bestDayEntry?.date || null,
     bestDayTrades: bestDayEntry?.trades || 0,

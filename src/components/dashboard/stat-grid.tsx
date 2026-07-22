@@ -49,6 +49,23 @@ export function StatGrid({ stats }: StatGridProps) {
           : "Needs work",
     },
     {
+      label: "Avg R:R",
+      value: stats.averageRR > 0 ? `${stats.averageRR.toFixed(2)}R` : "—",
+      icon: Activity,
+      color:
+        stats.averageRR >= 2
+          ? "var(--color-profit)"
+          : stats.averageRR >= 1
+          ? "var(--color-warning)"
+          : "var(--text-muted)",
+      sub:
+        stats.averageRR >= 2
+          ? "Excellent"
+          : stats.averageRR >= 1
+          ? "Room for improvement"
+          : "Insufficient data",
+    },
+    {
       label: "Best day",
       value: `$${stats.bestDay.toFixed(0)}`,
       icon: TrendingUp,
@@ -102,7 +119,7 @@ export function StatGrid({ stats }: StatGridProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 stagger-children">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7 stagger-children">
       {cards.map((card) => (
         <div
           key={card.label}
