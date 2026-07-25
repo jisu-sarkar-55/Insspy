@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 import { explainLosingTrade } from "@/lib/openrouter";
 import { analyzeLosingTrade } from "@/lib/calculations";
 import { checkAiLimit } from "@/lib/limits";
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
         usage: limitCheck,
       }, { status: 429 });
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }
 
@@ -45,17 +44,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const [trade] = await sql`
-      SELECT * FROM trades WHERE id = ${trade_id} AND user_id = ${user.id}
-    `;
+    const { data: trade, error: tradeError } = await supabase
+      .from("trades")
+      .select("*")
+      .eq("id", trade_id)
+      .eq("user_id", user.id)
+      .single();
 
-    if (!trade) {
-      return NextResponse.json({ error: "Trade not found" }, { status: 404 });
+    if (tradeError) {
+      if (tradeError.code === "PGRST116") {
+        return NextResponse.json({ error: "Trade not found" }, { status: 404 });
+      }
+      throw tradeError;
     }
 
-    const allTrades = await sql`
-      SELECT * FROM trades WHERE user_id = ${user.id} ORDER BY entry_time DESC LIMIT 20
-    `;
+    const { data: allTrades, error: allError } = await supabase
+      .from("trades")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("entry_time", { ascending: false })
+      .limit(20);
+
+    if (allError) throw allError;
 
     const localAnalysis = analyzeLosingTrade(trade as unknown as Trade, allTrades as unknown as Trade[]);
 
@@ -69,10 +79,9 @@ export async function POST(request: NextRequest) {
     try {
       const insightsJson = JSON.stringify({ localAnalysis, aiAnalysis });
       const tradeIds = [trade_id];
-      await sql`
-        INSERT INTO ai_analyses (user_id, trade_ids, analysis_text, insights)
-        VALUES (${user.id}, ${tradeIds}, ${aiAnalysis || ""}, ${insightsJson})
-      `;
+      await supabase
+        .from("ai_analyses")
+        .insert({ user_id: user.id, trade_ids: tradeIds, analysis_text: aiAnalysis || "", insights: insightsJson });
     } catch (saveError) {
       console.error("Error saving AI analysis:", saveError);
     }

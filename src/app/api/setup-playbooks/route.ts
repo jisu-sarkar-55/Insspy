@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 import { checkPlaybooksLimit } from "@/lib/limits";
 
 export async function GET() {
@@ -15,9 +14,14 @@ export async function GET() {
   }
 
   try {
-    const data = await sql`
-      SELECT * FROM setup_playbooks WHERE user_id = ${user.id} ORDER BY created_at DESC
-    `;
+    const { data, error } = await supabase
+      .from("setup_playbooks")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
@@ -57,11 +61,15 @@ export async function POST(request: NextRequest) {
       if (key in body) insertData[key] = body[key];
     }
 
-    const data = await sql`
-      INSERT INTO setup_playbooks ${sql(insertData)}
-      RETURNING *
-    `;
-    return NextResponse.json(data[0], { status: 201 });
+    const { data, error } = await supabase
+      .from("setup_playbooks")
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }

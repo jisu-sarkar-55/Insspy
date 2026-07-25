@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 import { checkCsvImportLimit } from "@/lib/limits";
 
 interface Mt5Trade {
@@ -258,16 +257,16 @@ export async function POST(request: NextRequest) {
     const firstLine = text.trim().split("\n")[0].toLowerCase();
     const isDealFormat = firstLine.includes("deal") && firstLine.includes("direction");
 
-    const trades = isDealFormat ? parseDealLevelCsv(text) : parseMt5Csv(text);
+    const parsedTrades = isDealFormat ? parseDealLevelCsv(text) : parseMt5Csv(text);
 
-    if (trades.length === 0) {
+    if (parsedTrades.length === 0) {
       return NextResponse.json(
         { error: "No valid trades found in the file. Check the format." },
         { status: 400 }
       );
     }
 
-    const insertData = trades.map((t) => ({
+    const insertData = parsedTrades.map((t) => ({
       user_id: user.id,
       symbol: t.symbol,
       direction: t.direction,
@@ -285,14 +284,20 @@ export async function POST(request: NextRequest) {
     }));
 
     try {
-      const data = await sql`
-        INSERT INTO trades ${sql(insertData, 'user_id', 'symbol', 'direction', 'entry_price', 'exit_price', 'lot_size', 'entry_time', 'exit_time', 'pnl', 'commission', 'swap', 'net_pnl', 'source', 'mt5_ticket')}
-        RETURNING *
-      `;
+      const { data, error } = await supabase
+        .from("trades")
+        .insert(insertData)
+        .select();
 
-      await sql`
-        INSERT INTO import_log (user_id, source, trades_count) VALUES (${user.id}, 'csv', ${data.length})
-      `.catch((e) => console.error("import_log insert failed:", e));
+      if (error) throw error;
+
+      try {
+        await supabase
+          .from("import_log")
+          .insert({ user_id: user.id, source: "csv", trades_count: data.length });
+      } catch (e) {
+        console.error("import_log insert failed:", e);
+      }
 
       return NextResponse.json({
         success: true,

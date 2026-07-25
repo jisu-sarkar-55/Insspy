@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
+import { createServiceClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const apiKey = request.headers.get("x-api-key");
@@ -9,22 +8,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing x-api-key header" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   try {
-    const [keyData] = await sql`
-      SELECT user_id FROM api_keys WHERE key = ${apiKey}
-    `;
+    const { data: keyData, error: keyError } = await supabase
+      .from("api_keys")
+      .select("user_id")
+      .eq("key", apiKey)
+      .single();
 
-    if (!keyData) {
+    if (keyError || !keyData) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
 
     const userId = keyData.user_id;
 
-    await sql`
-      UPDATE api_keys SET last_used = ${new Date().toISOString()} WHERE key = ${apiKey}
-    `.catch((e) => console.error("api_keys update failed:", e));
+    try {
+      await supabase
+        .from("api_keys")
+        .update({ last_used: new Date().toISOString() })
+        .eq("key", apiKey);
+    } catch (e) {
+      console.error("api_keys update failed:", e);
+    }
 
     const trades = await request.json();
 
@@ -60,12 +66,14 @@ export async function POST(request: NextRequest) {
       .filter((t): t is string => !!t);
 
     if (mt5Tickets.length > 0) {
-      const existing: { mt5_ticket: string }[] = await sql`
-        SELECT mt5_ticket FROM trades WHERE user_id = ${userId} AND mt5_ticket = ANY(${mt5Tickets})
-      `;
+      const { data: existing } = await supabase
+        .from("trades")
+        .select("mt5_ticket")
+        .eq("user_id", userId)
+        .in("mt5_ticket", mt5Tickets);
 
       const existingTickets = new Set(
-        (existing || []).map((e) => e.mt5_ticket)
+        (existing || []).map((e: { mt5_ticket: string }) => e.mt5_ticket)
       );
 
       const newTrades = insertData.filter(
@@ -80,27 +88,12 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const typedNew = newTrades.map((t) => ({
-        user_id: t.user_id as string,
-        symbol: t.symbol as string,
-        direction: t.direction as string,
-        entry_price: t.entry_price as number,
-        exit_price: t.exit_price as number | null,
-        lot_size: t.lot_size as number,
-        entry_time: t.entry_time as string,
-        exit_time: t.exit_time as string | null,
-        pnl: t.pnl as number,
-        commission: t.commission as number,
-        swap: t.swap as number,
-        net_pnl: t.net_pnl as number,
-        source: t.source as string,
-        mt5_ticket: t.mt5_ticket as string | null,
-      }));
+      const { data, error } = await supabase
+        .from("trades")
+        .insert(newTrades)
+        .select();
 
-      const data = await sql`
-        INSERT INTO trades ${sql(typedNew, 'user_id', 'symbol', 'direction', 'entry_price', 'exit_price', 'lot_size', 'entry_time', 'exit_time', 'pnl', 'commission', 'swap', 'net_pnl', 'source', 'mt5_ticket')}
-        RETURNING *
-      `;
+      if (error) throw error;
 
       return NextResponse.json({
         success: true,
@@ -109,27 +102,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const typedAll = insertData.map((t) => ({
-      user_id: t.user_id as string,
-      symbol: t.symbol as string,
-      direction: t.direction as string,
-      entry_price: t.entry_price as number,
-      exit_price: t.exit_price as number | null,
-      lot_size: t.lot_size as number,
-      entry_time: t.entry_time as string,
-      exit_time: t.exit_time as string | null,
-      pnl: t.pnl as number,
-      commission: t.commission as number,
-      swap: t.swap as number,
-      net_pnl: t.net_pnl as number,
-      source: t.source as string,
-      mt5_ticket: t.mt5_ticket as string | null,
-    }));
+    const { data, error } = await supabase
+      .from("trades")
+      .insert(insertData)
+      .select();
 
-    const data = await sql`
-      INSERT INTO trades ${sql(typedAll, 'user_id', 'symbol', 'direction', 'entry_price', 'exit_price', 'lot_size', 'entry_time', 'exit_time', 'pnl', 'commission', 'swap', 'net_pnl', 'source', 'mt5_ticket')}
-      RETURNING *
-    `;
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,

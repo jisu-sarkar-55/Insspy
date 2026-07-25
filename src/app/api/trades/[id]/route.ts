@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
@@ -23,10 +22,19 @@ export async function GET(
   }
 
   try {
-    const data = await sql`
-      SELECT * FROM trades WHERE id = ${id} AND user_id = ${user.id} LIMIT 1
-    `;
-    return NextResponse.json(data[0] ?? null);
+    const { data, error } = await supabase
+      .from("trades")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return NextResponse.json(null);
+      throw error;
+    }
+
+    return NextResponse.json(data ?? null);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
@@ -59,8 +67,8 @@ export async function PUT(
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const netPnl = body.net_pnl as number ?? ((body.pnl as number || 0) + (body.commission as number || 0) + (body.swap as number || 0));
-  const pnl = body.pnl as number ?? (netPnl - (body.commission as number || 0) - (body.swap as number || 0));
+  const netPnl = (body.net_pnl as number) ?? ((body.pnl as number) || 0) + ((body.commission as number) || 0) + ((body.swap as number) || 0);
+  const pnl = (body.pnl as number) ?? netPnl - ((body.commission as number) || 0) - ((body.swap as number) || 0);
 
   const allowed = ["symbol", "direction", "entry_price", "exit_price", "stop_loss", "take_profit", "lot_size", "entry_time", "exit_time", "commission", "swap", "strategy", "tags", "notes", "screenshot_url", "confidence_before", "fear_level", "greed_level", "followed_plan", "mistakes", "source", "mt5_ticket", "setup_playbook_id", "account_id"];
   const updateData: Record<string, unknown> = { pnl, net_pnl: netPnl, updated_at: new Date().toISOString() };
@@ -69,12 +77,17 @@ export async function PUT(
   }
 
   try {
-    const data = await sql`
-      UPDATE trades SET ${sql(updateData)}
-      WHERE id = ${id} AND user_id = ${user.id}
-      RETURNING *
-    `;
-    return NextResponse.json(data[0]);
+    const { data, error } = await supabase
+      .from("trades")
+      .update(updateData)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
@@ -101,7 +114,14 @@ export async function DELETE(
   }
 
   try {
-    await sql`DELETE FROM trades WHERE id = ${id} AND user_id = ${user.id}`;
+    const { error } = await supabase
+      .from("trades")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });

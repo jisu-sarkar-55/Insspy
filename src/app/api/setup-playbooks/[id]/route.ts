@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
@@ -23,10 +22,19 @@ export async function GET(
   }
 
   try {
-    const data = await sql`
-      SELECT * FROM setup_playbooks WHERE id = ${id} AND user_id = ${user.id} LIMIT 1
-    `;
-    return NextResponse.json(data[0] ?? null);
+    const { data, error } = await supabase
+      .from("setup_playbooks")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return NextResponse.json(null);
+      throw error;
+    }
+
+    return NextResponse.json(data ?? null);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
@@ -66,12 +74,17 @@ export async function PUT(
   }
 
   try {
-    const data = await sql`
-      UPDATE setup_playbooks SET ${sql(updateData)}
-      WHERE id = ${id} AND user_id = ${user.id}
-      RETURNING *
-    `;
-    return NextResponse.json(data[0]);
+    const { data, error } = await supabase
+      .from("setup_playbooks")
+      .update(updateData)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
@@ -98,7 +111,14 @@ export async function DELETE(
   }
 
   try {
-    await sql`DELETE FROM setup_playbooks WHERE id = ${id} AND user_id = ${user.id}`;
+    const { error } = await supabase
+      .from("setup_playbooks")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });

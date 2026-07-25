@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 
 export async function DELETE(
   request: NextRequest,
@@ -23,7 +22,14 @@ export async function DELETE(
   }
 
   try {
-    await sql`DELETE FROM goals WHERE id = ${id} AND user_id = ${user.id}`;
+    const { error } = await supabase
+      .from("goals")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
@@ -58,19 +64,23 @@ export async function PUT(
   }
 
   const allowed = ["title", "type", "target_value", "current_value", "unit", "period", "start_date", "end_date", "status"];
-  const updateData: Record<string, unknown> = {};
+  const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of allowed) {
     if (key in body) updateData[key] = body[key];
   }
-  updateData.updated_at = new Date().toISOString();
 
   try {
-    const data = await sql`
-      UPDATE goals SET ${sql(updateData)}
-      WHERE id = ${id} AND user_id = ${user.id}
-      RETURNING *
-    `;
-    return NextResponse.json(data[0]);
+    const { data, error } = await supabase
+      .from("goals")
+      .update(updateData)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }

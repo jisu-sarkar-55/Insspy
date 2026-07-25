@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 import crypto from "crypto";
 
 function generateApiKey(): string {
@@ -20,11 +19,13 @@ export async function GET() {
   }
 
   try {
-    const data = await sql`
-      SELECT id, name, key, last_used, created_at FROM api_keys
-      WHERE user_id = ${user.id}
-      ORDER BY created_at DESC
-    `;
+    const { data, error } = await supabase
+      .from("api_keys")
+      .select("id, name, key, last_used, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
 
     return NextResponse.json(data);
   } catch (error) {
@@ -46,11 +47,13 @@ export async function POST() {
   const key = generateApiKey();
 
   try {
-    const [data] = await sql`
-      INSERT INTO api_keys (user_id, key, name)
-      VALUES (${user.id}, ${key}, ${"MT5 Sync Key"})
-      RETURNING *
-    `;
+    const { data, error } = await supabase
+      .from("api_keys")
+      .insert({ user_id: user.id, key, name: "MT5 Sync Key" })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
@@ -82,9 +85,13 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    await sql`
-      DELETE FROM api_keys WHERE id = ${keyId} AND user_id = ${user.id}
-    `;
+    const { error } = await supabase
+      .from("api_keys")
+      .delete()
+      .eq("id", keyId)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {

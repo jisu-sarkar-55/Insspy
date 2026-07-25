@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sql } from "@/lib/db";
 import { analyzeTrades } from "@/lib/openrouter";
 import { checkAiLimit } from "@/lib/limits";
 import type { Trade } from "@/types";
@@ -39,21 +38,25 @@ export async function POST(request: NextRequest) {
         usage: limitCheck,
       }, { status: 429 });
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
   }
 
   try {
-    const trades = await sql`
-      SELECT * FROM trades
-      WHERE user_id = ${user.id}
-      ${account_id ? sql`AND account_id = ${account_id}` : sql``}
-      ${strategy ? sql`AND strategy = ${strategy}` : sql``}
-      ORDER BY entry_time DESC
-      LIMIT ${queryLimit}
-    `;
+    let query = supabase
+      .from("trades")
+      .select("*")
+      .eq("user_id", user.id);
 
-    if (trades.length === 0) {
+    if (account_id) query = query.eq("account_id", account_id);
+    if (strategy) query = query.eq("strategy", strategy);
+
+    query = query.order("entry_time", { ascending: false }).limit(queryLimit);
+
+    const { data: trades, error } = await query;
+    if (error) throw error;
+
+    if (!trades || trades.length === 0) {
       return NextResponse.json(
         { error: "No trades found for analysis" },
         { status: 404 }
@@ -64,13 +67,15 @@ export async function POST(request: NextRequest) {
 
     let savedId: string | undefined;
     try {
-      const tradeIds = trades.map((t: any) => t.id);
+      const tradeIds = trades.map((t: { id: string }) => t.id);
       const insightsJson = JSON.stringify(analysis);
-      const [savedAnalysis] = await sql`
-        INSERT INTO ai_analyses (user_id, trade_ids, analysis_text, insights)
-        VALUES (${user.id}, ${tradeIds}, ${analysis.summary}, ${insightsJson})
-        RETURNING *
-      `;
+      const { data: savedAnalysis, error: saveError } = await supabase
+        .from("ai_analyses")
+        .insert({ user_id: user.id, trade_ids: tradeIds, analysis_text: analysis.summary, insights: insightsJson })
+        .select()
+        .single();
+
+      if (saveError) throw saveError;
       savedId = savedAnalysis?.id;
     } catch (saveError) {
       console.error("Error saving analysis:", saveError);
