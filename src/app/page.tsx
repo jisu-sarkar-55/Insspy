@@ -219,16 +219,16 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8">
               <span className="hud-chip">
                 <span className="hud-label">Trades</span>
-                <span className="hud-value">50,000+</span>
+                <span className="hud-value">N/A</span>
               </span>
               <span className="hud-chip">
                 <span className="hud-label">Traders</span>
-                <span className="hud-value">500+</span>
+                <span className="hud-value">2+</span>
               </span>
               <span className="hud-chip">
                 <span className="hud-label">Rating</span>
                 <span className="hud-value" style={{ color: "var(--primary)" }}>
-                  4.9
+                  N/A
                 </span>
               </span>
             </div>
@@ -572,8 +572,8 @@ export default function HomePage() {
           </Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
-              { value: "50K+", label: "Trades Analyzed" },
-              { value: "500+", label: "Active Traders" },
+              { value: "N/A", label: "Trades Analyzed" },
+              { value: "2+", label: "Active Traders" },
               { value: "20+", label: "Performance Metrics" },
               { value: "4.9", label: "Average Rating" },
             ].map((stat, i) => (

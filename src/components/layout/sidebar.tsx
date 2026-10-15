@@ -50,7 +50,11 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Strategy",
     items: [
-      { name: "Setup Playbook", href: "/dashboard/setup-playbook", icon: Library },
+      {
+        name: "Setup Playbook",
+        href: "/dashboard/setup-playbook",
+        icon: Library,
+      },
     ],
   },
   {
@@ -116,7 +120,10 @@ export function Sidebar() {
               className="mb-1.5 flex items-center gap-1.5 px-2.5 text-[9px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: "var(--text-muted)" }}
             >
-              <span className="inline-block h-1 w-1 rounded-[1px]" style={{ background: "var(--primary)" }} />
+              <span
+                className="inline-block h-1 w-1 rounded-[1px]"
+                style={{ background: "var(--primary)" }}
+              />
               {group.label}
             </div>
             {group.items.map((item) => {
@@ -138,12 +145,7 @@ export function Sidebar() {
       <div
         className="border-t px-3 py-3"
         style={{ borderColor: "var(--border-subtle)" }}
-      >
-        <span className="hud-chip" style={{ width: "100%" }}>
-          <span className="hud-label">Plan</span>
-          <span className="hud-value" style={{ color: "var(--primary)" }}>∞ Unlimited</span>
-        </span>
-      </div>
+      ></div>
 
       <div
         className="border-t p-3"
