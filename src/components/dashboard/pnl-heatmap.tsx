@@ -8,10 +8,10 @@ interface PnlHeatmapProps {
 
 function getColor(pnl: number): string {
   if (pnl === 0) return "var(--border-subtle)";
-  if (pnl > 100) return "rgba(74, 222, 128, 0.7)";
-  if (pnl > 0) return "rgba(74, 222, 128, 0.35)";
-  if (pnl < -30) return "rgba(248, 113, 113, 0.65)";
-  return "rgba(248, 113, 113, 0.3)";
+  if (pnl > 100) return "rgba(52, 211, 153, 0.7)";
+  if (pnl > 0) return "rgba(52, 211, 153, 0.35)";
+  if (pnl < -30) return "rgba(251, 113, 133, 0.65)";
+  return "rgba(251, 113, 133, 0.3)";
 }
 
 export function PnlHeatmap({ days }: PnlHeatmapProps) {
@@ -54,11 +54,11 @@ export function PnlHeatmap({ days }: PnlHeatmapProps) {
         </span>
         <div
           className="h-[10px] w-[14px] rounded-[2px]"
-          style={{ background: "rgba(248, 113, 113, 0.65)" }}
+          style={{ background: "rgba(251, 113, 133, 0.65)" }}
         />
         <div
           className="h-[10px] w-[14px] rounded-[2px]"
-          style={{ background: "rgba(248, 113, 113, 0.3)" }}
+          style={{ background: "rgba(251, 113, 133, 0.3)" }}
         />
         <div
           className="h-[10px] w-[14px] rounded-[2px]"
@@ -66,11 +66,11 @@ export function PnlHeatmap({ days }: PnlHeatmapProps) {
         />
         <div
           className="h-[10px] w-[14px] rounded-[2px]"
-          style={{ background: "rgba(74, 222, 128, 0.35)" }}
+          style={{ background: "rgba(52, 211, 153, 0.35)" }}
         />
         <div
           className="h-[10px] w-[14px] rounded-[2px]"
-          style={{ background: "rgba(74, 222, 128, 0.7)" }}
+          style={{ background: "rgba(52, 211, 153, 0.7)" }}
         />
         <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
           Win

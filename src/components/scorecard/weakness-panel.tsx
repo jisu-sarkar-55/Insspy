@@ -35,8 +35,8 @@ export function WeaknessPanel({ weaknesses, strengths }: WeaknessPanelProps) {
                 key={w.pillar}
                 className="rounded-lg border p-3"
                 style={{
-                  background: "rgba(248, 113, 113, 0.04)",
-                  borderColor: "rgba(248, 113, 113, 0.12)",
+                  background: "rgba(251, 113, 133, 0.04)",
+                  borderColor: "rgba(251, 113, 133, 0.12)",
                 }}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -68,8 +68,8 @@ export function WeaknessPanel({ weaknesses, strengths }: WeaknessPanelProps) {
                 key={s.pillar}
                 className="rounded-lg border p-3"
                 style={{
-                  background: "rgba(74, 222, 128, 0.04)",
-                  borderColor: "rgba(74, 222, 128, 0.12)",
+                  background: "rgba(52, 211, 153, 0.04)",
+                  borderColor: "rgba(52, 211, 153, 0.12)",
                 }}
               >
                 <div className="flex items-center justify-between mb-1">

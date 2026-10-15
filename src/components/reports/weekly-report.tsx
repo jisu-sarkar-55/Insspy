@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingBottom: 6,
     borderBottomWidth: 2,
-    borderBottomColor: "#10b981",
+    borderBottomColor: "#34d399",
   },
   statsGrid: {
     flexDirection: "row",
@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     padding: 6,
   },
-  positive: { color: "#10b981" },
-  negative: { color: "#ef4444" },
+  positive: { color: "#34d399" },
+  negative: { color: "#fb7185" },
   muted: { color: "#999999" },
   summaryCard: {
     flexDirection: "row",

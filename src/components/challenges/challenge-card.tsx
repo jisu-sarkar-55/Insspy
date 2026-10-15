@@ -9,11 +9,11 @@ interface ChallengeCardProps {
 }
 
 const categoryConfig: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  discipline: { label: "Discipline", color: "var(--color-info)", bg: "rgba(96, 165, 250, 0.12)", icon: Target },
-  risk: { label: "Risk", color: "var(--color-warning)", bg: "rgba(251, 191, 36, 0.12)", icon: Shield },
-  performance: { label: "Performance", color: "var(--color-profit)", bg: "rgba(74, 222, 128, 0.12)", icon: TrendingUp },
-  psychology: { label: "Psychology", color: "var(--color-ai)", bg: "rgba(192, 132, 252, 0.12)", icon: Brain },
-  diversification: { label: "Diversification", color: "var(--primary)", bg: "rgba(251, 191, 36, 0.08)", icon: Compass },
+  discipline: { label: "Discipline", color: "var(--color-info)", bg: "rgba(56, 189, 248, 0.12)", icon: Target },
+  risk: { label: "Risk", color: "var(--color-warning)", bg: "rgba(255, 61, 139, 0.12)", icon: Shield },
+  performance: { label: "Performance", color: "var(--color-profit)", bg: "rgba(52, 211, 153, 0.12)", icon: TrendingUp },
+  psychology: { label: "Psychology", color: "var(--color-ai)", bg: "rgba(167, 139, 250, 0.12)", icon: Brain },
+  diversification: { label: "Diversification", color: "var(--primary)", bg: "rgba(255, 61, 139, 0.08)", icon: Compass },
 };
 
 const difficultyConfig: Record<string, { label: string; color: string }> = {
@@ -70,11 +70,11 @@ export function ChallengeCard({ challenge, progress }: ChallengeCardProps) {
       className="rounded-xl border p-4 transition-all hover:translate-y-[-2px]"
       style={{
         background: progress.passed
-          ? "linear-gradient(135deg, rgba(74, 222, 128, 0.06), rgba(74, 222, 128, 0.02))"
+          ? "linear-gradient(135deg, rgba(52, 211, 153, 0.06), rgba(52, 211, 153, 0.02))"
           : "var(--surface-card)",
-        borderColor: progress.passed ? "rgba(74, 222, 128, 0.2)" : "var(--border-subtle)",
+        borderColor: progress.passed ? "rgba(52, 211, 153, 0.2)" : "var(--border-subtle)",
         boxShadow: progress.passed
-          ? "0 0 0 1px rgba(74, 222, 128, 0.08)"
+          ? "0 0 0 1px rgba(52, 211, 153, 0.08)"
           : "none",
       }}
     >
@@ -94,7 +94,7 @@ export function ChallengeCard({ challenge, progress }: ChallengeCardProps) {
             {progress.passed && (
               <div
                 className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                style={{ background: "rgba(74, 222, 128, 0.12)", color: "var(--color-profit)" }}
+                style={{ background: "rgba(52, 211, 153, 0.12)", color: "var(--color-profit)" }}
               >
                 <CheckCircle className="h-2.5 w-2.5" />
                 Passed

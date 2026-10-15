@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import type { LosingTradeAnalysis as LosingTradeAnalysisType, Trade } from "@/types";
 
@@ -18,12 +18,14 @@ export function LosingTradeExplainer({
   loading,
 }: LosingTradeExplainerProps) {
   const [expanded, setExpanded] = useState(false);
+  const [prevAnalysis, setPrevAnalysis] = useState(analysis);
 
-  useEffect(() => {
-    if (analysis && !expanded) {
+  if (analysis !== prevAnalysis) {
+    setPrevAnalysis(analysis);
+    if (analysis) {
       setExpanded(true);
     }
-  }, [analysis, expanded]);
+  }
 
   if (!lastLosingTrade) return null;
 
@@ -51,9 +53,9 @@ export function LosingTradeExplainer({
           disabled={loading}
           className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-semibold transition-colors"
           style={{
-            background: "linear-gradient(135deg, rgba(192, 132, 252, 0.2), rgba(74, 222, 128, 0.15))",
+            background: "linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(52, 211, 153, 0.15))",
             color: "var(--color-ai)",
-            border: "1px solid rgba(192, 132, 252, 0.25)",
+            border: "1px solid rgba(167, 139, 250, 0.25)",
           }}
         >
           {loading ? (
@@ -127,7 +129,7 @@ export function LosingTradeExplainer({
                 <div
                   key={i}
                   className="flex items-start gap-2 rounded-lg p-2.5"
-                  style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.12)" }}
+                  style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.12)" }}
                 >
                   <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--color-loss)" }} />
                   <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>{reason}</span>
@@ -138,7 +140,7 @@ export function LosingTradeExplainer({
 
           <div
             className="rounded-lg p-3"
-            style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(74, 222, 128, 0.15)" }}
+            style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(52, 211, 153, 0.15)" }}
           >
             <div className="text-[10px] font-semibold" style={{ color: "var(--color-profit)" }}>
               Suggested Improvement
@@ -151,7 +153,7 @@ export function LosingTradeExplainer({
           {analysis.aiAnalysis && (
             <div
               className="rounded-lg p-3"
-              style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(192, 132, 252, 0.15)" }}
+              style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(167, 139, 250, 0.15)" }}
             >
               <div className="mb-1 text-[10px] font-semibold" style={{ color: "var(--color-ai)" }}>
                 AI Coach Analysis

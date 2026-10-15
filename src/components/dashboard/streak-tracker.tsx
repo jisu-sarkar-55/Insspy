@@ -10,12 +10,12 @@ const dotStyles = {
   W: {
     bg: "var(--color-profit-bg)",
     color: "var(--color-profit)",
-    border: "rgba(74, 222, 128, 0.2)",
+    border: "rgba(52, 211, 153, 0.2)",
   },
   L: {
     bg: "var(--color-loss-bg)",
     color: "var(--color-loss)",
-    border: "rgba(248, 113, 113, 0.2)",
+    border: "rgba(251, 113, 133, 0.2)",
   },
   B: {
     bg: "var(--surface-raised)",
@@ -90,7 +90,7 @@ export function StreakTracker({ data }: StreakTrackerProps) {
           className="flex-1 rounded-md p-2"
           style={{
             background: "var(--color-profit-bg)",
-            border: "1px solid rgba(74, 222, 128, 0.15)",
+            border: "1px solid rgba(52, 211, 153, 0.15)",
           }}
         >
           <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
@@ -107,7 +107,7 @@ export function StreakTracker({ data }: StreakTrackerProps) {
           className="flex-1 rounded-md p-2"
           style={{
             background: "var(--color-loss-bg)",
-            border: "1px solid rgba(248, 113, 113, 0.15)",
+            border: "1px solid rgba(251, 113, 133, 0.15)",
           }}
         >
           <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>

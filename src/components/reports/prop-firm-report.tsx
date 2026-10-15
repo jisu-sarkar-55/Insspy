@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingBottom: 6,
     borderBottomWidth: 2,
-    borderBottomColor: "#10b981",
+    borderBottomColor: "#34d399",
   },
   row: {
     flexDirection: "row",
@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     padding: 6,
   },
-  positive: { color: "#10b981" },
-  negative: { color: "#ef4444" },
+  positive: { color: "#34d399" },
+  negative: { color: "#fb7185" },
   muted: { color: "#999999" },
   rulesSection: {
     marginTop: 16,
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: "right",
   },
-  pass: { color: "#10b981" },
-  fail: { color: "#ef4444" },
+  pass: { color: "#34d399" },
+  fail: { color: "#fb7185" },
   barOuter: {
     height: 10,
     backgroundColor: "#e5e7eb",
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   barInner: {
     height: "100%",
-    backgroundColor: "#10b981",
+    backgroundColor: "#34d399",
     borderRadius: 5,
   },
   barLabel: {
@@ -241,7 +241,7 @@ export function PropFirmReport({ trades }: Props) {
           <Text style={{ fontSize: 10, color: "#666666", marginTop: 4 }}>
             Account: ${ACCOUNT_SIZE.toLocaleString()} · {sorted.length} trades · {formatCurrency(totalPnl)} net P&L
           </Text>
-          <Text style={{ fontSize: 10, marginTop: 2, color: allPassed ? "#10b981" : "#ef4444" }}>
+          <Text style={{ fontSize: 10, marginTop: 2, color: allPassed ? "#34d399" : "#fb7185" }}>
             Rules: {passedCount}/{rules.length} passed {allPassed ? "✓" : "✗"}
           </Text>
         </View>

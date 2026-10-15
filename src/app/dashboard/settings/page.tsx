@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UsageSummary } from "@/components/usage/usage-summary";
 import { User } from "lucide-react";
 
 export default function SettingsPage() {
@@ -60,8 +59,6 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-
-      <UsageSummary />
 
       <div className="pb-8">
       </div>

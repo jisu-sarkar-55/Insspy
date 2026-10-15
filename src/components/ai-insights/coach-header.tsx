@@ -38,7 +38,7 @@ export function CoachHeader({ tradesAnalyzed, lastAnalysis, dateRange }: CoachHe
         <div className="flex items-center gap-3">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg"
-            style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(192, 132, 252, 0.2)" }}
+            style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(167, 139, 250, 0.2)" }}
           >
             <Brain className="h-5 w-5" style={{ color: "var(--color-ai)" }} />
           </div>

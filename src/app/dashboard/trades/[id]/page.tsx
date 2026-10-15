@@ -80,7 +80,7 @@ export default function TradeDetailPage() {
       <div className="text-center py-12">
         <div
           className="inline-block rounded-lg p-4 text-sm mb-4"
-          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)", color: "var(--color-loss)" }}
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.2)", color: "var(--color-loss)" }}
         >
           {error}
         </div>

@@ -117,7 +117,7 @@ export function AiReflectionPanel({ trades }: AiReflectionPanelProps) {
       className="texture-noise"
       style={{
         background: "var(--surface-card)",
-        borderColor: "rgba(192, 132, 252, 0.3)",
+        borderColor: "rgba(167, 139, 250, 0.3)",
       }}
     >
       <CardHeader className="pb-3">

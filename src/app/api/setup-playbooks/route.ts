@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkPlaybooksLimit } from "@/lib/limits";
 
 export async function GET() {
   const supabase = await createClient();
@@ -47,14 +46,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkPlaybooksLimit(user.id, user.email);
-    if (!limitCheck.allowed) {
-      return NextResponse.json({
-        error: `Setup playbook limit reached (${limitCheck.current}/${limitCheck.limit}). Delete existing playbooks to create more.`,
-        usage: limitCheck,
-      }, { status: 429 });
-    }
-
     const allowed = ["name", "description", "entry_rules", "exit_rules", "timeframe", "market_conditions", "screenshot_urls", "examples", "is_active"];
     const insertData: Record<string, unknown> = { user_id: user.id };
     for (const key of allowed) {

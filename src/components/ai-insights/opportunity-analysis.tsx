@@ -21,7 +21,7 @@ export function OpportunityAnalysis({ data }: OpportunityAnalysisProps) {
 
       <div
         className="rounded-lg p-4"
-        style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(192, 132, 252, 0.15)" }}
+        style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(167, 139, 250, 0.15)" }}
       >
         <div className="mb-3 flex items-center gap-2">
           <Lightbulb className="h-4 w-4" style={{ color: "var(--color-ai)" }} />

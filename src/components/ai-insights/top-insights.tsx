@@ -18,7 +18,7 @@ function InsightCard({ card, icon: Icon, iconColor }: {
   return (
     <div
       className="flex flex-col rounded-lg p-3"
-      style={{ background: card.isPositive ? "rgba(74, 222, 128, 0.04)" : "rgba(248, 113, 113, 0.04)", border: `1px solid ${card.isPositive ? "rgba(74, 222, 128, 0.12)" : "rgba(248, 113, 113, 0.12)"}` }}
+      style={{ background: card.isPositive ? "rgba(52, 211, 153, 0.04)" : "rgba(251, 113, 133, 0.04)", border: `1px solid ${card.isPositive ? "rgba(52, 211, 153, 0.12)" : "rgba(251, 113, 133, 0.12)"}` }}
     >
       <div className="flex items-center gap-1.5 mb-2.5">
         <Icon className="h-3.5 w-3.5" style={{ color: iconColor }} />
@@ -58,7 +58,7 @@ function SessionCard({ insight, icon: Icon, iconColor }: {
   return (
     <div
       className="flex flex-col rounded-lg p-3"
-      style={{ background: insight.isPositive ? "rgba(74, 222, 128, 0.04)" : "rgba(248, 113, 113, 0.04)", border: `1px solid ${insight.isPositive ? "rgba(74, 222, 128, 0.12)" : "rgba(248, 113, 113, 0.12)"}` }}
+      style={{ background: insight.isPositive ? "rgba(52, 211, 153, 0.04)" : "rgba(251, 113, 133, 0.04)", border: `1px solid ${insight.isPositive ? "rgba(52, 211, 153, 0.12)" : "rgba(251, 113, 133, 0.12)"}` }}
     >
       <div className="flex items-center gap-1.5 mb-2.5">
         <Icon className="h-3.5 w-3.5" style={{ color: iconColor }} />

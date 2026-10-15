@@ -6,16 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
-
+import { ArrowLeft, TrendingUp, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -52,33 +44,56 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: "var(--surface-page)" }}
-    >
-      <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-3">
-            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+    <div className="min-h-screen grid lg:grid-cols-2" style={{ background: "var(--surface-page)" }}>
+      {/* ── Left brand panel ── */}
+      <div className="hidden lg:flex flex-col justify-between p-10 relative overflow-hidden border-r" style={{ borderColor: "rgba(63, 63, 63, 0.4)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(40rem_30rem_at_20%_10%,rgba(255,61,139,0.12),transparent_65%)]" />
+        <Link href="/" className="relative">
+          <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+        </Link>
+        <div className="relative">
+          <h2 className="text-5xl font-bold uppercase tracking-tight leading-[0.95]" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+            Welcome<br />back to the<br /><span className="gradient-text">edge.</span>
+          </h2>
+          <div className="flex flex-wrap gap-2 mt-8">
+            <span className="hud-chip"><span className="hud-label">Trades</span><span className="hud-value">50K+</span></span>
+            <span className="hud-chip"><span className="hud-label">Traders</span><span className="hud-value">500+</span></span>
           </div>
-          <CardTitle
-            className="text-2xl font-bold"
-            style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}
-          >
-            Welcome Back
-          </CardTitle>
-          <CardDescription style={{ color: "var(--text-secondary)" }}>
+        </div>
+        <div className="relative flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <TrendingUp className="h-4 w-4" style={{ color: "var(--primary)" }} />
+          We count runs, not luck.
+        </div>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-sm animate-fade-in">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm mb-8 hover:opacity-80 lg:hidden" style={{ color: "var(--text-muted)" }}>
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Link>
+
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--primary)" }}>
+              Sign in
+            </span>
+          </div>
+
+          <h1 className="text-4xl font-bold uppercase tracking-tight mb-2" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+            Welcome back
+          </h1>
+          <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>
             Sign in to your trading journal
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
+          </p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
             {error && (
               <div
-                className="p-3 rounded-md text-sm border"
+                className="p-3 rounded-xl text-sm border"
                 style={{
-                  background: "rgba(248, 113, 113, 0.08)",
-                  borderColor: "rgba(248, 113, 113, 0.2)",
+                  background: "rgba(255, 77, 77, 0.08)",
+                  borderColor: "rgba(255, 77, 77, 0.25)",
                   color: "var(--color-loss)",
                 }}
               >
@@ -118,24 +133,24 @@ export default function LoginPage() {
                 required
               />
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+
             <Button
               type="submit"
-              className="w-full text-[11px] uppercase tracking-wider font-semibold"
+              className="w-full text-xs uppercase tracking-wider h-12 mt-2"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+
+            <p className="text-sm text-center pt-2" style={{ color: "var(--text-secondary)" }}>
               Don&apos;t have an account?{" "}
-              <Link href="/auth/signup" className="hover:underline" style={{ color: "var(--primary)" }}>
+              <Link href="/auth/signup" className="hover:underline font-semibold" style={{ color: "var(--primary)" }}>
                 Sign up
               </Link>
             </p>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

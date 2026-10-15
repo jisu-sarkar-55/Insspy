@@ -13,7 +13,7 @@ const pillars: { key: keyof TraderScorecard["trends"]; label: string; color: str
   { key: "execution", label: "Execution", color: "var(--color-ai)" },
   { key: "consistency", label: "Consistency", color: "var(--primary)" },
   { key: "patience", label: "Patience", color: "var(--color-info)" },
-  { key: "psychology", label: "Psychology", color: "var(--color-premium, #8b5cf6)" },
+  { key: "psychology", label: "Psychology", color: "var(--color-premium, #a78bfa)" },
   { key: "discipline", label: "Discipline", color: "var(--color-warning)" },
 ];
 
@@ -53,7 +53,7 @@ export function TraderIQ({ data }: TraderIQProps) {
         className="pointer-events-none absolute -right-10 -top-10 h-[140px] w-[140px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(255, 61, 139, 0.1) 0%, transparent 70%)",
         }}
       />
       <div
@@ -148,7 +148,7 @@ export function TraderIQ({ data }: TraderIQProps) {
       <Link
         href="/dashboard/scorecard"
         className="mt-3 flex items-center gap-1 text-[11px] font-medium transition-opacity hover:opacity-80"
-        style={{ color: "var(--color-premium, #8b5cf6)" }}
+        style={{ color: "var(--color-premium, #a78bfa)" }}
       >
         View Full Scorecard
         <ArrowUpRight className="h-3 w-3" />

@@ -100,8 +100,8 @@ export default function ResetPasswordPage() {
               <div
                 className="text-sm p-3 rounded-lg"
                 style={{
-                  background: "rgba(248, 113, 113, 0.08)",
-                  borderColor: "rgba(248, 113, 113, 0.2)",
+                  background: "rgba(251, 113, 133, 0.08)",
+                  borderColor: "rgba(251, 113, 133, 0.2)",
                   color: "var(--color-loss)",
                 }}
               >

@@ -68,7 +68,7 @@ export function SessionPerformance({ sessions }: SessionPerformanceProps) {
           className="rounded-md p-2 text-[10px]"
           style={{
             background: "var(--color-loss-bg)",
-            border: "1px solid rgba(248, 113, 113, 0.12)",
+            border: "1px solid rgba(251, 113, 133, 0.12)",
             color: "var(--color-loss)",
           }}
         >

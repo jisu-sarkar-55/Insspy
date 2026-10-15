@@ -36,7 +36,7 @@ export function JournalStatsRow({ trades }: StatsRowProps) {
       label: "Total Entries",
       value: totalEntries,
       color: "var(--primary)",
-      bg: "rgba(251, 191, 36, 0.1)",
+      bg: "rgba(255, 61, 139, 0.1)",
     },
     {
       icon: Lightbulb,

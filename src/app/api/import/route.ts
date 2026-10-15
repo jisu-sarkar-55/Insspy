@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkCsvImportLimit } from "@/lib/limits";
 
 interface Mt5Trade {
   ticket: string;
@@ -218,18 +217,6 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const limitCheck = await checkCsvImportLimit(user.id, user.email);
-    if (!limitCheck.allowed) {
-      return NextResponse.json({
-        error: `CSV import limit reached (${limitCheck.current}/${limitCheck.limit}).`,
-        usage: limitCheck,
-      }, { status: 429 });
-    }
-  } catch {
-    return NextResponse.json({ error: "Failed to check import limit" }, { status: 500 });
   }
 
   try {

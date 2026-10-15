@@ -22,8 +22,8 @@ export function EdgeDiscovery({ data }: EdgeDiscoveryProps) {
       <div
         className="rounded-lg p-4"
         style={{
-          background: "linear-gradient(135deg, rgba(74, 222, 128, 0.08), rgba(192, 132, 252, 0.08))",
-          border: "1px solid rgba(74, 222, 128, 0.15)",
+          background: "linear-gradient(135deg, rgba(52, 211, 153, 0.08), rgba(167, 139, 250, 0.08))",
+          border: "1px solid rgba(52, 211, 153, 0.15)",
         }}
       >
         <div className="mb-3 flex items-center gap-2">

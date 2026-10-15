@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkTradeLimit } from "@/lib/limits";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -89,18 +88,6 @@ export async function POST(request: NextRequest) {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
-
-  try {
-    const limitCheck = await checkTradeLimit(user.id, user.email);
-    if (!limitCheck.allowed) {
-      return NextResponse.json({
-        error: `Trade limit reached (${limitCheck.current}/${limitCheck.limit}). Delete existing trades to add more.`,
-        usage: limitCheck,
-      }, { status: 429 });
-    }
-  } catch {
-    return NextResponse.json({ error: "Failed to check trade limit" }, { status: 500 });
   }
 
   const netPnl = (body.net_pnl as number) ?? ((body.pnl as number) || 0) + ((body.commission as number) || 0) + ((body.swap as number) || 0);

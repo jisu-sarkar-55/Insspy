@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -25,9 +25,12 @@ export function NavLink({
   const pathname = usePathname();
   const [navigating, setNavigating] = useState(false);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setNavigating(false);
-  }, [pathname]);
+  }
 
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
@@ -46,24 +49,23 @@ export function NavLink({
       href={href}
       onClick={handleClick}
       className={cn(
-        "mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[12px] transition-all duration-150",
+        "group relative mb-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[12px] font-medium transition-all duration-150",
       )}
       style={{
         background: isActive
-          ? "rgba(251, 191, 36, 0.08)"
+          ? "rgba(255, 61, 139, 0.12)"
           : navigating
-            ? "rgba(251, 191, 36, 0.05)"
+            ? "rgba(255, 61, 139, 0.06)"
             : "transparent",
         color: isActive
           ? "var(--primary)"
           : navigating
             ? "var(--primary)"
             : "var(--text-secondary)",
-        borderLeft: isActive
-          ? "2px solid var(--primary)"
-          : "2px solid transparent",
-        marginLeft: "-2px",
-        paddingLeft: "10px",
+        border: isActive
+          ? "1px solid rgba(255, 61, 139, 0.25)"
+          : "1px solid transparent",
+        boxShadow: isActive ? "inset 3px 0 0 var(--primary)" : "none",
       }}
     >
       {navigating ? (

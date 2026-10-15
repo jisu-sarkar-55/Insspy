@@ -6,16 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
-
+import { ArrowLeft, TrendingUp, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -65,71 +57,85 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-4"
-        style={{ background: "var(--surface-page)" }}
-      >
-        <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
-          <CardHeader className="text-center">
-          <div className="flex justify-center mb-3">
-            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--surface-page)" }}>
+        <div className="w-full max-w-sm text-center animate-fade-in">
+          <div className="flex justify-center mb-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.25)" }}>
+              <CheckCircle2 className="h-8 w-8" style={{ color: "var(--color-profit)" }} />
+            </div>
           </div>
-            <CardTitle
-              className="text-2xl font-bold"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Success! Check your email
-            </CardTitle>
-            <CardDescription style={{ color: "var(--text-secondary)" }}>
-              We&apos;ve sent a confirmation link to {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4 text-sm" style={{ color: "var(--text-secondary)" }}>
-              Click the link in your email to verify your account and start
-              journaling your trades.
-            </p>
-            <Button
-              onClick={() => router.push("/auth/login")}
-              variant="outline"
-              className="text-[11px] uppercase tracking-wider font-semibold"
-            >
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
+          <h1 className="text-3xl font-bold uppercase tracking-tight mb-2" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+            Check your email
+          </h1>
+          <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+            We&apos;ve sent a confirmation link to <span style={{ color: "var(--primary)" }}>{email}</span>
+          </p>
+          <p className="mb-8 text-sm" style={{ color: "var(--text-muted)" }}>
+            Click the link to verify your account and start journaling your trades.
+          </p>
+          <Button onClick={() => router.push("/auth/login")} variant="outline" className="text-xs uppercase tracking-wider">
+            Go to Login
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: "var(--surface-page)" }}
-    >
-      <Card className="w-full max-w-md animate-fade-in" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-3">
-            <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+    <div className="min-h-screen grid lg:grid-cols-2" style={{ background: "var(--surface-page)" }}>
+      {/* ── Left brand panel ── */}
+      <div className="hidden lg:flex flex-col justify-between p-10 relative overflow-hidden border-r" style={{ borderColor: "rgba(63, 63, 63, 0.4)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(40rem_30rem_at_20%_10%,rgba(255,61,139,0.12),transparent_65%)]" />
+        <Link href="/" className="relative">
+          <img src="/Ilogo.png" alt="Insspy" className="h-10 w-auto" />
+        </Link>
+        <div className="relative">
+          <h2 className="text-5xl font-bold uppercase tracking-tight leading-[0.95]" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+            Start<br />compounding<br />your <span className="gradient-text">edge.</span>
+          </h2>
+          <ul className="mt-8 space-y-3">
+            {["Unlimited trades & AI insights", "Personalized coaching", "Free forever, no card"].map((item) => (
+              <li key={item} className="flex items-center gap-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "var(--color-profit)" }} />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="relative flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <TrendingUp className="h-4 w-4" style={{ color: "var(--primary)" }} />
+          We count runs, not luck.
+        </div>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-sm animate-fade-in">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm mb-8 hover:opacity-80 lg:hidden" style={{ color: "var(--text-muted)" }}>
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Link>
+
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--primary)" }}>
+              Create account
+            </span>
           </div>
-            <CardTitle
-              className="text-2xl font-bold"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Create your account
-            </CardTitle>
-            <CardDescription style={{ color: "var(--text-muted)" }}>
-              Enter your details to get started
-            </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSignup}>
-          <CardContent className="space-y-4">
+
+          <h1 className="text-4xl font-bold uppercase tracking-tight mb-2" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>
+            Get started
+          </h1>
+          <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>
+            Enter your details to start journaling
+          </p>
+
+          <form onSubmit={handleSignup} className="space-y-4">
             {error && (
               <div
-                className="p-3 rounded-md text-sm border"
+                className="p-3 rounded-xl text-sm border"
                 style={{
-                  background: "rgba(248, 113, 113, 0.08)",
-                  borderColor: "rgba(248, 113, 113, 0.2)",
+                  background: "rgba(255, 77, 77, 0.08)",
+                  borderColor: "rgba(255, 77, 77, 0.25)",
                   color: "var(--color-loss)",
                 }}
               >
@@ -199,24 +205,24 @@ export default function SignupPage() {
                 </Link>
               </label>
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+
             <Button
               type="submit"
-              className="w-full text-[11px] uppercase tracking-wider font-semibold"
+              className="w-full text-xs uppercase tracking-wider h-12 mt-2"
               disabled={loading || !acceptedTerms}
             >
               {loading ? "Creating account..." : "Create Account"}
             </Button>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+
+            <p className="text-sm text-center pt-2" style={{ color: "var(--text-secondary)" }}>
               Already have an account?{" "}
-              <Link href="/auth/login" className="hover:underline" style={{ color: "var(--primary)" }}>
+              <Link href="/auth/login" className="hover:underline font-semibold" style={{ color: "var(--primary)" }}>
                 Sign in
               </Link>
             </p>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

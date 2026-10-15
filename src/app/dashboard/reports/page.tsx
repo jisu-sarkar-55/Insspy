@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, type ComponentType } from "react";
-import { FileText, Calendar, Building2, Download, AlertCircle, AlertTriangle } from "lucide-react";
+import { FileText, Calendar, Building2, Download, AlertCircle } from "lucide-react";
 import type { Trade } from "@/types";
 
 interface ReportType {
@@ -59,7 +59,6 @@ export default function ReportsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [pdfGenerate, setPdfGenerate] = useState<((doc: any) => { toBlob: () => Promise<Blob> }) | null>(null);
   const [pdfEngineLoading, setPdfEngineLoading] = useState(true);
-  const [reportUsage, setReportUsage] = useState<{ current: number; limit: number } | null>(null);
   const [downloadMsg, setDownloadMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,18 +88,11 @@ export default function ReportsPage() {
     let cancelled = false;
     async function fetchData() {
       try {
-        const [tradesRes, usageRes] = await Promise.all([
-          fetch("/api/trades"),
-          fetch("/api/user/usage"),
-        ]);
+        const tradesRes = await fetch("/api/trades");
         if (cancelled) return;
         const tradesData = await tradesRes.json();
         if (cancelled) return;
         if (Array.isArray(tradesData)) setTrades(tradesData);
-        if (usageRes.ok) {
-          const usageData = await usageRes.json();
-          if (usageData.report_downloads) setReportUsage(usageData.report_downloads);
-        }
       } catch (err: unknown) {
         if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
@@ -144,22 +136,10 @@ export default function ReportsPage() {
 
   const selectedReportData = reportTypes.find((r) => r.id === selectedReport) || reportTypes[0];
 
-  const downloadsRemaining = reportUsage ? (reportUsage.limit - reportUsage.current) : null;
-
   async function handleDownload(pdfDoc: React.ReactElement, fileName: string) {
     if (!pdfGenerate) return;
-    if (reportUsage && reportUsage.current >= reportUsage.limit) return;
 
-    const res = await fetch("/api/reports/download", { method: "POST" });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setDownloadMsg(data?.error || "Download limit reached");
-      setTimeout(() => setDownloadMsg(null), 3000);
-      return;
-    }
-
-    setReportUsage((prev) => prev ? { ...prev, current: prev.current + 1 } : prev);
+    setDownloadMsg(null);
 
     try {
       const blob = await pdfGenerate(pdfDoc).toBlob();
@@ -241,18 +221,6 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {downloadsRemaining !== null && (
-            <div
-              className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium"
-              style={{
-                background: downloadsRemaining > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                color: downloadsRemaining > 0 ? "var(--color-profit)" : "var(--color-loss)",
-              }}
-            >
-              <Download className="h-3 w-3" />
-              {downloadsRemaining} / {reportUsage?.limit} downloads left
-            </div>
-          )}
           {downloadMsg && (
             <div className="text-[11px] px-2 py-1 rounded" style={{ background: "var(--surface-raised)", color: "var(--color-loss)" }}>
               {downloadMsg}
@@ -297,7 +265,7 @@ export default function ReportsPage() {
                   background: "var(--surface-card)",
                   borderColor: isSelected
                     ? report.featured
-                      ? "var(--color-premium, #8b5cf6)"
+                      ? "var(--color-premium, #a78bfa)"
                       : "var(--color-profit)"
                     : "var(--border-subtle)",
                   ...(report.featured && isSelected
@@ -311,14 +279,14 @@ export default function ReportsPage() {
                     className="rounded-lg p-2"
                     style={{
                       background: report.featured
-                        ? "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))"
+                        ? "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(255,61,139,0.15))"
                         : "var(--surface-raised)",
                     }}
                   >
                     <Icon
                       className="h-5 w-5"
                       style={{
-                        color: report.featured ? "var(--color-premium, #8b5cf6)" : "var(--color-profit)",
+                        color: report.featured ? "var(--color-premium, #a78bfa)" : "var(--color-profit)",
                       }}
                     />
                   </div>
@@ -331,8 +299,8 @@ export default function ReportsPage() {
                         <span
                           className="text-[9px] font-medium px-1.5 py-0.5 rounded"
                           style={{
-                            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.2))",
-                            color: "var(--color-premium, #8b5cf6)",
+                            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(255,61,139,0.2))",
+                            color: "var(--color-premium, #a78bfa)",
                           }}
                         >
                           Featured
@@ -352,7 +320,7 @@ export default function ReportsPage() {
                   </span>
                 </div>
 
-                {pdfGenerate && (downloadsRemaining === null || downloadsRemaining > 0) ? (
+                {pdfGenerate ? (
                   <div
                     className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium cursor-pointer transition-opacity hover:opacity-80"
                     style={{ background: "var(--color-profit)", color: "var(--surface-page)" }}
@@ -360,14 +328,6 @@ export default function ReportsPage() {
                   >
                     <Download className="h-3.5 w-3.5" />
                     Download PDF
-                  </div>
-                ) : pdfGenerate && downloadsRemaining !== null ? (
-                  <div
-                    className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium"
-                    style={{ background: "var(--surface-raised)", color: "var(--text-muted)", cursor: "not-allowed" }}
-                  >
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    Downloads used
                   </div>
                 ) : null}
               </div>
@@ -408,7 +368,7 @@ export default function ReportsPage() {
                   {dateRange}
                 </span>
               </div>
-              {pdfGenerate && (downloadsRemaining === null || downloadsRemaining > 0) ? (
+              {pdfGenerate ? (
                 <div
                   className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium cursor-pointer transition-opacity hover:opacity-80"
                   style={{ background: "var(--color-profit)", color: "var(--surface-page)" }}
@@ -416,14 +376,6 @@ export default function ReportsPage() {
                 >
                   <Download className="h-3.5 w-3.5" />
                   Download PDF
-                </div>
-              ) : pdfGenerate && downloadsRemaining !== null ? (
-                <div
-                  className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-medium"
-                  style={{ background: "var(--surface-raised)", color: "var(--text-muted)", cursor: "not-allowed" }}
-                >
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  Downloads used
                 </div>
               ) : null}
             </div>

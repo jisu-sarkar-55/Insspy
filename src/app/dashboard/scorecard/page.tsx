@@ -122,7 +122,7 @@ export default function ScorecardPage() {
           </div>
           <div className="rounded-xl border p-8 text-center" style={{ background: "var(--surface-card)", borderColor: "var(--border-subtle)" }}>
             <div className="flex justify-center mb-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(251, 191, 36, 0.1)" }}>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(255, 61, 139, 0.1)" }}>
                 <Lock className="h-7 w-7" style={{ color: "var(--color-warning)" }} />
               </div>
             </div>

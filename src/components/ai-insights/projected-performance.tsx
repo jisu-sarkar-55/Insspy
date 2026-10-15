@@ -21,8 +21,8 @@ export function ProjectedPerformance({ data }: ProjectedPerformanceProps) {
       <div
         className="rounded-lg p-4"
         style={{
-          background: "linear-gradient(135deg, rgba(74, 222, 128, 0.06), rgba(96, 165, 250, 0.06))",
-          border: "1px solid rgba(74, 222, 128, 0.12)",
+          background: "linear-gradient(135deg, rgba(52, 211, 153, 0.06), rgba(56, 189, 248, 0.06))",
+          border: "1px solid rgba(52, 211, 153, 0.12)",
         }}
       >
         <div className="mb-1 text-[11px]" style={{ color: "var(--text-secondary)" }}>

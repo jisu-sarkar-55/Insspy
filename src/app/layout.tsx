@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
@@ -8,10 +8,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const playfair = Playfair_Display({
+// Display font loaded into the legacy --font-playfair variable slot so all
+// existing `var(--font-playfair)` references pick up the modern face.
+const display = Space_Grotesk({
   variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const inter = Inter({
@@ -40,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable} ${jetbrains.variable} dark`}
+      className={`${display.variable} ${inter.variable} ${jetbrains.variable} dark`}
     >
       <body className="min-h-screen antialiased">
         {children}

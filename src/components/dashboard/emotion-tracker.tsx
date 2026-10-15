@@ -47,7 +47,7 @@ export function EmotionTracker({ emotions, bestHours }: EmotionTrackerProps) {
           className="rounded-md p-2"
           style={{
             background: "var(--color-profit-bg)",
-            border: "1px solid rgba(74, 222, 128, 0.15)",
+            border: "1px solid rgba(52, 211, 153, 0.15)",
           }}
         >
           <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-profit)" }}>

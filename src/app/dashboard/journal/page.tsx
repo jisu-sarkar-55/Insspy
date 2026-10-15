@@ -168,7 +168,7 @@ export default function JournalPage() {
             <div className="mx-auto max-w-lg text-center">
               <div
                 className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl"
-                style={{ background: "rgba(251, 191, 36, 0.08)", border: "1px solid rgba(251, 191, 36, 0.15)" }}
+                style={{ background: "rgba(255, 61, 139, 0.08)", border: "1px solid rgba(255, 61, 139, 0.15)" }}
               >
                 <BookOpen className="h-9 w-9" style={{ color: "var(--primary)" }} />
               </div>

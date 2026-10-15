@@ -20,7 +20,7 @@ export function ImprovementAreas({ areas }: ImprovementAreasProps) {
           <div key={i} className="flex items-center gap-3">
             <div
               className="flex h-5 w-5 items-center justify-center rounded-full"
-              style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.2)" }}
+              style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.2)" }}
             >
               <X className="h-3 w-3" style={{ color: "var(--color-loss)" }} />
             </div>

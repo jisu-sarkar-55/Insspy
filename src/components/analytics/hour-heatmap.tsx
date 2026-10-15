@@ -8,12 +8,12 @@ interface Props {
 
 function getColor(pnl: number, hasData: boolean): string {
   if (!hasData) return "rgba(255,255,255,0.02)";
-  if (pnl > 50) return "rgba(74, 222, 128,0.8)";
-  if (pnl > 20) return "rgba(74, 222, 128,0.5)";
-  if (pnl > 0) return "rgba(74, 222, 128,0.25)";
-  if (pnl < -50) return "rgba(248, 113, 113,0.8)";
-  if (pnl < -20) return "rgba(248, 113, 113,0.5)";
-  if (pnl < 0) return "rgba(248, 113, 113,0.25)";
+  if (pnl > 50) return "rgba(52, 211, 153,0.8)";
+  if (pnl > 20) return "rgba(52, 211, 153,0.5)";
+  if (pnl > 0) return "rgba(52, 211, 153,0.25)";
+  if (pnl < -50) return "rgba(251, 113, 133,0.8)";
+  if (pnl < -20) return "rgba(251, 113, 133,0.5)";
+  if (pnl < 0) return "rgba(251, 113, 133,0.25)";
   return "rgba(255,255,255,0.04)";
 }
 
@@ -62,11 +62,11 @@ export function HourHeatmap({ data }: Props) {
       </div>
       <div className="flex items-center gap-1">
         <span className="text-[9px]" style={{ color: "var(--text-muted)" }}>Loss</span>
-        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(248, 113, 113,0.7)" }} />
-        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(248, 113, 113,0.35)" }} />
+        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(251, 113, 133,0.7)" }} />
+        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(251, 113, 133,0.35)" }} />
         <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(255,255,255,0.04)" }} />
-        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(74, 222, 128,0.35)" }} />
-        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(74, 222, 128,0.7)" }} />
+        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(52, 211, 153,0.35)" }} />
+        <div className="h-2.5 w-3 rounded-sm" style={{ background: "rgba(52, 211, 153,0.7)" }} />
         <span className="text-[9px]" style={{ color: "var(--text-muted)" }}>Win</span>
       </div>
     </div>

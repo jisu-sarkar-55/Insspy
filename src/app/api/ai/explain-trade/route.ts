@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { explainLosingTrade } from "@/lib/openrouter";
 import { analyzeLosingTrade } from "@/lib/calculations";
-import { checkAiLimit } from "@/lib/limits";
 import type { Trade } from "@/types";
 
 export async function POST(request: NextRequest) {
@@ -16,8 +15,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let trade_id: string | undefined;
-
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -25,19 +22,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  try {
-    trade_id = body.trade_id as string | undefined;
-
-    const limitCheck = await checkAiLimit(user.id, user.email);
-    if (!limitCheck.allowed) {
-      return NextResponse.json({
-        error: `AI analysis limit reached (${limitCheck.current}/${limitCheck.limit} this month).`,
-        usage: limitCheck,
-      }, { status: 429 });
-    }
-  } catch {
-    return NextResponse.json({ error: "Failed to check AI limit" }, { status: 500 });
-  }
+  const trade_id = body.trade_id as string | undefined;
 
   if (!trade_id) {
     return NextResponse.json({ error: "trade_id is required" }, { status: 400 });

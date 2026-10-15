@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2, LogOut } from "lucide-react";
@@ -26,9 +26,12 @@ export function MobileNav() {
   const router = useRouter();
   const [navigating, setNavigating] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setNavigating(null);
-  }, [pathname]);
+  }
 
   return (
     <div
@@ -48,11 +51,17 @@ export function MobileNav() {
               href={item.href}
               onClick={() => { if (!isActive) setNavigating(item.href); }}
               aria-current={isActive ? "page" : undefined}
-              className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
+              className="relative flex flex-col items-center justify-center gap-0.5 w-14 h-14 transition-colors"
               style={{
                 color: isActive ? "var(--primary)" : "var(--text-muted)",
               }}
             >
+              {isActive && (
+                <span
+                  className="absolute top-0 h-[3px] w-8 rounded-b-full"
+                  style={{ background: "var(--primary)" }}
+                />
+              )}
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (

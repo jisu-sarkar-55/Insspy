@@ -128,8 +128,8 @@ export default function TradeReplayPage() {
         <div
           className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium"
           style={{
-            background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))",
-            color: "var(--color-premium, #8b5cf6)",
+            background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(255,61,139,0.15))",
+            color: "var(--color-premium, #a78bfa)",
           }}
         >
           <span className="text-[10px]">✦</span> Premium

@@ -37,8 +37,8 @@ export function MoneyLeakReport({ leaks, totalAvoidable }: MoneyLeakReportProps)
                   style={{
                     width: `${pct}%`,
                     background: i === 0
-                      ? "linear-gradient(90deg, var(--color-loss), rgba(248, 113, 113, 0.4))"
-                      : "rgba(248, 113, 113, 0.3)",
+                      ? "linear-gradient(90deg, var(--color-loss), rgba(251, 113, 133, 0.4))"
+                      : "rgba(251, 113, 133, 0.3)",
                   }}
                 />
               </div>
@@ -49,7 +49,7 @@ export function MoneyLeakReport({ leaks, totalAvoidable }: MoneyLeakReportProps)
 
       <div
         className="mt-4 flex items-center justify-between rounded-lg p-3"
-        style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.15)" }}
+        style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.15)" }}
       >
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4" style={{ color: "var(--color-loss)" }} />

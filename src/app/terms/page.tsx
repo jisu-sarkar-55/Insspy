@@ -45,7 +45,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold mb-3" style={{ fontFamily: "var(--font-playfair)", color: "var(--text-primary)" }}>5. Usage Limits</h2>
-            <p>The Service operates on a usage-based free tier. Limits apply to trades, AI analyses, CSV imports, active goals, setup playbooks, and PDF report downloads. These limits are subject to change at our discretion. We will make reasonable efforts to notify you of material changes.</p>
+            <p>The Service is provided free of charge with unlimited access to trades, AI analyses, CSV imports, active goals, setup playbooks, and PDF report downloads.</p>
           </section>
 
           <section>

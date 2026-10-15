@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkGoalsLimit } from "@/lib/limits";
 
 export async function GET() {
   const supabase = await createClient();
@@ -47,14 +46,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const limitCheck = await checkGoalsLimit(user.id, user.email);
-    if (!limitCheck.allowed) {
-      return NextResponse.json({
-        error: `Active goal limit reached (${limitCheck.current}/${limitCheck.limit}). Complete or delete existing goals to create more.`,
-        usage: limitCheck,
-      }, { status: 429 });
-    }
-
     const allowed = ["title", "type", "target_value", "current_value", "unit", "period", "start_date", "end_date", "status"];
     const insertData: Record<string, unknown> = { user_id: user.id };
     for (const key of allowed) {

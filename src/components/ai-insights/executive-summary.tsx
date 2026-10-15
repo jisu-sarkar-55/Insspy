@@ -33,7 +33,7 @@ export function ExecutiveSummary({ data }: ExecutiveSummaryProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div
           className="rounded-lg p-3"
-          style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(74, 222, 128, 0.15)" }}
+          style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(52, 211, 153, 0.15)" }}
         >
           <div className="mb-2 flex items-center gap-2">
             <Target className="h-4 w-4" style={{ color: "var(--color-profit)" }} />
@@ -59,7 +59,7 @@ export function ExecutiveSummary({ data }: ExecutiveSummaryProps) {
 
         <div
           className="rounded-lg p-3"
-          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.15)" }}
+          style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.15)" }}
         >
           <div className="mb-2 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" style={{ color: "var(--color-loss)" }} />

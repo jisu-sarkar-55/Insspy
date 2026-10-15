@@ -113,9 +113,10 @@ export function Sidebar() {
         {navGroups.map((group) => (
           <div key={group.label} className="mt-3">
             <div
-              className="mb-1.5 px-2.5 text-[9px] font-semibold uppercase tracking-[0.12em]"
+              className="mb-1.5 flex items-center gap-1.5 px-2.5 text-[9px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: "var(--text-muted)" }}
             >
+              <span className="inline-block h-1 w-1 rounded-[1px]" style={{ background: "var(--primary)" }} />
               {group.label}
             </div>
             {group.items.map((item) => {
@@ -134,7 +135,14 @@ export function Sidebar() {
         ))}
       </div>
 
-      <div className="border-t px-2 py-2" style={{ borderColor: "var(--border-subtle)" }}>
+      <div
+        className="border-t px-3 py-3"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <span className="hud-chip" style={{ width: "100%" }}>
+          <span className="hud-label">Plan</span>
+          <span className="hud-value" style={{ color: "var(--primary)" }}>∞ Unlimited</span>
+        </span>
       </div>
 
       <div

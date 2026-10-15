@@ -44,7 +44,7 @@ export function WeeklyReview({ data }: WeeklyReviewProps) {
 
           <div
             className="rounded-lg p-3"
-            style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(74, 222, 128, 0.15)" }}
+            style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(52, 211, 153, 0.15)" }}
           >
             <div className="text-[10px] font-semibold" style={{ color: "var(--color-profit)" }}>Top Strength</div>
             <div className="text-[12px]" style={{ color: "var(--text-primary)" }}>{data.topStrength}</div>
@@ -52,7 +52,7 @@ export function WeeklyReview({ data }: WeeklyReviewProps) {
 
           <div
             className="rounded-lg p-3"
-            style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113, 0.15)" }}
+            style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133, 0.15)" }}
           >
             <div className="text-[10px] font-semibold" style={{ color: "var(--color-loss)" }}>Biggest Mistake</div>
             <div className="text-[12px]" style={{ color: "var(--text-primary)" }}>{data.biggestMistake}</div>
@@ -60,7 +60,7 @@ export function WeeklyReview({ data }: WeeklyReviewProps) {
 
           <div
             className="rounded-lg p-3"
-            style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(192, 132, 252, 0.15)" }}
+            style={{ background: "var(--color-ai-bg)", border: "1px solid rgba(167, 139, 250, 0.15)" }}
           >
             <div className="text-[10px] font-semibold" style={{ color: "var(--color-ai)" }}>Recommendation</div>
             <div className="text-[12px]" style={{ color: "var(--text-primary)" }}>{data.recommendation}</div>

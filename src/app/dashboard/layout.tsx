@@ -16,7 +16,7 @@ export default function DashboardLayout({
       <Sidebar />
       <main className="min-h-screen md:pl-[180px] pb-16 md:pb-0">
         <ErrorBoundary>
-          <div className="p-4 md:p-5">{children}</div>
+          <div className="mx-auto w-full max-w-[1680px] p-4 md:p-5">{children}</div>
         </ErrorBoundary>
       </main>
       <MobileNav />

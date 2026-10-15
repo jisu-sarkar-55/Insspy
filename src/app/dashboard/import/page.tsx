@@ -215,7 +215,7 @@ export default function ImportPage() {
               className="p-4 rounded-lg flex items-center gap-3"
               style={{
                 background: result.success ? "var(--color-profit-bg)" : "var(--color-loss-bg)",
-                border: `1px solid ${result.success ? "rgba(74, 222, 128, 0.2)" : "rgba(248, 113, 113, 0.2)"}`,
+                border: `1px solid ${result.success ? "rgba(52, 211, 153, 0.2)" : "rgba(251, 113, 133, 0.2)"}`,
                 color: result.success ? "var(--color-profit)" : "var(--color-loss)",
               }}
             >

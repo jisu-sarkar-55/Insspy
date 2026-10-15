@@ -165,7 +165,7 @@ export function TradeReplay({ trades }: Props) {
                 className="rounded-lg border overflow-hidden transition-all"
                 style={{
                   background: "var(--surface-card)",
-                  borderColor: isExpanded ? "var(--color-premium, #8b5cf6)" : "var(--border-subtle)",
+                  borderColor: isExpanded ? "var(--color-premium, #a78bfa)" : "var(--border-subtle)",
                   ...(isExpanded ? { boxShadow: "0 0 0 1px rgba(139,92,246,0.15)" } : {}),
                 }}
               >
@@ -189,8 +189,8 @@ export function TradeReplay({ trades }: Props) {
                         className="text-[9px] leading-none"
                         style={{
                           background: t.direction === "buy"
-                            ? "rgba(74, 222, 128, 0.15)"
-                            : "rgba(248, 113, 113, 0.15)",
+                            ? "rgba(52, 211, 153, 0.15)"
+                            : "rgba(251, 113, 133, 0.15)",
                           color: t.direction === "buy" ? "var(--color-profit)" : "var(--color-loss)",
                         }}
                       >
@@ -356,7 +356,7 @@ export function TradeReplay({ trades }: Props) {
                     {(t.confidence_before || t.fear_level || t.greed_level || t.followed_plan !== null) && (
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Brain className="h-3 w-3" style={{ color: "var(--color-premium, #8b5cf6)" }} />
+                          <Brain className="h-3 w-3" style={{ color: "var(--color-premium, #a78bfa)" }} />
                           <span
                             className="text-[9px] font-semibold uppercase tracking-wider"
                             style={{ color: "var(--text-muted)" }}

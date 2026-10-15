@@ -33,7 +33,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>To provide and maintain the trading journal and analytics features</li>
               <li>To generate AI-powered insights based on your trade history</li>
-              <li>To enforce usage limits and prevent abuse</li>
+              <li>To prevent abuse</li>
               <li>To communicate account-related notices and service updates</li>
               <li>To display advertisements via third-party ad networks</li>
               <li>To improve the Service through aggregate analytics</li>

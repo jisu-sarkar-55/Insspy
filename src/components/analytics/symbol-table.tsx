@@ -22,12 +22,12 @@ export function SymbolTable({ data }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex gap-3">
-        <div className="flex-1 rounded-lg p-2" style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(74, 222, 128,0.15)" }}>
+        <div className="flex-1 rounded-lg p-2" style={{ background: "var(--color-profit-bg)", border: "1px solid rgba(52, 211, 153,0.15)" }}>
           <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>Best symbol</div>
           <div className="text-sm font-bold font-[var(--font-playfair)]" style={{ color: "var(--color-profit)" }}>{best.symbol}</div>
           <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>+${best.pnl.toFixed(0)}</div>
         </div>
-        <div className="flex-1 rounded-lg p-2" style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(248, 113, 113,0.15)" }}>
+        <div className="flex-1 rounded-lg p-2" style={{ background: "var(--color-loss-bg)", border: "1px solid rgba(251, 113, 133,0.15)" }}>
           <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>Worst symbol</div>
           <div className="text-sm font-bold font-[var(--font-playfair)]" style={{ color: "var(--color-loss)" }}>{worst.symbol}</div>
           <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>${worst.pnl.toFixed(0)}</div>

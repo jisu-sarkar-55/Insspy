@@ -10,25 +10,25 @@ interface AiCoachingPanelProps {
 const severityConfig = {
   critical: {
     bg: "var(--color-loss-bg)",
-    border: "rgba(248, 113, 113, 0.15)",
+    border: "rgba(251, 113, 133, 0.15)",
     icon: Flame,
     iconColor: "var(--color-loss)",
   },
   warning: {
     bg: "var(--color-warning-bg)",
-    border: "rgba(251, 191, 36, 0.15)",
+    border: "rgba(255, 61, 139, 0.15)",
     icon: Clock,
     iconColor: "var(--primary)",
   },
   positive: {
     bg: "var(--color-profit-bg)",
-    border: "rgba(74, 222, 128, 0.15)",
+    border: "rgba(52, 211, 153, 0.15)",
     icon: TrendingUp,
     iconColor: "var(--color-profit)",
   },
   tip: {
     bg: "var(--color-ai-bg)",
-    border: "rgba(192, 132, 252, 0.15)",
+    border: "rgba(167, 139, 250, 0.15)",
     icon: Shield,
     iconColor: "var(--color-ai)",
   },
